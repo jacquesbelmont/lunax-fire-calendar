@@ -4,7 +4,7 @@ Deadline: Sunday 2026-11-15 23:59, America/Porto_Velho (UTC-4). Team target: sub
 
 ## Roles
 - **Jacques** (@jacquesbelmont): data engineering + web app.
-- **Rafael** (@TODO(verify): GitHub handle): harmonization + validation.
+- **Rafael** (@RafaelSdeS): harmonization + validation.
 - **Tiara** (@TODO(verify): GitHub handle): scope, quality, docs, submission.
 
 Research split: Jacques covers FIRMS data specs; Rafael covers method and validation; Tiara verifies the source of every claim in public texts.
