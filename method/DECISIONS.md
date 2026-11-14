@@ -6,18 +6,18 @@ PROPOSED rows become DECIDED when the team approves them in PR review. Options, 
 
 | ID | Date/time (UTC-4) | Decision | Options considered | Chosen by | Justification | Evidence | Status |
 |----|-------------------|----------|--------------------|-----------|---------------|----------|--------|
-| DE-1 | 2026-11-14 16:06 | Demo area: **Rondônia, Brazil**. Bbox = IBGE state boundary aligned to 0.25° cells: W -67, S -13.75, E -59.75, N -7.75 (696 cells) | Whole North Region; one northern state (Rondônia) | Jacques (suggested), Rafael (agreed) | A single region is acceptable (discussions/2016); the team knows its fire context; 696 cells × 313 months keeps the app data small | IBGE: https://servicodados.ibge.gov.br/api/v3/malhas/estados/11?formato=application/vnd.geo+json ; [details](#de-1-demo-area) | DECIDED |
-| DE-1b | 2026-11-14 16:06 | Cross-border extension: the Rondônia bbox also covers land in Bolivia; use the FIRMS country files of Bolivia as well as Brazil, so the demo is international | Brazil files only, cells outside Brazil masked as no-data; Brazil + Bolivia files | Rafael | International at no extra method cost; foreign cells never read as zero fire; Bolivia adds about 0.7 GB of raw files | https://firms.modaps.eosdis.nasa.gov/data/country/yearly_summary_files.txt ; [details](#de-1-demo-area) | PROPOSED |
+| DE-1 | 2026-11-14 17:10 | Demo area: **Rondônia, Brazil**, as given by the IBGE state boundary. Only detections inside the boundary are kept. Outside it is "outside the area", never zero fire. Processing box (`config/area.json`): the boundary's bbox aligned to 0.25° cells, W -67, S -13.75, E -59.75, N -7.75 | Whole North Region; one northern state (Rondônia) | Jacques (suggested), Rafael (agreed) | Rondônia is in the Amazon, has a lot of burning and is our region: 13,176 to 90,362 VIIRS hotspots a year inside the boundary in 2012-2025. A single region is acceptable (discussions/2016) | IBGE: https://servicodados.ibge.gov.br/api/v3/malhas/estados/11?formato=application/vnd.geo+json ; [details](#de-1-demo-area) | DECIDED |
+| DE-1b | 2026-11-14 17:10 | Bolivia: also keep the detections of Bolivia's FIRMS country file that fall inside the processing box, so the demo is international | A: Rondônia only; B: Rondônia + the Bolivian part of the box | - (team to decide) | A follows DE-1 literally and keeps the scope. B makes the demo international at no method cost (+0.7 GB of raw files) | [details](#de-1-demo-area) | OPEN |
 | DE-2 | 2026-11-14 15:44 | Target scale: **VIIRS-equivalent** (monthly counts of VIIRS 375 m hotspots per grid cell). Both sensors are used: MODIS-only months are converted to the VIIRS scale with a model learned where both sensors overlap | MODIS-equivalent; VIIRS-equivalent (both acceptable if justified, per challenge author) | Rafael (agreed with Jacques) | The challenge author asks for continuity with NOAA-20 and NOAA-21 (VIIRS); MODIS is retiring; MODIS and VIIRS overlap in FIRMS since 2012-01-20 | https://github.com/nasa/spaceapps/discussions/1879 ; [details](#de-2-target-scale) | DECIDED |
 | DE-3 | 2026-11-14 15:44 | Calendar time step: monthly | Monthly (recommended by the challenge author); weekly only if easy to read | Team (AGENTS.md rule 5) | Recommended by the challenge author; already a project rule | https://github.com/nasa/spaceapps/discussions/1879 | DECIDED |
 | DE-4 | 2026-11-14 15:44 | SP for each satellite up to its last SP date; NRT only after that date, flagged `provisional` | SP only; NRT only; SP then NRT | Rafael (to confirm with Jacques) | FIRMS advises standard data for scientific analysis; NRT is replaced by SP after about 2-5 months | method/FIRMS_REFERENCE.md section 6 ; [details](#de-4-sp-vs-nrt) | PROPOSED |
-| DE-5 | 2026-11-14 15:44 | Cleaning rules: normalize schema, clip to bbox, period, `type` (DE-9), no confidence/day-night filter (DE-10), exact duplicates, SP/NRT split (DE-4), log of removed rows | See details | Rafael | Only rules traceable to DE-4, DE-9 and DE-10; every removal is counted | [details](#de-5-cleaning-rules) | PROPOSED |
-| DE-6 | 2026-11-14 16:55 | Harmonization method: **ratio per month of year** (option 2), selected by the DE-15 backcast. The negative binomial count regression (option 3, registered as main) failed validation. ML only as RA-6 challenger | Global ratio; ratio per month of year; quantile mapping; count regression; ML | Rafael (by the pre-registered DE-15 rule) | Backcast 2012-2014: bias of the total +2.0 % (ratio) vs +133 % (NB regression); the ratio is also the simplest | method/results/validation_metrics.json (PR #32) ; [details](#de-6-harmonization-method) | PROPOSED |
+| DE-5 | 2026-11-14 17:10 | Cleaning rules: normalize schema, clip to the processing box and then to the IBGE boundary of Rondônia (DE-1), period, `type` (DE-9), no confidence/day-night filter (DE-10), exact duplicates, SP/NRT split (DE-4), log of removed rows | See details | Rafael | Only rules traceable to DE-4, DE-9 and DE-10; every removal is counted | [details](#de-5-cleaning-rules) | PROPOSED |
+| DE-6 | 2026-11-14 16:37 | Harmonization method: **ratio per month of year** (option 2), selected by the DE-15 backcast. The negative binomial count regression (option 3, registered as main) failed validation. ML only as RA-6 challenger | Global ratio; ratio per month of year; quantile mapping; count regression; ML | Rafael (by the pre-registered DE-15 rule) | Backcast 2012-2014: bias of the total +2.0 % (ratio) vs +133 % (NB regression); the ratio is also the simplest | method/results/validation_metrics.json (PR #32) ; [details](#de-6-harmonization-method) | PROPOSED |
 | DE-7 | | App libraries: Leaflet 1.x (map), Leaflet.draw (rectangle selection), Plotly.js (calendar heatmap, charts, PNG download), vendored in docs/lib/ | | Jacques | | docs/lib/README.md | PROPOSED |
-| DE-8 | | Data route for history: country yearly summary CSVs (SP, no MAP_KEY, 2000-2025, no NOAA-21, no 2026) vs area API (needs MAP_KEY) vs Archive Download; and for 2026 / NOAA-21 | See method/FIRMS_REFERENCE.md sections 3.1-3.3 | | | method/FIRMS_REFERENCE.md | OPEN |
-| DE-9 | 2026-11-14 15:44 | `type`: keep only 0 (presumed vegetation fire) in SP data. NRT (no `type`): measure the share of `type` ≠ 0 in SP first, then flag NRT months `provisional` or mask static locations | Type 0 only; all types; type 0 plus a static-location mask for NRT | Rafael | Excludes volcanoes, static land sources and offshore detections; NRT data carry no `type` | method/FIRMS_REFERENCE.md sections 5, 8 ; [details](#de-9-type-values) | PROPOSED |
+| DE-8 | 2026-11-14 17:10 | Data route: FIRMS **country yearly summary CSVs** (standard processing, no MAP_KEY) for the history 2000-2025; FIRMS **area API** (MAP_KEY) only for 2026 and NOAA-21 | Country yearly CSVs; area API; Archive Download (see method/FIRMS_REFERENCE.md sections 3.1-3.3) | Jacques, Rafael | The CSVs need no key and are complete standard years (2025 files: 365 days for MODIS and NOAA-20, checked 2026-11-14). 2026 and NOAA-21 are not in them, so only those use the API. Implemented in `pipeline/download.py` (JA-2) | method/FIRMS_REFERENCE.md ; https://firms.modaps.eosdis.nasa.gov/data/country/ | DECIDED |
+| DE-9 | 2026-11-14 17:10 | `type`: keep only 0 (presumed vegetation fire) in SP data. NRT months (no `type`) are flagged `provisional`, with no mask | Type 0 only; all types; all types in the data with type 0 as the default app view (suggested by Jacques); type 0 plus a static-location mask for NRT | Rafael | **Impact under 0.5 %:** `type` ≠ 0 is 0.23-0.43 % of the detections by satellite (0.35 % overall) in the processing box. Keeping all types would need a second harmonized series per type for a sub-0.5 % difference | method/results/cleaning_log.csv ; method/FIRMS_REFERENCE.md sections 5, 8 ; [details](#de-9-type-values) | PROPOSED |
 | DE-10 | 2026-11-14 15:44 | No confidence filter in v1 (keep the column; sensitivity test in RA-3). No day/night filter (keep the column) | Filter low confidence; no filter. Day only; night only; both | Rafael | MODIS (0-100) and VIIRS (l/n/h) confidence are not comparable; thresholds must be chosen empirically (FAQ); the NRT day/night flag differs from SP | method/FIRMS_REFERENCE.md section 5 ; [details](#de-10-confidence-and-daynight) | PROPOSED |
-| DE-11 | 2026-11-14 16:55 | Terra-only conversion for 2000-11 to 2002-06 (and months with Aqua flagged); Terra + Aqua conversion for 2002-07 to 2012-01; native VIIRS from 2012-02: S-NPP to 2018-03, NOAA-20 from 2018-04, NOAA-21 as check and backup | Sum all satellites; Aqua only; one model per MODIS configuration; Terra only | Rafael | No artificial step when a satellite is added; no double counting; keeps the Terra-only months | method/FIRMS_REFERENCE.md section 2 ; [details](#de-11-satellites-per-era) | PROPOSED |
+| DE-11 | 2026-11-14 16:37 | Terra-only conversion for 2000-11 to 2002-06 (and months with Aqua flagged); Terra + Aqua conversion for 2002-07 to 2012-01; native VIIRS from 2012-02: S-NPP to 2018-03, NOAA-20 from 2018-04, NOAA-21 as check and backup | Sum all satellites; Aqua only; one model per MODIS configuration; Terra only | Rafael | No artificial step when a satellite is added; no double counting; keeps the Terra-only months | method/FIRMS_REFERENCE.md section 2 ; [details](#de-11-satellites-per-era) | PROPOSED |
 | DE-12 | 2026-11-14 15:44 | Grid: 0.25° cells aligned globally (candidate, to confirm with real data) | 0.1°; 0.25°; 0.5° | Rafael (to confirm with Jacques) | Cells much larger than the MODIS pixel; fewer zero cells for the model; export size; to confirm by measuring | [details](#de-12-grid) | PROPOSED |
 | DE-13 | 2026-11-14 15:44 | Historical median = median of the same month in all previous years, excluding months flagged missing; anomaly = difference and ratio (ratio only if median > 0) | All previous years; all years except the current one; fixed baseline period | Rafael (to confirm with Jacques) | Literal reading of R7; same rules in Python and JS (JA-8) | [details](#de-13-historical-median-and-anomaly) | PROPOSED |
 | DE-14 | 2026-11-14 15:44 | Missing-data flag: a month is flagged for a satellite if at least one day is missing; store `missing_days`; no rescaling in v1 | ≥ 1 missing day; share-of-days threshold; flag and rescale; flag and fill with converted MODIS | Rafael | Simple and follows AGENTS.md rule 6: missing data never becomes zero fire | method/FIRMS_REFERENCE.md section 7 ; [details](#de-14-missing-data-flag) | PROPOSED |
@@ -30,34 +30,31 @@ PROPOSED rows become DECIDED when the team approves them in PR review. Options, 
 
 ### DE-1 Demo area
 
-- **Decision:** Rondônia, Brazil. Suggested by Jacques and agreed by Rafael on 2026-11-14.
+- **Decision (DECIDED):** the area of interest is **Rondônia, Brazil**, as given by the IBGE state boundary: state code 11, https://servicodados.ibge.gov.br/api/v3/malhas/estados/11?formato=application/vnd.geo+json. Suggested by Jacques and agreed by Rafael on 2026-11-14.
+- **Why Rondônia:** it is in the Amazon, it has a lot of burning, and it is our region, so the team knows its fire context. A single region is acceptable (discussions/2016).
+- **Measured activity inside the boundary** (cleaned FIRMS country files, point in polygon, 2026-11-14), reference VIIRS hotspots per year:
+
+  | Year | 2012 | 2013 | 2014 | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 |
+  |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+  | Hotspots | 57,125 | 27,233 | 45,475 | 90,362 | 79,589 | 68,193 | 61,395 | 79,455 | 76,927 | 74,737 | 85,450 | 52,874 | 87,445 | 13,176 |
+
+  S-NPP until 2017, NOAA-20 from 2018. MODIS (Terra + Aqua) reaches 71,460 in 2005. These counts will come from `method/results/cleaning_log.csv` once the boundary clip is merged (PR #28).
 - **Options considered:**
-  - Whole North Region: more cells to select and more data to train the conversion (DE-6), but much larger app files.
-  - One state: small and fast; less training data.
-- **Size:** chosen for app data size, measured on real data.
-  - Whole Brazil at 0.25° had 10,126 active cells in only three years of data (country CSVs 2013, 2022, 2025; RA-2a test run, PR #29). At 313 months that is about 3 million rows for the app (10,126 × 313, derived).
-  - With the cell climatology of DE-6, every active cell has a value in every MODIS-era month, so export rows ≈ active cells × 313 months (Nov 2000 to Nov 2026, derived).
-- **Bbox:**
-  - IBGE boundary of Rondônia (state code 11), from https://servicodados.ibge.gov.br/api/v3/malhas/estados/11?formato=application/vnd.geo+json : W -66.8103, S -13.6937, E -59.7744, N -7.9759.
-  - Aligned outwards to whole 0.25° cells (DE-12): **W -67, S -13.75, E -59.75, N -7.75**, which gives 29 × 24 = 696 cells (derived) and at most 217,848 cell-month rows (derived).
-  - Written to `config/area.json`.
-- **Measured activity** inside the aligned bbox, using Brazil files only (2013, 2022, 2025): 483 of the 696 cells had at least one detection.
+  - Whole North Region: more cells to select and more data to train the conversion (DE-6), but much larger app files. Whole Brazil at 0.25° had 10,126 active cells in only three years of data (RA-2a test run, PR #29), about 3 million rows at 313 months (derived).
+  - One state: small and fast. Chosen.
+- **Processing box:**
+  - `config/area.json` holds the boundary's bbox (W -66.8103, S -13.6937, E -59.7744, N -7.9759), aligned outwards to whole 0.25° cells (DE-12): **W -67, S -13.75, E -59.75, N -7.75**, i.e. 696 cells (derived). The box is only used to read and grid the data.
+  - It also covers parts of neighbouring Brazilian states and of Bolivia. Only 42 % to 56 % of the detections in the box, depending on the satellite, fall inside Rondônia (same measurement).
+- **Outside Rondônia is never zero fire:**
+  - `clean.py` keeps only the detections inside the IBGE boundary (point in polygon). A cell that crosses the boundary counts only its detections inside Rondônia.
+  - `export.py` writes the boundary to `docs/data/area.geojson`. The app draws it and marks everything outside as "outside the area".
 
-**DE-1b, cross-border extension (PROPOSED):**
-- The bbox also covers land in Bolivia.
-- With Brazil's files only, those cells would be empty and would read as zero fire (AGENTS.md rule 6). The options are to mask them as no-data, or to add the FIRMS country files of Bolivia.
-- **Proposal:** add Bolivia.
-  - The demo becomes international, which the team wants, at no extra method cost (same sensors, same pipeline).
-  - Border cells are complete.
-- **Raw size** (FIRMS index, 2026-11-14):
-
-  | Country | MODIS 2000-2025 | VIIRS S-NPP 2012-2025 | VIIRS NOAA-20 2018-2025 |
-  |---|---|---|---|
-  | Bolivia | 147 MB | 309 MB | 241 MB |
-  | Brazil | 790 MB | 1,533 MB | 885 MB |
-
-  The two countries together are about 3.9 GB of raw files; the cleaned files are clipped to the bbox and gzip-compressed.
-- **Implementation:** `download.py` (#4, #6) fetches both countries into `data/raw/country/<instrument>/<year>/`. `clean.py` (PR #28) reads every CSV in that folder and clips them to the bbox.
+**DE-1b, Bolivia (OPEN, the team decides):**
+- **Option A, Rondônia only:** as above. This is Jacques's preference and the current implementation.
+- **Option B, Rondônia + the Bolivian part of the box:** Rafael's earlier wish for an international demo.
+  - Also keep the detections of Bolivia's FIRMS country file that fall inside the box. The country comes from the file, so no other boundary data is needed. Other Brazilian states stay out.
+  - Bolivia's raw files are about 0.7 GB for 2000-2025 (MODIS 147 MB, S-NPP 309 MB, NOAA-20 241 MB; FIRMS index, 2026-11-14).
+- **Both options use the same method.** B is a configuration switch plus a rerun of the pipeline.
 
 ### DE-2 Target scale
 
@@ -112,7 +109,7 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
      - Observed SP values: MODIS `6.2` (2013) and `61.03` (2025); VIIRS `2`.
      - TODO(verify): meaning of `6.2` and `61.03` - FIRMS.
    - `route` (country CSV or API).
-2. Clip to the demo bbox with half-open intervals (west ≤ lon < east, south ≤ lat < north), so no detection is counted twice at an edge.
+2. Clip to the processing box with half-open intervals (west ≤ lon < east, south ≤ lat < north), so no detection is counted twice at an edge. Then keep only detections inside the IBGE boundary of Rondônia (point in polygon, DE-1).
 3. Keep dates from 2000-11-01 to the data cut-off date.
 4. `type` filter (DE-9).
 5. No confidence or day/night filter (DE-10).
@@ -182,6 +179,9 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
   - VIIRS S-NPP: 0.43 %
   
   The share is small, so NRT months are only flagged `provisional`, with no static-location mask.
+- **Considered on review** (Jacques): keep all types in the data and make type 0 the default app view, since "burning activity" is not limited to vegetation fire.
+  - Not chosen: every number would then need a second harmonized series (one k per type), and a second set of export columns, for a difference under 0.5 %.
+  - The impact of dropping `type` ≠ 0 is stated here and in method/METHOD.md.
 - TODO(verify): meaning of the `type` codes for VIIRS in the documentation - FIRMS_REFERENCE section 13, item 2.
 
 ### DE-10 Confidence and day/night
