@@ -17,4 +17,4 @@ The exact versions used in the setup are in `requirements.lock.txt`. Put `FIRMS_
 | 5 | `aggregate.py` | `data/interim/clean/*.csv.gz`; `data/raw/missing_days.csv` (from `download.py`) | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv` (git-ignored) | RA-2 |
 | 6 | `harmonize.py` | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv` | `data/interim/harmonized.csv.gz` (git-ignored); `method/results/harmonize_model.json` | RA-2, DE-2 |
 | 7 | `validate.py` | harmonized series | `method/results/`, `method/figures/` | RA-3 |
-| 8 | `export.py` | harmonized series | `docs/data/` | RA-2 |
+| 8 | `export.py` | `data/interim/harmonized.csv.gz`, `data/interim/month_flags.csv`, `config/area.json` | `docs/data/monthly_cells.csv`, `docs/data/months.csv`, `docs/data/metadata.json` (DATA_CONTRACT.md) | RA-2 |

@@ -1,0 +1,112 @@
+{
+  "title": "LUNAX Fire Calendar - harmonized monthly hotspot counts",
+  "area": {
+    "name": "Rondônia, Brazil (bbox also covers adjacent Bolivia)",
+    "bbox_west_south_east_north": [
+      -67.0,
+      -13.75,
+      -59.75,
+      -7.75
+    ],
+    "source_countries": [
+      "Bolivia",
+      "Brazil"
+    ]
+  },
+  "source": {
+    "name": "NASA FIRMS (Fire Information for Resource Management System)",
+    "url": "https://www.earthdata.nasa.gov/data/tools/firms",
+    "product": "FIRMS country yearly summary CSVs, standard processing (SP)",
+    "files": "https://firms.modaps.eosdis.nasa.gov/data/country/",
+    "satellites": {
+      "MODIS 1 km": [
+        "Terra",
+        "Aqua"
+      ],
+      "VIIRS 375 m": [
+        "S-NPP",
+        "NOAA-20"
+      ]
+    },
+    "versions_by_satellite": {
+      "Aqua": [
+        "6.03",
+        "6.2",
+        "61.03"
+      ],
+      "NOAA20": [
+        "2"
+      ],
+      "SNPP": [
+        "2"
+      ],
+      "Terra": [
+        "6.03",
+        "6.2",
+        "61.03"
+      ]
+    }
+  },
+  "period": {
+    "first_month": "2000-11",
+    "last_month": "2025-12"
+  },
+  "data_cutoff_date": "2025-12-31",
+  "archived": "Archived FIRMS data, not live; see data_cutoff_date.",
+  "grid": {
+    "cell_size_deg": 0.25,
+    "origin_lon_lat": [
+      -180,
+      -90
+    ],
+    "cell_id": "<row>_<col>, row = floor((lat+90)/0.25), col = floor((lon+180)/0.25)",
+    "area_rule": "a cell belongs to a selected area if its centre is inside the rectangle"
+  },
+  "method": {
+    "target_scale": "VIIRS-equivalent: monthly count of VIIRS 375 m hotspots per cell (DE-2)",
+    "native_months": "from 2012-02: S-NPP to 2018-03, NOAA-20 from 2018-04 (DE-11)",
+    "estimated_months": "2000-11 to 2012-01: viirs_eq = k(month of year) x MODIS count, with MODIS = Terra + Aqua when both are valid, else Terra (DE-6 option 2, selected by the DE-15 backcast; method/results/validation_metrics.json)",
+    "train_years": [
+      2015,
+      2025
+    ],
+    "k_by_month": {
+      "TA": {
+        "01": 3.482520699172033,
+        "02": 2.8134715025906734,
+        "03": 2.639021074099252,
+        "04": 2.9057702488088935,
+        "05": 3.3993288590604025,
+        "06": 3.6083788706739526,
+        "07": 3.4949709552495696,
+        "08": 3.7644116306164834,
+        "09": 3.6917249333237225,
+        "10": 3.8636443873866644,
+        "11": 3.9337846922116584,
+        "12": 3.3173601147776184
+      },
+      "T": {
+        "01": 10.148793565683647,
+        "02": 8.418604651162791,
+        "03": 8.883295194508008,
+        "04": 8.405128205128205,
+        "05": 11.067006554989074,
+        "06": 12.6,
+        "07": 10.501575757575758,
+        "08": 9.152723465837362,
+        "09": 9.427748324865622,
+        "10": 9.048519242333134,
+        "11": 9.261248021704725,
+        "12": 9.285943775100401
+      }
+    },
+    "uncertainty_note": "viirs_eq_var under-covers in validation (90 % intervals cover fewer than 90 % of observations); see method/VALIDATION.md",
+    "decisions": "method/DECISIONS.md"
+  },
+  "files": {
+    "monthly_cells.csv": "cell_id, year_month, viirs_eq (harmonized), viirs_eq_var (variance, 0 when observed), estimated (1 = converted from MODIS), terra, aqua, snpp, noaa20, noaa21 (raw counts). Empty value = no data, never zero fire. Active cells only; other cells had no detection.",
+    "months.csv": "year_month, sat, missing_days, flagged (1 = missing data), provisional (1 = NRT)"
+  },
+  "attribution": "We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Land, Atmosphere Near real-time Capability for Earth observations (LANCE) (https://earthdata.nasa.gov/lance) and NASA's Earth Science Data and Information System (ESDIS).",
+  "disclaimer_url": "https://www.earthdata.nasa.gov/data/projects/lance#ed-lance-disclaimer"
+}
