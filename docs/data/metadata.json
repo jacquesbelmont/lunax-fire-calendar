@@ -104,7 +104,7 @@
       }
     },
     "uncertainty": "viirs_eq_var = model variance x lambda (DE-16). For an area, sum viirs_eq and viirs_eq_var over its cells; the 90 % interval is sum +/- 1.645 x sqrt(summed variance). lambda was calibrated on the monthly totals of the whole demo area; see method/VALIDATION.md",
-    "uncertainty_lambda": 12.287932526219151,
+    "uncertainty_lambda": 11.538036604104438,
     "decisions": "method/DECISIONS.md"
   },
   "files": {
