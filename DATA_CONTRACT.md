@@ -10,7 +10,12 @@ Changing any format here requires updating this file and telling the other side.
 
 ### (a) Monthly counts per grid cell
 Path: `docs/data/monthly_cells.csv`. Proposed by Rafael on issue #5 and implemented in `pipeline/export.py`; to be approved by Jacques (JA-3).
-Content: one row per **active cell** (at least one detection by any satellite in any month) and month. Cells without a row had no detection in any month. Grid: DE-12 (0.25° cells; see `metadata.json` → `grid`).
+Content: one row per **active cell** (at least one detection by any satellite in any month) and month. Only detections inside the area boundary (`docs/data/area.geojson`, DE-1) are counted.
+- Cells inside the boundary without a row had no detection in any month.
+- Everything outside the boundary is **outside the area**, never zero fire.
+- A cell that crosses the boundary counts only its detections inside it.
+
+Grid: DE-12 (0.25° cells; see `metadata.json` → `grid`).
 **An empty value means no data and is never zero fire** (AGENTS.md rule 6).
 
 | Column | Type | Unit | Description |
@@ -34,6 +39,9 @@ Path: `docs/data/months.csv`.
 | `provisional` | 0/1 | - | 1 = month contains NRT data (DE-4) |
 
 A satellite-month absent from this file has no data.
+
+### (d) Area boundary
+Path: `docs/data/area.geojson`. This is the IBGE boundary of Rondônia (DE-1), a GeoJSON FeatureCollection with one Polygon. The source URL and retrieval date are in the feature `properties`. The app draws it and marks everything outside it as "outside the area".
 
 ### (b) Hotspot list per year (CSV export)
 Path: TODO(verify): file naming - decide in JA-3

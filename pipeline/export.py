@@ -24,8 +24,8 @@ ROOT = Path(__file__).resolve().parent.parent
 HARMONIZED = ROOT / "data" / "interim" / "harmonized.csv.gz"
 FLAGS = ROOT / "data" / "interim" / "month_flags.csv"
 CLEAN_DIR = ROOT / "data" / "interim" / "clean"
-RAW_COUNTRY = ROOT / "data" / "raw" / "country"
 AREA = ROOT / "config" / "area.json"
+BOUNDARY = ROOT / "config" / "area_boundary.geojson"  # IBGE boundary of Rondonia (DE-1)
 MODEL = ROOT / "method" / "results" / "harmonize_model.json"
 DOCS_DATA = ROOT / "docs" / "data"
 MAX_FILE_MB = 90  # GitHub rejects files over 100 MB
@@ -51,6 +51,13 @@ def export_monthly_counts(harmonized):
     return path
 
 
+def export_area_boundary():
+    """(d) area.geojson: the area boundary (DE-1). The app draws it; outside it is "outside the area", not zero."""
+    path = DOCS_DATA / "area.geojson"
+    path.write_text(BOUNDARY.read_text())
+    return path
+
+
 def export_months(flags):
     """(a2) months.csv: one row per satellite and covered month."""
     path = DOCS_DATA / "months.csv"
@@ -70,14 +77,16 @@ def export_metadata(harmonized):
     if not area.get("name") or not area.get("bbox_west_south_east_north"):
         raise ValueError(f"{AREA.relative_to(ROOT)} is not filled (DE-1)")
     model = json.loads(MODEL.read_text())
-    clean = pd.concat([pd.read_csv(f, usecols=["acq_date", "sat", "version"], dtype=str)
+    clean = pd.concat([pd.read_csv(f, usecols=["acq_date", "sat", "version", "country"], dtype=str)
                        for f in sorted(CLEAN_DIR.glob("*.csv.gz"))])
-    countries = sorted({p.name.split("_", 2)[2].removesuffix(".csv.gz").removesuffix(".csv")
-                        for p in RAW_COUNTRY.glob("*/*/*.csv*")})
+    boundary_props = json.loads(BOUNDARY.read_text())["features"][0]["properties"]
     meta = {
         "title": "LUNAX Fire Calendar - harmonized monthly hotspot counts",
         "area": {"name": area["name"], "bbox_west_south_east_north": area["bbox_west_south_east_north"],
-                 "source_countries": countries},
+                 "boundary_file": "area.geojson", "boundary_source": boundary_props.get("url"),
+                 "rule": "only detections inside the boundary are counted; outside the boundary is outside the "
+                         "area, not zero fire (DE-1)",
+                 "countries_in_data": sorted(clean["country"].unique())},
         "source": {
             "name": "NASA FIRMS (Fire Information for Resource Management System)",
             "url": "https://www.earthdata.nasa.gov/data/tools/firms",
@@ -107,8 +116,11 @@ def export_metadata(harmonized):
         "files": {
             "monthly_cells.csv": "cell_id, year_month, viirs_eq (harmonized), viirs_eq_var (variance, 0 when observed), "
                                  "estimated (1 = converted from MODIS), terra, aqua, snpp, noaa20, noaa21 (raw counts). "
-                                 "Empty value = no data, never zero fire. Active cells only; other cells had no detection.",
+                                 "Empty value = no data, never zero fire. Active cells only: other cells inside the "
+                                 "boundary had no detection; cells outside the boundary are outside the area. A cell "
+                                 "that crosses the boundary counts only its detections inside it.",
             "months.csv": "year_month, sat, missing_days, flagged (1 = missing data), provisional (1 = NRT)",
+            "area.geojson": "IBGE boundary of the area (DE-1); draw it and mark everything outside as outside the area",
         },
         "attribution": ATTRIBUTION,
         "disclaimer_url": DISCLAIMER_URL,
@@ -137,7 +149,8 @@ def main(argv=None):
     harmonized = pd.read_csv(HARMONIZED, dtype={"year_month": str})
     flags = pd.read_csv(FLAGS, dtype={"year_month": str})
     DOCS_DATA.mkdir(parents=True, exist_ok=True)
-    paths = [export_monthly_counts(harmonized), export_months(flags), export_metadata(harmonized)]
+    paths = [export_monthly_counts(harmonized), export_months(flags), export_metadata(harmonized),
+             export_area_boundary()]
     if a.check:
         check(harmonized, paths)
     for path in paths:
