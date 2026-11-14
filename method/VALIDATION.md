@@ -49,13 +49,31 @@ Figure: `method/figures/backcast.png`.
 
 ## Uncertainty
 
-- Variance per estimated cell-month: mu + alpha·mu², with alpha by the method of moments on the training rows (`method/results/harmonize_model.json`).
-- Area-level relative standard error in the 129 estimated months: median 3.7 %, 90th percentile 8.2 %.
-- **These intervals are too narrow.** In the backcast, the nominal 90 % intervals cover 76 % of cell-months and 38 % of monthly area totals.
-- The real error at area level (MdAPE 9.2 % in the backcast) is larger than the reported standard error. Summing cell variances assumes independent cells, and fire is spatially clustered.
-- TODO(RA-3): calibrate the variance on leave-one-year-out errors before it is shown in the app. Until then the app should state that the interval understates uncertainty.
+**Model variance** per estimated cell-month: mu + alpha·mu², with alpha by the method of moments on the training rows (`method/results/harmonize_model.json`). It is **too narrow**:
+- In the backcast, the nominal 90 % intervals cover only 76 % of cell-months and 38 % of monthly area totals.
+- Summing cell variances assumes independent cells, but fire is spatially clustered and the ratio varies from year to year.
+
+**Calibration (DE-16):**
+- One variance inflation factor, lambda = 12.3, fitted on the monthly area totals of the leave-one-year-out years 2015-2025 (127 months), so that 90 % of them fall inside ±1.645·sqrt(lambda × summed variance). The value is also in `method/results/uncertainty_calibration.json`.
+- Tested on the backcast years 2012-2014, which were not used to fit lambda: coverage rises to **85 %** of monthly area totals (from 38 %) and **86 %** of cell-months (from 76 %). The calibrated intervals are close to, but still a little below, the nominal 90 %.
+- `docs/data/monthly_cells.csv` exports the calibrated variance (model variance × lambda). For an area, the app sums `viirs_eq` and `viirs_eq_var` over the cells.
+
+## Sensitivity (DE-15)
+
+**Training window** (possible MODIS orbital drift):
+- Backcast trained on 2015-2019: bias -1.5 %, MdAPE 5.7 %.
+- Backcast trained on 2020-2025: bias +4.9 %, MdAPE 11.3 %.
+- The leave-one-year-out bias tends to fall with the year (Spearman rho = -0.46, p = 0.10, 14 years). This is consistent with a VIIRS/MODIS ratio that grows in recent years, but it is not conclusive.
+- The production fit (2015-2025) is between the two. Changing the window now would mean choosing after seeing the test, so it is reported here, not changed. Decision for the team.
+
+**Low-confidence VIIRS detections** (DE-10):
+- They are 6.3 % (S-NPP) and 6.7 % (NOAA-20) of the VIIRS detections in the area.
+- Removing them from the reference changes the backcast bias from +2.0 % to +2.5 % and the MdAPE from 9.2 % to 8.1 % (area level). The no-filter choice does not change the conversion materially.
+- MODIS is not filtered, because its class cut-offs are not verified.
+
+**Grid size** (DE-12): not run. The ratio per month of year is fitted on area sums, so k and every area total are the same for any cell size; only the split of a total between cells changes.
 
 ## Not done yet
 
-- **Sensitivity tests in DE-15:** confidence filter (DE-10), grid size (DE-12), training window (orbital drift). TODO(RA-3).
 - **NOAA-21 continuity:** needs API data (DE-8).
+- **Calibrated intervals:** still slightly below 90 % in the backcast (see Uncertainty).

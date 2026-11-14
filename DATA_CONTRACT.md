@@ -18,7 +18,7 @@ Content: one row per **active cell** (at least one detection by any satellite in
 | `cell_id` | text | - | `<row>_<col>` with row = floor((lat+90)/0.25), col = floor((lon+180)/0.25). Cell centre: lat = (row+0.5)·0.25−90, lon = (col+0.5)·0.25−180 |
 | `year_month` | text | YYYY-MM | Month (UTC acquisition dates) |
 | `viirs_eq` | float | hotspots | Harmonized count on the VIIRS 375 m scale (DE-2). Empty = no data |
-| `viirs_eq_var` | float | hotspots² | Variance of `viirs_eq`; 0 for observed (native VIIRS) months |
+| `viirs_eq_var` | float | hotspots² | Calibrated variance of `viirs_eq` (DE-16); 0 for observed (native VIIRS) months. For an area: 90 % interval = sum(`viirs_eq`) ± 1.645·sqrt(sum(`viirs_eq_var`)) |
 | `estimated` | 0/1 | - | 1 = converted from MODIS (2000-11 to 2012-01, DE-6/DE-11) |
 | `terra`, `aqua`, `snpp`, `noaa20`, `noaa21` | int | hotspots | Raw count per satellite, for the per-sensor view (JA-7). Empty = satellite not covered or month flagged. Never sum MODIS and VIIRS columns |
 

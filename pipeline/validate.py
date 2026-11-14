@@ -47,6 +47,8 @@ FIGURES = ROOT / "method" / "figures"
 BACKCAST_TRAIN = range(2015, 2026)  # DE-15
 BACKCAST_TEST = range(2012, 2015)  # DE-15
 LOYO_YEARS = range(2012, 2026)  # DE-15
+CALIB_YEARS = range(2015, 2026)  # DE-16: lambda fitted on these LOYO years, tested on the backcast years
+CLEAN_DIR = ROOT / "data" / "interim" / "clean"
 Z90 = stats.norm.ppf(0.95)
 SOURCE_NOTE = "Data: NASA FIRMS country CSVs (standard processing), Brazil + Bolivia. Area: Rondônia bbox (DE-1)."
 FORMULAS = {  # DE-6 option 3, as registered
@@ -151,20 +153,86 @@ def validate_on_held_out_years(panel):
 
 
 def leave_one_year_out(panel):
-    """One fit per held-out year of the overlap (DE-15): production ratio and the NB comparator."""
-    rows = []
+    """One fit per held-out year of the overlap (DE-15): production ratio and the NB comparator.
+    Returns (metrics per year, monthly area totals of the ratio method: obs, pred, summed variance)."""
+    rows, areas = [], []
     for y in LOYO_YEARS:
         others = [z for z in LOYO_YEARS if z != y]
         test = _split(panel, [y])
         mu, var, alpha = predict_ratio(hz.fit(panel, others), test)
         m = metrics(test, mu, var, alpha)
+        ok = mu.notna()
+        areas.append(pd.DataFrame({"year_month": test.loc[ok, "year_month"], "obs": test.loc[ok, "ref"],
+                                   "pred": mu[ok], "var": var[ok]}).groupby("year_month").sum().assign(year=y))
         nb, clim = fit_regression(panel, others, "nb")
         n = metrics(test, *predict_regression(nb, clim, test))
         rows.append({"year": y, **{f"ratio_{k}": v for k, v in m.items()},
                      **{f"nb_{k}": v for k, v in n.items() if k not in ("n_cell_months", "n_months")}})
         print(f"  LOYO {y}: ratio bias {m['relative_bias_total']:+.3f} MdAPE {m['mdape_monthly_area']:.3f} | "
               f"NB bias {n['relative_bias_total']:+.3f}")
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows), pd.concat(areas)
+
+
+def calibrate_variance(loyo_area, test, mu, var, alpha):
+    """DE-16: one variance inflation factor lambda, so that 90 % of the monthly area totals of the
+    leave-one-year-out years 2015-2025 fall inside +/- 1.645*sqrt(lambda * summed variance).
+    Tested on the backcast years 2012-2014, which are not used to fit lambda."""
+    fit_part = loyo_area[loyo_area["year"].isin(list(CALIB_YEARS)) & (loyo_area["var"] > 0)]
+    z = (fit_part["obs"] - fit_part["pred"]).abs() / np.sqrt(fit_part["var"])
+    lam = max(1.0, float((np.quantile(z, 0.90) / Z90) ** 2))
+    var_c = var * lam
+    alpha_c = ((var_c - mu) / mu ** 2).where(mu > 0, alpha)  # NB2 alpha giving the inflated variance
+    before, after = metrics(test, mu, var, alpha), metrics(test, mu, var_c, alpha_c)
+    return {"lambda": lam, "fitted_on_loyo_years": [CALIB_YEARS[0], CALIB_YEARS[-1]],
+            "n_months_fitted": int(len(fit_part)),
+            "backcast_pi90_coverage_area": {"before": before["pi90_coverage_area"],
+                                            "after": after["pi90_coverage_area"]},
+            "backcast_pi90_coverage_cell": {"before": before["pi90_coverage_cell"],
+                                            "after": after["pi90_coverage_cell"]}}
+
+
+def sensitivity_training_window(panel, loyo):
+    """DE-15 sensitivity to the training window (orbital drift): backcast with early vs late training years,
+    and the trend of the leave-one-year-out bias with the year."""
+    test = _split(panel, BACKCAST_TEST)
+    out = {}
+    for label, years in (("train_2015_2019", range(2015, 2020)), ("train_2020_2025", range(2020, 2026))):
+        mu, _, _ = predict_ratio(hz.fit(panel, years), test)
+        m = metrics(test, mu)
+        out[label] = {"relative_bias_total": m["relative_bias_total"], "mdape_monthly_area": m["mdape_monthly_area"]}
+    rho = stats.spearmanr(loyo["year"], loyo["ratio_relative_bias_total"])
+    out["loyo_bias_vs_year_spearman"] = float(rho.statistic)
+    out["loyo_bias_vs_year_p"] = float(rho.pvalue)
+    return out
+
+
+def sensitivity_viirs_low_confidence(panel):
+    """DE-10 sensitivity at area level: share of low-confidence VIIRS detections, and the backcast of the ratio
+    method with them removed from the reference. MODIS is not filtered: its class cut-offs are not verified."""
+    files = sorted(CLEAN_DIR.glob("viirs-*.csv.gz"))
+    v = pd.concat([pd.read_csv(f, usecols=["acq_date", "sat", "confidence"], dtype=str) for f in files],
+                  ignore_index=True)
+    v["year_month"] = v["acq_date"].str[:7]
+    share = v.groupby("sat")["confidence"].apply(lambda s: float((s == "l").mean())).to_dict()
+    low = v[v["confidence"].eq("l")].groupby(["year_month", "sat"]).size()
+    p = panel[panel["ref"].notna()]
+    area = p.groupby("year_month").agg(ref=("ref", "sum"), ref_sat=("ref_sat", "first"), month=("month", "first"),
+                                       Terra=("Terra", lambda s: s.sum(min_count=1)),
+                                       Aqua=("Aqua", lambda s: s.sum(min_count=1)))
+    area["ref_no_low"] = area["ref"] - [low.get((ym, s), 0) for ym, s in zip(area.index, area["ref_sat"])]
+    area["modis"] = area["Terra"] + area["Aqua"]
+    area["year"] = area.index.str[:4].astype(int)
+    out = {"low_confidence_share_by_satellite": share}
+    for col in ("ref", "ref_no_low"):
+        tr = area[area["year"].isin(list(BACKCAST_TRAIN)) & area["modis"].notna()]
+        te = area[area["year"].isin(list(BACKCAST_TEST)) & area["modis"].notna()]
+        g = tr.groupby("month")[[col, "modis"]].sum()
+        pred = te["month"].map(g[col] / g["modis"]) * te["modis"]
+        pos = te[col] > 0
+        out[f"backcast_area_{col}"] = {
+            "relative_bias_total": float(pred.sum() / te[col].sum() - 1),
+            "mdape_monthly_area": float(np.median((pred[pos] - te.loc[pos, col]).abs() / te.loc[pos, col]))}
+    return out
 
 
 def check_continuity_across_viirs_satellites(panel):
@@ -212,11 +280,13 @@ def _save(fig, name):
     return path
 
 
-def before_after_figure(harmonized):
-    """Area totals per month: uncorrected baseline vs harmonized VIIRS-scale series (does the series jump in 2012?)."""
+def before_after_figure(harmonized, lam):
+    """Area totals per month: uncorrected baseline vs harmonized VIIRS-scale series (does the series jump in 2012?).
+    The band uses the calibrated variance (model variance x lambda, DE-16)."""
     a = harmonized.groupby("year_month").agg(baseline=("baseline", lambda s: s.sum(min_count=1)),
                                              harmonized=("viirs_eq", lambda s: s.sum(min_count=1)),
                                              var=("viirs_eq_var", "sum"))
+    a["var"] *= lam
     x = pd.to_datetime(a.index)
     fig, ax = plt.subplots(figsize=(11, 4))
     ax.plot(x, a["baseline"], color="0.6", lw=1, label="Baseline, no correction (raw MODIS, then raw VIIRS)")
@@ -224,7 +294,7 @@ def before_after_figure(harmonized):
     band = a["var"] > 0
     ax.fill_between(x[band], (a["harmonized"] - Z90 * np.sqrt(a["var"]))[band].clip(lower=0),
                     (a["harmonized"] + Z90 * np.sqrt(a["var"]))[band], color="C3", alpha=0.2,
-                    label="90 % interval (estimated months, independent cells)")
+                    label="90 % interval (estimated months, calibrated, DE-16)")
     ax.axvline(pd.Timestamp(hz.FIRST_NATIVE + "-01"), color="k", ls="--", lw=0.8)
     ax.set_ylabel("Hotspots per month (area total)")
     ax.set_title("Before/after harmonization: converted from MODIS until 2012-01, native VIIRS after")
@@ -264,8 +334,19 @@ def main():
 
     backcast, test = validate_on_held_out_years(panel)
     print("backcast:", json.dumps(backcast, indent=1))
-    loyo = leave_one_year_out(panel)
+    loyo, loyo_area = leave_one_year_out(panel)
     loyo.to_csv(RESULTS / "loyo.csv", index=False)
+    bt = _split(panel, BACKCAST_TEST)
+    calibration = calibrate_variance(loyo_area, bt, *predict_ratio(hz.fit(panel, BACKCAST_TRAIN), bt))
+    (RESULTS / "uncertainty_calibration.json").write_text(json.dumps(
+        {"lambda": calibration["lambda"], "decision": "method/DECISIONS.md DE-16",
+         "details": "method/results/validation_metrics.json -> uncertainty_calibration"}, indent=2) + "\n")
+    sensitivity = {
+        "training_window": sensitivity_training_window(panel, loyo),
+        "viirs_low_confidence": sensitivity_viirs_low_confidence(panel),
+        "grid_size": "not run: the ratio per month of year is fitted on area sums, so k and every area total are "
+                     "the same for any cell size; only the split between cells changes",
+    }
     continuity, area = check_continuity_across_viirs_satellites(panel)
     area.to_csv(RESULTS / "continuity.csv")
     stability, annual = ratio_stability(panel)
@@ -293,9 +374,11 @@ def main():
         "annual_ratio_file": "method/results/annual_ratio.csv",
         "continuity": continuity,
         "uncertainty": estimate_uncertainty(harmonized),
+        "uncertainty_calibration": calibration,
+        "sensitivity": sensitivity,
     }
     (RESULTS / "validation_metrics.json").write_text(json.dumps(result, indent=2) + "\n")
-    for p in (before_after_figure(harmonized), backcast_figure(test), continuity_figure(area)):
+    for p in (before_after_figure(harmonized, calibration["lambda"]), backcast_figure(test), continuity_figure(area)):
         print("wrote", p.relative_to(ROOT))
     print("wrote method/results/validation_metrics.json, loyo.csv, continuity.csv")
 

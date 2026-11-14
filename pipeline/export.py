@@ -27,6 +27,7 @@ CLEAN_DIR = ROOT / "data" / "interim" / "clean"
 RAW_COUNTRY = ROOT / "data" / "raw" / "country"
 AREA = ROOT / "config" / "area.json"
 MODEL = ROOT / "method" / "results" / "harmonize_model.json"
+CALIBRATION = ROOT / "method" / "results" / "uncertainty_calibration.json"
 DOCS_DATA = ROOT / "docs" / "data"
 MAX_FILE_MB = 90  # GitHub rejects files over 100 MB
 
@@ -39,10 +40,18 @@ DISCLAIMER_URL = "https://www.earthdata.nasa.gov/data/projects/lance#ed-lance-di
 SAT_COLUMNS = {"Terra": "terra", "Aqua": "aqua", "SNPP": "snpp", "NOAA20": "noaa20", "NOAA21": "noaa21"}
 
 
-def export_monthly_counts(harmonized):
-    """(a) monthly_cells.csv: harmonized VIIRS-scale value, its variance, estimated flag and raw counts per satellite."""
+def calibration_lambda():
+    """Variance inflation factor from validate.py (DE-16). Run validate.py before export.py."""
+    if not CALIBRATION.exists():
+        raise FileNotFoundError(f"{CALIBRATION.relative_to(ROOT)} missing: run pipeline/validate.py first (DE-16)")
+    return float(json.loads(CALIBRATION.read_text())["lambda"])
+
+
+def export_monthly_counts(harmonized, lam):
+    """(a) monthly_cells.csv: harmonized VIIRS-scale value, its calibrated variance (model variance x lambda,
+    DE-16), estimated flag and raw counts per satellite."""
     out = harmonized[["cell_id", "year_month", "viirs_eq", "viirs_eq_var", "estimated", *SAT_COLUMNS]]
-    out = out.rename(columns=SAT_COLUMNS)
+    out = out.rename(columns=SAT_COLUMNS).assign(viirs_eq_var=harmonized["viirs_eq_var"] * lam)
     for c in SAT_COLUMNS.values():
         out[c] = out[c].astype("Int64")  # empty = satellite-month not covered or flagged
     path = DOCS_DATA / "monthly_cells.csv"
@@ -100,8 +109,10 @@ def export_metadata(harmonized):
                                 "DE-15 backcast; method/results/validation_metrics.json)",
             "train_years": model["train_years"],
             "k_by_month": {k: v["k_by_month"] for k, v in model["configurations"].items()},
-            "uncertainty_note": "viirs_eq_var under-covers in validation (90 % intervals cover fewer than 90 % of "
-                                "observations); see method/VALIDATION.md",
+            "uncertainty": "viirs_eq_var = model variance x lambda (DE-16). For an area, sum viirs_eq and "
+                           "viirs_eq_var over its cells; the 90 % interval is sum +/- 1.645 x sqrt(summed variance). "
+                           "lambda was calibrated on the monthly totals of the whole demo area; see method/VALIDATION.md",
+            "uncertainty_lambda": calibration_lambda(),
             "decisions": "method/DECISIONS.md",
         },
         "files": {
@@ -137,7 +148,7 @@ def main(argv=None):
     harmonized = pd.read_csv(HARMONIZED, dtype={"year_month": str})
     flags = pd.read_csv(FLAGS, dtype={"year_month": str})
     DOCS_DATA.mkdir(parents=True, exist_ok=True)
-    paths = [export_monthly_counts(harmonized), export_months(flags), export_metadata(harmonized)]
+    paths = [export_monthly_counts(harmonized, calibration_lambda()), export_months(flags), export_metadata(harmonized)]
     if a.check:
         check(harmonized, paths)
     for path in paths:

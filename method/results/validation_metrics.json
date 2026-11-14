@@ -96,5 +96,50 @@
     "estimated_months": 129,
     "area_rse_median": 0.03698354771181779,
     "area_rse_q90": 0.08241427624931731
+  },
+  "uncertainty_calibration": {
+    "lambda": 12.287932526219151,
+    "fitted_on_loyo_years": [
+      2015,
+      2025
+    ],
+    "n_months_fitted": 127,
+    "backcast_pi90_coverage_area": {
+      "before": 0.38235294117647056,
+      "after": 0.8529411764705882
+    },
+    "backcast_pi90_coverage_cell": {
+      "before": 0.76060093101989,
+      "after": 0.8633093525179856
+    }
+  },
+  "sensitivity": {
+    "training_window": {
+      "train_2015_2019": {
+        "relative_bias_total": -0.0147436168441204,
+        "mdape_monthly_area": 0.05676828229610774
+      },
+      "train_2020_2025": {
+        "relative_bias_total": 0.04854029173190355,
+        "mdape_monthly_area": 0.1134506173826951
+      },
+      "loyo_bias_vs_year_spearman": -0.4593406593406593,
+      "loyo_bias_vs_year_p": 0.09846837616829024
+    },
+    "viirs_low_confidence": {
+      "low_confidence_share_by_satellite": {
+        "NOAA20": 0.06653795355685786,
+        "SNPP": 0.06305422636957703
+      },
+      "backcast_area_ref": {
+        "relative_bias_total": 0.01967350554677072,
+        "mdape_monthly_area": 0.09221826322847554
+      },
+      "backcast_area_ref_no_low": {
+        "relative_bias_total": 0.025037190598938164,
+        "mdape_monthly_area": 0.08073468158297639
+      }
+    },
+    "grid_size": "not run: the ratio per month of year is fitted on area sums, so k and every area total are the same for any cell size; only the split between cells changes"
   }
 }

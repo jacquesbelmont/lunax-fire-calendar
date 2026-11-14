@@ -100,7 +100,8 @@
         "12": 9.285943775100401
       }
     },
-    "uncertainty_note": "viirs_eq_var under-covers in validation (90 % intervals cover fewer than 90 % of observations); see method/VALIDATION.md",
+    "uncertainty": "viirs_eq_var = model variance x lambda (DE-16). For an area, sum viirs_eq and viirs_eq_var over its cells; the 90 % interval is sum +/- 1.645 x sqrt(summed variance). lambda was calibrated on the monthly totals of the whole demo area; see method/VALIDATION.md",
+    "uncertainty_lambda": 12.287932526219151,
     "decisions": "method/DECISIONS.md"
   },
   "files": {
