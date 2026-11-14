@@ -6,7 +6,8 @@ PROPOSED rows become DECIDED when the team approves them in PR review. Options, 
 
 | ID | Date/time (UTC-4) | Decision | Options considered | Chosen by | Justification | Evidence | Status |
 |----|-------------------|----------|--------------------|-----------|---------------|----------|--------|
-| DE-1 | 2026-11-14 15:44 | Demo area: northern Brazil (Amazon). Recommended extent: one state, Rondônia (app data size, see details). Bbox and border handling still open | Whole North Region; one northern state (e.g. Rondônia) | Rafael, Jacques (region); extent to be confirmed by the team | A single region is acceptable (discussions/2016); the team knows the fire context of the Amazon; a smaller area keeps the app data small | [details](#de-1-demo-area) | PROPOSED |
+| DE-1 | 2026-11-14 16:06 | Demo area: **Rondônia, Brazil**. Bbox = IBGE state boundary aligned to 0.25° cells: W -67, S -13.75, E -59.75, N -7.75 (696 cells) | Whole North Region; one northern state (Rondônia) | Jacques (suggested), Rafael (agreed) | A single region is acceptable (discussions/2016); the team knows its fire context; 696 cells × 313 months keeps the app data small | IBGE: https://servicodados.ibge.gov.br/api/v3/malhas/estados/11?formato=application/vnd.geo+json ; [details](#de-1-demo-area) | DECIDED |
+| DE-1b | 2026-11-14 16:06 | Cross-border extension: the Rondônia bbox also covers land in Bolivia; use the FIRMS country files of Bolivia as well as Brazil, so the demo is international | Brazil files only, cells outside Brazil masked as no-data; Brazil + Bolivia files | Rafael | International at no extra method cost; foreign cells never read as zero fire; Bolivia adds about 0.7 GB of raw files | https://firms.modaps.eosdis.nasa.gov/data/country/yearly_summary_files.txt ; [details](#de-1-demo-area) | PROPOSED |
 | DE-2 | 2026-11-14 15:44 | Target scale: **VIIRS-equivalent** (monthly counts of VIIRS 375 m hotspots per grid cell). Both sensors are used: MODIS-only months are converted to the VIIRS scale with a model learned where both sensors overlap | MODIS-equivalent; VIIRS-equivalent (both acceptable if justified, per challenge author) | Rafael (agreed with Jacques) | The challenge author asks for continuity with NOAA-20 and NOAA-21 (VIIRS); MODIS is retiring; MODIS and VIIRS overlap in FIRMS since 2012-01-20 | https://github.com/nasa/spaceapps/discussions/1879 ; [details](#de-2-target-scale) | DECIDED |
 | DE-3 | 2026-11-14 15:44 | Calendar time step: monthly | Monthly (recommended by the challenge author); weekly only if easy to read | Team (AGENTS.md rule 5) | Recommended by the challenge author; already a project rule | https://github.com/nasa/spaceapps/discussions/1879 | DECIDED |
 | DE-4 | 2026-11-14 15:44 | SP for each satellite up to its last SP date; NRT only after that date, flagged `provisional` | SP only; NRT only; SP then NRT | Rafael (to confirm with Jacques) | FIRMS advises standard data for scientific analysis; NRT is replaced by SP after about 2-5 months | method/FIRMS_REFERENCE.md section 6 ; [details](#de-4-sp-vs-nrt) | PROPOSED |
@@ -28,14 +29,34 @@ PROPOSED rows become DECIDED when the team approves them in PR review. Options, 
 
 ### DE-1 Demo area
 
-- **Proposal:** northern Brazil (Amazon), as discussed by Rafael and Jacques on 2026-11-14.
-- **Still open:** whole North Region, or one northern state such as Rondônia (suggested by Jacques).
-  - Larger area: more cells for the user to select and more data to train the conversion (DE-6); larger export files.
+- **Decision:** Rondônia, Brazil. Suggested by Jacques and agreed by Rafael on 2026-11-14.
+- **Options considered:**
+  - Whole North Region: more cells to select and more data to train the conversion (DE-6), but much larger app files.
   - One state: small and fast; less training data.
-- **Recommendation: Rondônia.** With the cell climatology of DE-6, every active cell has a value in every MODIS-era month. The app file then has about active cells × 313 months rows (derived). The whole North Region at 0.25° has thousands of cells, which means millions of rows in the browser; one state stays far smaller. To be measured on real data before deciding (DE-12).
-- **Borders:** a bbox around either option includes land outside Brazil. With the country CSV route (DE-8), using only Brazil's file would leave foreign cells empty, and they would read as zero fire (AGENTS.md rule 6). Either download the neighbouring countries' files or mask cells outside Brazil as no-data.
-- **Size:** export rows ≈ cells × 313 months (Nov 2000 to Nov 2026, derived); see DE-12.
-- TODO(verify): bbox from official IBGE boundaries - IBGE. Owner of #1 (Jacques) writes `config/area.json`.
+- **Size:** chosen for app data size, measured on real data.
+  - Whole Brazil at 0.25° had 10,126 active cells in only three years of data (country CSVs 2013, 2022, 2025; RA-2a test run, PR #29). At 313 months that is about 3 million rows for the app (10,126 × 313, derived).
+  - With the cell climatology of DE-6, every active cell has a value in every MODIS-era month, so export rows ≈ active cells × 313 months (Nov 2000 to Nov 2026, derived).
+- **Bbox:**
+  - IBGE boundary of Rondônia (state code 11), from https://servicodados.ibge.gov.br/api/v3/malhas/estados/11?formato=application/vnd.geo+json : W -66.8103, S -13.6937, E -59.7744, N -7.9759.
+  - Aligned outwards to whole 0.25° cells (DE-12): **W -67, S -13.75, E -59.75, N -7.75**, which gives 29 × 24 = 696 cells (derived) and at most 217,848 cell-month rows (derived).
+  - Written to `config/area.json`.
+- **Measured activity** inside the aligned bbox, using Brazil files only (2013, 2022, 2025): 483 of the 696 cells had at least one detection.
+
+**DE-1b, cross-border extension (PROPOSED):**
+- The bbox also covers land in Bolivia.
+- With Brazil's files only, those cells would be empty and would read as zero fire (AGENTS.md rule 6). The options are to mask them as no-data, or to add the FIRMS country files of Bolivia.
+- **Proposal:** add Bolivia.
+  - The demo becomes international, which the team wants, at no extra method cost (same sensors, same pipeline).
+  - Border cells are complete.
+- **Raw size** (FIRMS index, 2026-11-14):
+
+  | Country | MODIS 2000-2025 | VIIRS S-NPP 2012-2025 | VIIRS NOAA-20 2018-2025 |
+  |---|---|---|---|
+  | Bolivia | 147 MB | 309 MB | 241 MB |
+  | Brazil | 790 MB | 1,533 MB | 885 MB |
+
+  The two countries together are about 3.9 GB of raw files; the cleaned files are clipped to the bbox and gzip-compressed.
+- **Implementation:** `download.py` (#4, #6) fetches both countries into `data/raw/country/<instrument>/<year>/`. `clean.py` (PR #28) reads every CSV in that folder and clips them to the bbox.
 
 ### DE-2 Target scale
 
