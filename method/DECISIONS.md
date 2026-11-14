@@ -22,6 +22,7 @@ PROPOSED rows become DECIDED when the team approves them in PR review. Options, 
 | DE-13 | 2026-11-14 15:44 | Historical median = median of the same month in all previous years, excluding months flagged missing; anomaly = difference and ratio (ratio only if median > 0) | All previous years; all years except the current one; fixed baseline period | Rafael (to confirm with Jacques) | Literal reading of R7; same rules in Python and JS (JA-8) | [details](#de-13-historical-median-and-anomaly) | PROPOSED |
 | DE-14 | 2026-11-14 15:44 | Missing-data flag: a month is flagged for a satellite if at least one day is missing; store `missing_days`; no rescaling in v1 | ≥ 1 missing day; share-of-days threshold; flag and rescale; flag and fill with converted MODIS | Rafael | Simple and follows AGENTS.md rule 6: missing data never becomes zero fire | method/FIRMS_REFERENCE.md section 7 ; [details](#de-14-missing-data-flag) | PROPOSED |
 | DE-15 | 2026-11-14 15:44 | Validation protocol: backcast (train 2015-2025, test 2012-2014), leave-one-year-out, VIIRS continuity, sensitivity tests, selection rule fixed in advance | See details | Rafael | Tests the conversion in the direction it is used (backwards in time), with real VIIRS as reference | [details](#de-15-validation-protocol) | PROPOSED |
+| DE-16 | 2026-11-14 16:54 | Uncertainty calibration: one variance inflation factor lambda (= 12.3), fitted on leave-one-year-out area totals 2015-2025, tested on 2012-2014 | Model variance only; one factor lambda; correlated error term; no intervals | Rafael | Model variance covered only 38 % of area totals; with lambda, 85 % (area) and 86 % (cell) in the backcast; the app keeps summing variances | method/results/uncertainty_calibration.json (PR #32) ; [details](#de-16-uncertainty-calibration) | PROPOSED |
 
 ---
 
@@ -280,4 +281,23 @@ Fixed before any test result is seen.
   - **Backcast:** the ratio per month of year was selected (DE-6).
   - **Leave-one-year-out (ratio):** yearly bias -9.4 % to +7.2 %.
   - **VIIRS continuity:** NOAA-20/S-NPP over 83 months: total ratio 0.991, monthly median 0.991 (interquartile range 0.960-1.057). The total and the median differ from 1 by 0.9 %, so no correction factor is needed for any tolerance X ≥ 1 %.
-  - **Not done yet:** NOAA-21 continuity (needs API data), sensitivity tests, interval calibration.
+  - **Sensitivity** (PR #32):
+    - **Training window:** trained on 2015-2019 the backcast bias is -1.5 %; on 2020-2025 it is +4.9 %. The leave-one-year-out bias tends to fall with the year (Spearman -0.46, p = 0.10), a possible sign of MODIS orbital drift.
+    - **Decision for the team:** keep 2015-2025 (current) or move to an earlier window. Changing it now would be a choice made after seeing the test results.
+    - **Low-confidence VIIRS:** no material effect (+2.0 % → +2.5 %).
+    - **Grid size:** area totals do not depend on it.
+  - **Not done yet:** NOAA-21 continuity (needs API data).
+
+### DE-16 Uncertainty calibration
+
+- **Problem:** the model variance mu + alpha·mu² was too narrow. In the backcast its 90 % intervals covered 38 % of monthly area totals and 76 % of cell-months, because fire is spatially clustered and the ratio varies from year to year.
+- **Proposal:** one variance inflation factor lambda, applied to every converted cell-month.
+  - lambda is chosen so that 90 % of the monthly area totals of the leave-one-year-out years 2015-2025 fall inside ±1.645·sqrt(lambda × summed variance).
+  - It is tested on the backcast years 2012-2014, which are not used to fit it.
+- **Result** (`method/results/uncertainty_calibration.json`, `method/results/validation_metrics.json`, PR #32): lambda = 12.3. Backcast coverage rises to 85 % for area totals and 86 % for cell-months, close to but still below 90 %.
+- **Options considered:**
+  - Keep the model variance: too narrow.
+  - One factor lambda: simple, and the app keeps summing variances. Chosen.
+  - A separate correlated error term per month: closer to how errors behave, but the app would need a different formula (DATA_CONTRACT change).
+  - Do not show intervals at all.
+- **Implementation:** `pipeline/export.py` writes `viirs_eq_var` = model variance × lambda. For an area, the app uses sum ± 1.645·sqrt(summed variance) (DATA_CONTRACT.md).
