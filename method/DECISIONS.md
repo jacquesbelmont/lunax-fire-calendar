@@ -6,12 +6,12 @@ PROPOSED rows become DECIDED when the team approves them in PR review. Options, 
 
 | ID | Date/time (UTC-4) | Decision | Options considered | Chosen by | Justification | Evidence | Status |
 |----|-------------------|----------|--------------------|-----------|---------------|----------|--------|
-| DE-1 | 2026-11-14 15:44 | Demo area: northern Brazil (Amazon). Still open: exact extent (whole North Region or one state such as Rondônia), bbox and border handling | Whole North Region; one northern state (e.g. Rondônia) | Rafael, Jacques (region only) | A single region is acceptable (discussions/2016); the team knows the fire context of the Amazon | [details](#de-1-demo-area) | PROPOSED |
+| DE-1 | 2026-11-14 15:44 | Demo area: northern Brazil (Amazon). Recommended extent: one state, Rondônia (app data size, see details). Bbox and border handling still open | Whole North Region; one northern state (e.g. Rondônia) | Rafael, Jacques (region); extent to be confirmed by the team | A single region is acceptable (discussions/2016); the team knows the fire context of the Amazon; a smaller area keeps the app data small | [details](#de-1-demo-area) | PROPOSED |
 | DE-2 | 2026-11-14 15:44 | Target scale: **VIIRS-equivalent** (monthly counts of VIIRS 375 m hotspots per grid cell). Both sensors are used: MODIS-only months are converted to the VIIRS scale with a model learned where both sensors overlap | MODIS-equivalent; VIIRS-equivalent (both acceptable if justified, per challenge author) | Rafael (agreed with Jacques) | The challenge author asks for continuity with NOAA-20 and NOAA-21 (VIIRS); MODIS is retiring; MODIS and VIIRS overlap in FIRMS since 2012-01-20 | https://github.com/nasa/spaceapps/discussions/1879 ; [details](#de-2-target-scale) | DECIDED |
 | DE-3 | 2026-11-14 15:44 | Calendar time step: monthly | Monthly (recommended by the challenge author); weekly only if easy to read | Team (AGENTS.md rule 5) | Recommended by the challenge author; already a project rule | https://github.com/nasa/spaceapps/discussions/1879 | DECIDED |
 | DE-4 | 2026-11-14 15:44 | SP for each satellite up to its last SP date; NRT only after that date, flagged `provisional` | SP only; NRT only; SP then NRT | Rafael (to confirm with Jacques) | FIRMS advises standard data for scientific analysis; NRT is replaced by SP after about 2-5 months | method/FIRMS_REFERENCE.md section 6 ; [details](#de-4-sp-vs-nrt) | PROPOSED |
 | DE-5 | 2026-11-14 15:44 | Cleaning rules: normalize schema, clip to bbox, period, `type` (DE-9), no confidence/day-night filter (DE-10), exact duplicates, SP/NRT split (DE-4), log of removed rows | See details | Rafael | Only rules traceable to DE-4, DE-9 and DE-10; every removal is counted | [details](#de-5-cleaning-rules) | PROPOSED |
-| DE-6 | 2026-11-14 15:44 | Harmonization method: negative binomial count regression (main); ratio per month of year (fallback for M2); ML only as RA-6 challenger | Global ratio; ratio per month of year; quantile mapping; count regression; ML | Rafael | Predicts VIIRS-scale counts even when MODIS = 0 and gives uncertainty; the simplest method that passes validation (DE-15) wins | [details](#de-6-harmonization-method) | PROPOSED |
+| DE-6 | 2026-11-14 15:44 | Harmonization method: negative binomial count regression with a per-cell VIIRS climatology predictor computed on training years only (main); ratio per month of year (fallback for M2); ML only as RA-6 challenger | Global ratio; ratio per month of year; quantile mapping; count regression; ML | Rafael | Predicts VIIRS-scale counts even when MODIS = 0 and gives uncertainty; the climatology puts estimates where fires occur; the simplest method that passes validation (DE-15) wins | [details](#de-6-harmonization-method) | PROPOSED |
 | DE-7 | | App libraries: Leaflet 1.x (map), Leaflet.draw (rectangle selection), Plotly.js (calendar heatmap, charts, PNG download), vendored in docs/lib/ | | Jacques | | docs/lib/README.md | PROPOSED |
 | DE-8 | | Data route for history: country yearly summary CSVs (SP, no MAP_KEY, 2000-2025, no NOAA-21, no 2026) vs area API (needs MAP_KEY) vs Archive Download; and for 2026 / NOAA-21 | See method/FIRMS_REFERENCE.md sections 3.1-3.3 | | | method/FIRMS_REFERENCE.md | OPEN |
 | DE-9 | 2026-11-14 15:44 | `type`: keep only 0 (presumed vegetation fire) in SP data. NRT (no `type`): measure the share of `type` ≠ 0 in SP first, then flag NRT months `provisional` or mask static locations | Type 0 only; all types; type 0 plus a static-location mask for NRT | Rafael | Excludes volcanoes, static land sources and offshore detections; NRT data carry no `type` | method/FIRMS_REFERENCE.md sections 5, 8 ; [details](#de-9-type-values) | PROPOSED |
@@ -32,6 +32,7 @@ PROPOSED rows become DECIDED when the team approves them in PR review. Options, 
 - **Still open:** whole North Region, or one northern state such as Rondônia (suggested by Jacques).
   - Larger area: more cells for the user to select and more data to train the conversion (DE-6); larger export files.
   - One state: small and fast; less training data.
+- **Recommendation: Rondônia.** With the cell climatology of DE-6, every active cell has a value in every MODIS-era month. The app file then has about active cells × 313 months rows (derived). The whole North Region at 0.25° has thousands of cells, which means millions of rows in the browser; one state stays far smaller. To be measured on real data before deciding (DE-12).
 - **Borders:** a bbox around either option includes land outside Brazil. With the country CSV route (DE-8), using only Brazil's file would leave foreign cells empty, and they would read as zero fire (AGENTS.md rule 6). Either download the neighbouring countries' files or mask cells outside Brazil as no-data.
 - **Size:** export rows ≈ cells × 313 months (Nov 2000 to Nov 2026, derived); see DE-12.
 - TODO(verify): bbox from official IBGE boundaries - IBGE. Owner of #1 (Jacques) writes `config/area.json`.
@@ -80,9 +81,14 @@ PROPOSED rows become DECIDED when the team approves them in PR review. Options, 
 Order in `pipeline/clean.py`. Nothing else is filtered.
 
 1. Normalize both routes (country CSV, API) to one schema:
-   - `satellite` → Terra, Aqua, SNPP, NOAA20, NOAA21. Observed values: `Terra`, `N`, `N20`. TODO(verify): Aqua and NOAA-21 values - real files (FIRMS_REFERENCE section 13).
+   - `satellite` → Terra, Aqua, SNPP, NOAA20, NOAA21.
+     - Observed in the country CSVs downloaded 2026-11-14: `Terra` and `Aqua` (modis_2013_Brazil.csv, modis_2025_Brazil.csv), `N` (viirs-snpp_2013_Brazil.csv), `N20` (viirs-jpss1_2025_Brazil.csv).
+     - The FIRMS attribute page uses `T`/`A` for MODIS and `N`/`N20`/`N21` for VIIRS (https://www.earthdata.nasa.gov/data/tools/firms/active-fire-data-attributes-modis-viirs). Both forms are accepted.
+     - TODO(verify): API and NRT values.
    - `acq_time` read as text HHMM.
-   - `processing` (SP/NRT) from `version`. TODO(verify): meaning of MODIS `6.2` - FIRMS_REFERENCE section 13.
+   - `processing` (SP/NRT) from the `version` suffix. Standard processing carries the collection only; NRT, RT and URT add a suffix (FIRMS attribute page).
+     - Observed SP values: MODIS `6.2` (2013) and `61.03` (2025); VIIRS `2`.
+     - TODO(verify): meaning of `6.2` and `61.03` - FIRMS.
    - `route` (country CSV or API).
 2. Clip to the demo bbox with half-open intervals (west ≤ lon < east, south ≤ lat < north), so no detection is counted twice at an edge.
 3. Keep dates from 2000-11-01 to the data cut-off date.
@@ -105,14 +111,18 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
 | 1. Global ratio | Trivial and transparent | Ignores season and place; predicts 0 when MODIS = 0 |
 | 2. Ratio per month of year | Simple; captures seasonality | Same zero problem; unstable where a month has few data |
 | 2b. Quantile mapping | Corrects the whole distribution, not only the mean | Ignores location; extrapolates poorly beyond the observed range |
-| 3. Negative binomial count regression, log link: log E[VIIRS] = b0 + b1·log(Terra+1) + b2·log(Aqua+1) + month effect | Predicts VIIRS > 0 when MODIS = 0; handles overdispersion; gives prediction intervals; interpretable coefficients | New dependency (statsmodels); model assumptions |
+| 3. Negative binomial count regression, log link: log E[VIIRS] = b0 + b1·log(Terra+1) + b2·log(Aqua+1) + month effect + b3·log(cell VIIRS climatology + c) | Predicts VIIRS > 0 when MODIS = 0; handles overdispersion; gives prediction intervals; interpretable coefficients | New dependency (statsmodels); model assumptions |
 | 4. ML, e.g. gradient boosting with Poisson loss, with extra FIRMS features (FRP, night share, confidence mix) | Flexible, non-linear | Little training data per cell; may not generalize backwards in time; uncertainty harder; must be declared (S6) |
 
 - **Proposal:**
-  - Option 3 is the main method.
+  - Option 3, with the cell climatology predictor, is the main method.
   - Option 2 is the fallback if 3 is not ready for M2 (both recorded here).
   - Option 2b is used only as a comparison if 3 fails validation.
   - Option 4 only in RA-6, adopted only if it beats 3 in the backcast by the margin fixed in DE-15.
+- **Cell climatology (added 2026-11-14):**
+  - The count regression predicts a value above 0 wherever MODIS counts 0. Without more information, cells that never burn would get the same small value as fire-prone cells.
+  - Predictor added: log of the cell's mean monthly VIIRS count plus a small offset c, computed **only from training years**, so nothing leaks from the test years (DE-15). FIRMS data only.
+  - Export consequence: rows = active cells (at least one detection by any satellite in any month) × months; other cells are 0 in every month.
 - **App:** expected counts add up across cells, so the app can sum the cells of a selected area (R4). Variances are exported per cell-month and summed assuming independence. This understates uncertainty and is stated as a limitation. Format in DATA_CONTRACT.md (JA-3).
 
 ### DE-9 `type` values
@@ -125,7 +135,14 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
   - All types: uniform; static sources inflate counts and each sensor sees them differently.
   - Type 0 plus a mask for NRT: consistent over time; more method.
 - **Sources:** FIRMS attributes page and FAQ (FIRMS_REFERENCE sections 5, 8).
-- TODO(verify): that VIIRS uses the same `type` codes - FIRMS_REFERENCE section 13, item 2.
+- **Measured** on whole-Brazil country CSVs downloaded 2026-11-14. Share of rows with `type` ≠ 0:
+  - MODIS 2013: 0.61%
+  - VIIRS S-NPP 2013: 1.72%
+  - MODIS 2025: 2.01%
+  - VIIRS NOAA-20 2025: 1.88%
+  
+  VIIRS files use the same values as MODIS (0, 2, 3). Re-measure inside the demo area from `method/results/cleaning_log.csv` once DE-1 is fixed.
+- TODO(verify): meaning of the `type` codes for VIIRS in the documentation - FIRMS_REFERENCE section 13, item 2.
 
 ### DE-10 Confidence and day/night
 
@@ -133,7 +150,10 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
   - Keep the original value and a normalized class; sensitivity test with and without the low class in RA-3 (DE-15).
   - Why: MODIS (0-100) and VIIRS (l/n/h) confidence are not comparable, so any filter would differ by sensor. The FAQ says the meaning may vary by region and thresholds must be chosen empirically (FIRMS_REFERENCE section 5).
   - Cost: more false alarms are kept.
-  - TODO(verify): MODIS class cut-offs - FIRMS attributes page.
+  - TODO(verify): MODIS class cut-offs - the FIRMS attribute page lists the three classes but not their limits; check the MODIS C6.1 user guide.
+  - **Low-confidence night pixels (VIIRS):** the FIRMS attribute page says they "occur only over the geographic area extending from 11deg E to 110 deg W and 7 deg N to 55 deg S" (South Atlantic Magnetic Anomaly), may be false alarms, and "have been removed from the NRT data distributed by FIRMS". Brazil is inside that area.
+    - Measured: 0 such rows in the SP files viirs-snpp_2013_Brazil.csv and viirs-jpss1_2025_Brazil.csv.
+    - So SP and NRT are consistent and no extra rule is needed.
 - **Day/night: no filter.**
   - Keep `daynight` as an attribute (a possible ML feature).
   - Why: the NRT day/night flag is based on the orbit and differs from the SP method (FAQ; FIRMS_REFERENCE section 5).
@@ -166,7 +186,7 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
 - **Criteria:**
   - MODIS position uncertainty: 1 km nominal pixel, larger toward the scan edge (`scan`/`track` columns), so cells must be much larger than a pixel.
   - Smaller cells mean more zeros and a noisier conversion.
-  - Export size = cells × 313 months (derived), so a sparse format is needed.
+  - Export size ≈ active cells × 313 months (derived). The DE-6 cell climatology makes MODIS-era months dense for active cells, so area (DE-1) and cell size both matter.
   - Smaller cells give finer area selection (R4).
 - **Check before deciding:** sparse export size, share of zero cell-months, and backcast error at 0.1°, 0.25° and 0.5° (RA-3).
 
