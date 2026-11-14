@@ -12,12 +12,12 @@ PROPOSED rows become DECIDED when the team approves them in PR review. Options, 
 | DE-3 | 2026-11-14 15:44 | Calendar time step: monthly | Monthly (recommended by the challenge author); weekly only if easy to read | Team (AGENTS.md rule 5) | Recommended by the challenge author; already a project rule | https://github.com/nasa/spaceapps/discussions/1879 | DECIDED |
 | DE-4 | 2026-11-14 15:44 | SP for each satellite up to its last SP date; NRT only after that date, flagged `provisional` | SP only; NRT only; SP then NRT | Rafael (to confirm with Jacques) | FIRMS advises standard data for scientific analysis; NRT is replaced by SP after about 2-5 months | method/FIRMS_REFERENCE.md section 6 ; [details](#de-4-sp-vs-nrt) | PROPOSED |
 | DE-5 | 2026-11-14 15:44 | Cleaning rules: normalize schema, clip to bbox, period, `type` (DE-9), no confidence/day-night filter (DE-10), exact duplicates, SP/NRT split (DE-4), log of removed rows | See details | Rafael | Only rules traceable to DE-4, DE-9 and DE-10; every removal is counted | [details](#de-5-cleaning-rules) | PROPOSED |
-| DE-6 | 2026-11-14 15:44 | Harmonization method: negative binomial count regression with a per-cell VIIRS climatology predictor computed on training years only (main); ratio per month of year (fallback for M2); ML only as RA-6 challenger | Global ratio; ratio per month of year; quantile mapping; count regression; ML | Rafael | Predicts VIIRS-scale counts even when MODIS = 0 and gives uncertainty; the climatology puts estimates where fires occur; the simplest method that passes validation (DE-15) wins | [details](#de-6-harmonization-method) | PROPOSED |
+| DE-6 | 2026-11-14 16:55 | Harmonization method: **ratio per month of year** (option 2), selected by the DE-15 backcast. The negative binomial count regression (option 3, registered as main) failed validation. ML only as RA-6 challenger | Global ratio; ratio per month of year; quantile mapping; count regression; ML | Rafael (by the pre-registered DE-15 rule) | Backcast 2012-2014: bias of the total +2.0 % (ratio) vs +133 % (NB regression); the ratio is also the simplest | method/results/validation_metrics.json (PR #32) ; [details](#de-6-harmonization-method) | PROPOSED |
 | DE-7 | | App libraries: Leaflet 1.x (map), Leaflet.draw (rectangle selection), Plotly.js (calendar heatmap, charts, PNG download), vendored in docs/lib/ | | Jacques | | docs/lib/README.md | PROPOSED |
 | DE-8 | | Data route for history: country yearly summary CSVs (SP, no MAP_KEY, 2000-2025, no NOAA-21, no 2026) vs area API (needs MAP_KEY) vs Archive Download; and for 2026 / NOAA-21 | See method/FIRMS_REFERENCE.md sections 3.1-3.3 | | | method/FIRMS_REFERENCE.md | OPEN |
 | DE-9 | 2026-11-14 15:44 | `type`: keep only 0 (presumed vegetation fire) in SP data. NRT (no `type`): measure the share of `type` ≠ 0 in SP first, then flag NRT months `provisional` or mask static locations | Type 0 only; all types; type 0 plus a static-location mask for NRT | Rafael | Excludes volcanoes, static land sources and offshore detections; NRT data carry no `type` | method/FIRMS_REFERENCE.md sections 5, 8 ; [details](#de-9-type-values) | PROPOSED |
 | DE-10 | 2026-11-14 15:44 | No confidence filter in v1 (keep the column; sensitivity test in RA-3). No day/night filter (keep the column) | Filter low confidence; no filter. Day only; night only; both | Rafael | MODIS (0-100) and VIIRS (l/n/h) confidence are not comparable; thresholds must be chosen empirically (FAQ); the NRT day/night flag differs from SP | method/FIRMS_REFERENCE.md section 5 ; [details](#de-10-confidence-and-daynight) | PROPOSED |
-| DE-11 | 2026-11-14 15:44 | Terra-only model for 2000-11 to 2002-06; Terra + Aqua model (two separate predictors) for 2002-07 to 2012-01; native VIIRS from 2012-02: S-NPP to 2018-03, NOAA-20 from 2018-04, NOAA-21 as check and backup | Sum all satellites; Aqua only; one model per MODIS configuration; Terra only | Rafael | No artificial step when a satellite is added; no double counting; keeps the Terra-only months | method/FIRMS_REFERENCE.md section 2 ; [details](#de-11-satellites-per-era) | PROPOSED |
+| DE-11 | 2026-11-14 16:55 | Terra-only conversion for 2000-11 to 2002-06 (and months with Aqua flagged); Terra + Aqua conversion for 2002-07 to 2012-01; native VIIRS from 2012-02: S-NPP to 2018-03, NOAA-20 from 2018-04, NOAA-21 as check and backup | Sum all satellites; Aqua only; one model per MODIS configuration; Terra only | Rafael | No artificial step when a satellite is added; no double counting; keeps the Terra-only months | method/FIRMS_REFERENCE.md section 2 ; [details](#de-11-satellites-per-era) | PROPOSED |
 | DE-12 | 2026-11-14 15:44 | Grid: 0.25° cells aligned globally (candidate, to confirm with real data) | 0.1°; 0.25°; 0.5° | Rafael (to confirm with Jacques) | Cells much larger than the MODIS pixel; fewer zero cells for the model; export size; to confirm by measuring | [details](#de-12-grid) | PROPOSED |
 | DE-13 | 2026-11-14 15:44 | Historical median = median of the same month in all previous years, excluding months flagged missing; anomaly = difference and ratio (ratio only if median > 0) | All previous years; all years except the current one; fixed baseline period | Rafael (to confirm with Jacques) | Literal reading of R7; same rules in Python and JS (JA-8) | [details](#de-13-historical-median-and-anomaly) | PROPOSED |
 | DE-14 | 2026-11-14 15:44 | Missing-data flag: a month is flagged for a satellite if at least one day is missing; store `missing_days`; no rescaling in v1 | ≥ 1 missing day; share-of-days threshold; flag and rescale; flag and fill with converted MODIS | Rafael | Simple and follows AGENTS.md rule 6: missing data never becomes zero fire | method/FIRMS_REFERENCE.md section 7 ; [details](#de-14-missing-data-flag) | PROPOSED |
@@ -145,6 +145,18 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
   - Predictor added: log of the cell's mean monthly VIIRS count plus a small offset c, computed **only from training years**, so nothing leaks from the test years (DE-15). FIRMS data only.
   - Export consequence: rows = active cells (at least one detection by any satellite in any month) × months; other cells are 0 in every month.
 - **App:** expected counts add up across cells, so the app can sum the cells of a selected area (R4). Variances are exported per cell-month and summed assuming independence. This understates uncertainty and is stated as a limitation. Format in DATA_CONTRACT.md (JA-3).
+- **Outcome of the DE-15 backcast (2026-11-14, real Rondônia data; method/results/validation_metrics.json, PR #32):**
+
+  | Method | Bias of the total | MdAPE monthly |
+  |---|---|---|
+  | Option 2, ratio per month of year | +2.0 % | 9.2 % |
+  | Option 3, negative binomial regression | +133 % | 37.2 % |
+
+  - Option 3 is biased even on its own training years (predicted/observed total 2.85). The NB2 likelihood gives little weight to large counts, and most fire is in large counts.
+  - By the DE-15 rule, **option 2 is the production method** (`pipeline/harmonize.py`): it is both the best and the simplest.
+  - The cell climatology is therefore not used, and the export still lists active cells only.
+  - A Poisson version of option 3 was tried only after seeing the results, as a diagnostic: bias +3.9 %, MdAPE 22.0 %. It is not used for selection.
+  - **Uncertainty for option 2:** variance mu + alpha·mu², with alpha by the method of moments. It under-covers in validation (method/VALIDATION.md); calibration is a TODO in RA-3.
 
 ### DE-9 `type` values
 
@@ -162,7 +174,13 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
   - MODIS 2025: 2.01%
   - VIIRS NOAA-20 2025: 1.88%
   
-  VIIRS files use the same values as MODIS (0, 2, 3). Re-measure inside the demo area from `method/results/cleaning_log.csv` once DE-1 is fixed.
+  VIIRS files use the same values as MODIS (0, 2, 3).
+- **Measured inside the demo area** (Rondônia bbox, Brazil + Bolivia, 2000-2025; method/results/cleaning_log.csv, PR #30). Share of rows inside the bbox with `type` ≠ 0:
+  - MODIS: 0.23 %
+  - VIIRS NOAA-20: 0.35 %
+  - VIIRS S-NPP: 0.43 %
+  
+  The share is small, so NRT months are only flagged `provisional`, with no static-location mask.
 - TODO(verify): meaning of the `type` codes for VIIRS in the documentation - FIRMS_REFERENCE section 13, item 2.
 
 ### DE-10 Confidence and day/night
@@ -184,8 +202,8 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
 
 | Period | Source of the harmonized series |
 |---|---|
-| 2000-11 to 2002-06 (20 months, derived) | Terra, converted with a Terra-only model |
-| 2002-07 to 2012-01 | Terra and Aqua as two separate predictors (never summed), converted with a Terra + Aqua model |
+| 2000-11 to 2002-06 (20 months, derived) | Terra, converted with a Terra-only ratio |
+| 2002-07 to 2012-01 | Terra + Aqua (both MODIS), converted with a Terra + Aqua ratio. If Aqua is flagged in a month, the Terra-only ratio is used |
 | 2012-02 to 2018-03 | S-NPP (native VIIRS) |
 | 2018-04 onwards | NOAA-20 (native VIIRS); NOAA-21 as a check and backup |
 
@@ -258,3 +276,8 @@ Fixed before any test result is seen.
 - **Sensitivity:** confidence filter (DE-10), grid size (DE-12), training window (orbital drift).
 - **Selection:** the simplest method within a margin of the best backcast score wins. ML must beat the count regression by a margin fixed in advance (to be fixed by the team).
 - **Values still to fix (team):** training and test years if different from above, tolerance X, ML margin, minimum years N (DE-13).
+- **Results (2026-11-14):** see method/VALIDATION.md and method/results/ (PR #32).
+  - **Backcast:** the ratio per month of year was selected (DE-6).
+  - **Leave-one-year-out (ratio):** yearly bias -9.4 % to +7.2 %.
+  - **VIIRS continuity:** NOAA-20/S-NPP over 83 months: total ratio 0.991, monthly median 0.991 (interquartile range 0.960-1.057). The total and the median differ from 1 by 0.9 %, so no correction factor is needed for any tolerance X ≥ 1 %.
+  - **Not done yet:** NOAA-21 continuity (needs API data), sensitivity tests, interval calibration.
