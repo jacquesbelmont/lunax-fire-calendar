@@ -1,5 +1,5 @@
 {
-  "lambda": 12.287932526219151,
+  "lambda": 11.538036604104438,
   "decision": "method/DECISIONS.md DE-16",
   "details": "method/results/validation_metrics.json -> uncertainty_calibration"
 }

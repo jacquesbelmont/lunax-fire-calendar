@@ -13,7 +13,7 @@ Test areas and numbers come from real pipeline outputs, never invented.
   - anomaly = difference and ratio, the ratio only when the median > 0.
 - **Test areas**, chosen by a fixed rule:
   - the whole demo area;
-  - the 2°×2° square with the highest total of observed months;
-  - the one with the lowest non-zero total.
+  - among the 2°×2° squares with at least half of their cells active (mostly inside the area), the one with the highest total of observed months;
+  - and the one with the lowest non-zero total.
 - **Each area lists every month** with `value`, `var`, `median`, `n_years`, `anomaly_diff` and `anomaly_ratio`.
 - **JA-8:** the app should reproduce every value within a relative tolerance of 1e-9.
