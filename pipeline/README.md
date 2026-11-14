@@ -16,5 +16,5 @@ The exact versions used in the setup are in `requirements.lock.txt`. Put `FIRMS_
 | 4 | `clean.py` | `data/raw/country/<source>/<year>/*.csv` | `data/interim/clean/<source>_<year>.csv.gz` (git-ignored); `method/results/cleaning_log.csv` | RA-1 |
 | 5 | `aggregate.py` | `data/interim/clean/*.csv.gz`; `data/raw/missing_days.csv` (from `download.py`) | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv` (git-ignored) | RA-2 |
 | 6 | `harmonize.py` | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv` | `data/interim/harmonized.csv.gz` (git-ignored); `method/results/harmonize_model.json` | RA-2, DE-2 |
-| 7 | `validate.py` | harmonized series | `method/results/`, `method/figures/` | RA-3 |
+| 7 | `validate.py` | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv`, `data/interim/harmonized.csv.gz` | `method/results/` (validation_metrics.json, loyo.csv, continuity.csv, annual_ratio.csv), `method/figures/`; summary in `method/VALIDATION.md` | RA-3 |
 | 8 | `export.py` | `data/interim/harmonized.csv.gz`, `data/interim/month_flags.csv`, `config/area.json` | `docs/data/monthly_cells.csv`, `docs/data/months.csv`, `docs/data/metadata.json` (DATA_CONTRACT.md) | RA-2 |

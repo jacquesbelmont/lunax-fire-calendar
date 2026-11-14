@@ -1,0 +1,100 @@
+{
+  "protocol": "method/DECISIONS.md DE-15",
+  "backcast_train_years": [
+    2015,
+    2025
+  ],
+  "backcast_test_years": [
+    2012,
+    2014
+  ],
+  "backcast": {
+    "ratio_per_month": {
+      "n_cell_months": 23630,
+      "n_months": 34,
+      "relative_bias_total": 0.01967350554677072,
+      "mdape_monthly_area": 0.09221826322847554,
+      "pearson_r_monthly_area": 0.998538360084665,
+      "pi90_coverage_cell": 0.76060093101989,
+      "pi90_coverage_area": 0.38235294117647056
+    },
+    "ratio_per_month_terra_only": {
+      "n_cell_months": 23630,
+      "n_months": 34,
+      "relative_bias_total": -0.044351237039628844,
+      "mdape_monthly_area": 0.13934360021303038,
+      "pearson_r_monthly_area": 0.980774239035577,
+      "pi90_coverage_cell": 0.6875158696572155,
+      "pi90_coverage_area": 0.35294117647058826
+    },
+    "count_regression_nb": {
+      "n_cell_months": 23630,
+      "n_months": 34,
+      "relative_bias_total": 1.333011293462509,
+      "mdape_monthly_area": 0.371499667350235,
+      "pearson_r_monthly_area": 0.9857453566309415,
+      "pi90_coverage_cell": 0.964240372407956,
+      "pi90_coverage_area": 0.29411764705882354
+    },
+    "count_regression_nb_terra_only": {
+      "n_cell_months": 23630,
+      "n_months": 34,
+      "relative_bias_total": 0.9371690961878685,
+      "mdape_monthly_area": 0.5046634775860439,
+      "pearson_r_monthly_area": 0.9696255458101896,
+      "pi90_coverage_cell": 0.9647058823529412,
+      "pi90_coverage_area": 0.14705882352941177
+    },
+    "POSTHOC_count_regression_poisson": {
+      "n_cell_months": 23630,
+      "n_months": 34,
+      "relative_bias_total": 0.038787593032614476,
+      "mdape_monthly_area": 0.21961591895953952,
+      "pearson_r_monthly_area": 0.997858201216568,
+      "pi90_coverage_cell": 0.8144308082945408,
+      "pi90_coverage_area": 0.14705882352941177
+    },
+    "count_regression_nb_in_sample_total_ratio": 2.847771714876096
+  },
+  "selection": {
+    "pre_registered_mdape": {
+      "ratio_per_month": 0.09221826322847554,
+      "count_regression_nb": 0.371499667350235
+    },
+    "best": "ratio_per_month",
+    "simplest": "ratio_per_month",
+    "rule": "simplest method within a margin of the best backcast score (DE-15)"
+  },
+  "loyo_file": "method/results/loyo.csv",
+  "raw_ratio_viirs_to_modis_2012_2014": 3.6329206896091235,
+  "ratio_stability": {
+    "annual_ratio_min": 3.4703728610924305,
+    "annual_ratio_max": 4.027826889076793,
+    "spearman_modis_total_vs_ratio": 0.17362637362637365,
+    "spearman_p": 0.5527669411422413,
+    "n_years": 14,
+    "max_annual_modis_in_overlap": 65045.0,
+    "max_annual_modis_in_estimated_years": 108555.0,
+    "estimated_years_above_overlap_max": [
+      "2004",
+      "2005",
+      "2006",
+      "2007",
+      "2010"
+    ]
+  },
+  "annual_ratio_file": "method/results/annual_ratio.csv",
+  "continuity": {
+    "months_both_valid": 83,
+    "total_ratio_noaa20_to_snpp": 0.9912034225485666,
+    "monthly_ratio_median": 0.9914821124361158,
+    "monthly_ratio_q25": 0.9597667186703858,
+    "monthly_ratio_q75": 1.057005768750061,
+    "noaa21": "not in the FIRMS country CSVs; needs API data from 2024-01 (DE-8)"
+  },
+  "uncertainty": {
+    "estimated_months": 129,
+    "area_rse_median": 0.03698354771181779,
+    "area_rse_q90": 0.08241427624931731
+  }
+}
