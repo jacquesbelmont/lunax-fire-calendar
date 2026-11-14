@@ -18,6 +18,7 @@ CELLS = ROOT / "docs" / "data" / "monthly_cells.csv"
 META = ROOT / "docs" / "data" / "metadata.json"
 OUT = ROOT / "method" / "tests" / "expected.json"
 TILE = 2.0  # degrees, size of the two test squares
+MIN_ACTIVE_SHARE = 0.5  # a test square must have at least this share of its cells active (mostly inside the area)
 
 RULES = {
     "area_value": "sum of viirs_eq over the cells whose centre is inside the rectangle (DE-13); "
@@ -84,13 +85,17 @@ def main():
     native = cells["estimated"].eq(0)
     totals = {}
     for t in tiles(bbox):
-        g, _ = area_series(cells[native], lat[native], lon[native], t)
-        totals[tuple(t)] = float(g["value"].sum())
+        g, n = area_series(cells[native], lat[native], lon[native], t)
+        # Only squares mostly inside the area: at least half of their cells are active.
+        if n >= MIN_ACTIVE_SHARE * (TILE / size) ** 2:
+            totals[tuple(t)] = float(g["value"].sum())
     nonzero = {k: v for k, v in totals.items() if v > 0}
     high, low = max(nonzero, key=nonzero.get), min(nonzero, key=nonzero.get)
     areas = [("demo_area", bbox, "the whole demo area (metadata.json)"),
-             ("high_fire_2deg", list(high), "2x2 degree square with the highest total of observed months"),
-             ("low_fire_2deg", list(low), "2x2 degree square with the lowest non-zero total of observed months")]
+             ("high_fire_2deg", list(high), "2x2 degree square (at least half of its cells active) with the "
+                                            "highest total of observed months"),
+             ("low_fire_2deg", list(low), "2x2 degree square (at least half of its cells active) with the "
+                                          "lowest non-zero total of observed months")]
 
     out = {"description": "Expected values for the app (JA-8). Generated from docs/data by method/tests/make_expected.py.",
            "source_files": ["docs/data/monthly_cells.csv", "docs/data/metadata.json"],
