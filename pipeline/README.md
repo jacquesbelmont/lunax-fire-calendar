@@ -13,7 +13,7 @@ The exact versions used in the setup are in `requirements.lock.txt`. Put `FIRMS_
 | 1 | `config.py` (imported by the others) | `.env`, `config/area.json` | settings | JA-2 |
 | 2 | `check_availability.py` | FIRMS `data_availability` | SP/NRT date ranges per sensor (record in DATA_CONTRACT.md) | JA-2 |
 | 3 | `download.py` | route decided in DE-8: country yearly CSVs and/or FIRMS `area` API | `data/raw/` (cached, git-ignored) | JA-2, JA-4 |
-| 4 | `clean.py` | `data/raw/` | TODO(verify): path - decide in JA-3 | RA-1 |
+| 4 | `clean.py` | `data/raw/country/<source>/<year>/*.csv` | `data/interim/clean/<source>_<year>.csv.gz` (git-ignored); `method/results/cleaning_log.csv` | RA-1 |
 | 5 | `aggregate.py` | cleaned hotspots | monthly counts per grid cell | RA-2 |
 | 6 | `harmonize.py` | monthly counts | harmonized series | RA-2, DE-2 |
 | 7 | `validate.py` | harmonized series | `method/results/`, `method/figures/` | RA-3 |
