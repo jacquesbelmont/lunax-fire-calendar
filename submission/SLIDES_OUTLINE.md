@@ -17,9 +17,12 @@ Screenshots must be taken by a person from the published app (https://jacquesbel
 - **Text:** One consistent monthly series on the VIIRS scale, 2000-11 to 2026-10, for Rondônia, Brazil. From 2012: observed VIIRS (Suomi NPP, then NOAA-20; NOAA-21 as a check). Before 2012: MODIS counts times a ratio per month of the year, learned where both sensors overlap (2015-2025). Both sensors are needed.
 - **Image:** method/figures/backcast.png (converted MODIS vs observed VIIRS in the test years).
 
-## Slide 4 — September 2025 near Porto Velho
-- A rectangle selects 33 grid cells. In September 2025 the app shows 309 observed hotspots against a median of 5,545 across 23 earlier Septembers. An analyst can flag that month for follow-up in imagery and field reports. See FACT_CHECK.md for the coordinates and data source.
-- Chart captured from the published app in `submission/screenshots/porto_velho_september_2025.png`.
+## Slide 4 — What a fire manager sees
+- **Case (kept):** a rectangle near Porto Velho selects 33 grid cells. In September 2025 the app shows 309 observed hotspots against a median of 5,545 across 23 earlier Septembers: a month to check in satellite imagery and field reports.
+- **Where:** a municipality as the area (IBGE boundary). Porto Velho, October 2026: 1,352 hotspots against a usual 2,076 (provisional). Image: `submission/screenshots/app_porto_velho_map_2026-10.png`.
+- **When:** the fire season per year. In Porto Velho it typically runs from August to October, with the peak in August (median of 23 years). Image: `submission/screenshots/app_porto_velho_fire_season.png`.
+- **Where it burned before** (VIIRS, about 1 km): history, not a forecast; in the pre-registered test last year's fires were the better guide (28.0 % against 11.8 %). Image: `submission/screenshots/app_map_recurrence_2012-2025.png`.
+- Numbers: FACT_CHECK.md rows 27, 33, 35 and 36. The chart `porto_velho_september_2025.png` is no longer on the slide; the case numbers stay in the text.
 
 ## Slide 5 — How we know it works
 - Fit on 2015-2025 and test on 34 statewide months in 2012-2014. The Terra and Aqua conversion had 13.3% median absolute percentage error across monthly statewide totals and a +0.6% bias in the combined total. The first regression had +143% bias. NOAA-20/Suomi NPP totals had a ratio of 0.992. The nominal 90% intervals covered 85% of the monthly statewide totals.
@@ -32,6 +35,6 @@ Screenshots must be taken by a person from the published app (https://jacquesbel
 - Claude and Claude Code assisted with the original code, analysis and documentation. Codex assisted with the TI-8 review and revisions. AI_USE.md records the steps and method/DECISIONS.md records the team's decisions. Include the FIRMS acknowledgment, the reference and license list and the app link.
 
 ## Before publishing the slides
-- Check S2: team name, member names, challenge, an image of the project, the user experience, how NASA data makes the solution possible: slides 1, 4 and 6.
+- Check S2: team name, member names, challenge, an image of the project, the user experience, how NASA data makes the solution possible: slides 1, 4 and 6 (slide 4 is now "What a fire manager sees").
 - Do not use NASA logos. Do not use photos of people under 18 (S7).
 - Set the link to public with no login and test it in a private window (TI-8).

@@ -35,7 +35,10 @@ footer { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 12px;
 .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; vertical-align: middle; }
 .dot.modis, .cluster.modis { background: #0072B2; } .dot.viirs, .cluster.viirs { background: #D55E00; }
 .cluster { display: flex; align-items: center; justify-content: center; box-sizing: border-box; border: 2px solid #fff; border-radius: 10px; color: #fff; font: 600 11px/1 system-ui, sans-serif; box-shadow: 0 0 2px rgba(0,0,0,.5); }
-@media (max-width: 600px) { .map-legend { max-width: 160px; font-size: .7rem; } }
+/* DE-27: day and satellite of the GIBS image */
+.map-imagery { max-width: 280px; }
+.map-imagery input { font: inherit; margin-top: 4px; }
+@media (max-width: 600px) { .map-legend { max-width: 160px; font-size: .7rem; } .map-imagery { max-width: 150px; } .map-imagery input { width: 100%; box-sizing: border-box; } }
 .recurrence-overlay { image-rendering: pixelated; } /* DE-26: keep 1 km cells sharp when zoomed in */
 /* Map view panel inside the map (DE-22, DE-26, DE-29) */
 .map-panel { background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,.35); width: 280px; max-height: 70vh; overflow: auto; font-size: .82rem; }
