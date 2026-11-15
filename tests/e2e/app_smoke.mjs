@@ -4,7 +4,7 @@
 // Usage: node tests/e2e/app_smoke.mjs [URL]   (default: the GitHub Pages URL)
 //   Node 22 or later (global WebSocket); on Node 20/21 run: node --experimental-websocket tests/e2e/app_smoke.mjs
 //   Chrome: set CHROME to the binary if it is not found (Linux: google-chrome, chromium or /snap/bin/chromium).
-// AI-assisted code (Claude Code); logged in AI_USE.md.
+// AI-assisted code (Claude Code and Codex); logged in AI_USE.md.
 import { spawn } from "node:child_process";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -42,6 +42,17 @@ async function waitFor(expr, ms = 60000) {
   throw new Error("timeout waiting for: " + expr);
 }
 
+async function selectArea(west, south, east, north) {
+  const coordinates = JSON.stringify({ w: west, s: south, e: east, n: north });
+  await evaluate(`(() => {
+    for (const [key, value] of Object.entries(${coordinates})) {
+      document.getElementById('bbox-' + key).value = value;
+    }
+    document.querySelector('#bbox-form').dispatchEvent(new Event('submit', { cancelable: true }));
+    return true;
+  })()`);
+}
+
 const results = [];
 function check(name, ok, detail) { results.push({ name, ok, detail }); console.log((ok ? "PASS " : "FAIL ") + name + (detail ? " - " + detail : "")); }
 
@@ -74,9 +85,7 @@ try {
     (await evaluate(`document.querySelector('#compare-text').textContent`)).slice(0, 90));
 
   // Area by coordinates (R4, O1): a 2x2 degree square north of the area.
-  await evaluate(`(() => { const s = (k, v) => { document.querySelector('#bbox-' + k).value = v; };
-    s('w', -65); s('s', -9.75); s('e', -63); s('n', -7.75);
-    document.querySelector('#bbox-form').dispatchEvent(new Event('submit', { cancelable: true })); return true; })()`);
+  await selectArea(-65, -9.75, -63, -7.75);
   const info1 = await evaluate(`document.querySelector('#selection-info').textContent`);
   check("area typed as coordinates selects 46 cells (same as expected.json high_fire_2deg)", /^46 grid cells/.test(info1.trim()), info1.trim().slice(0, 40));
 
@@ -105,6 +114,39 @@ try {
       HTMLAnchorElement.prototype.click = orig; return a.length > 0 && /^data:image\\/png|^blob:/.test(a[0]); })()`);
     check(name + " download starts", ok);
   }
+
+  // Hold a real count result until the selection changes.
+  await evaluate(`(() => {
+    const load = LunaxHotspots.load;
+    LunaxHotspots.load = async (...args) => {
+      const result = await load(...args);
+      await new Promise((resolve) => { window.__releaseCount = resolve; });
+      LunaxHotspots.load = load;
+      return result;
+    };
+    document.querySelector('#hotspots-count').click();
+    return true;
+  })()`);
+  await waitFor(`typeof window.__releaseCount === 'function'`);
+  await selectArea(-59.9, -8, -59.8, -7.9);
+
+  const exportIds = ["png-calendar", "png-compare", "csv-series", "csv-cells", "hotspots-count"];
+  const allExportsDisabled = `${JSON.stringify([...exportIds, "hotspots-download"])}.every(id => document.getElementById(id).disabled)`;
+  check("empty selection disables every export and clears both charts", await evaluate(`(
+    ${allExportsDisabled} && !document.querySelector('#calendar .main-svg, #compare .main-svg') &&
+    /No grid cell/.test(document.querySelector('#selection-info').textContent)
+  )`));
+  await evaluate(`new Promise((resolve) => { window.__releaseCount(); setTimeout(resolve, 0); })`);
+  check("a late hotspot count leaves the empty selection disabled", await evaluate(`(
+    ${allExportsDisabled} && !/rows in the hotspot list/.test(document.querySelector('#hotspots-status').textContent)
+  )`));
+
+  await selectArea(-65, -9.75, -63, -7.75);
+  await waitFor(`document.querySelector('#calendar .main-svg') && document.querySelector('#compare .main-svg')`);
+  check("valid selection restores exports and requires a fresh hotspot count", await evaluate(`(
+    ${JSON.stringify(exportIds)}.every(id => !document.getElementById(id).disabled) &&
+    document.getElementById('hotspots-download').disabled
+  )`));
   check("no JavaScript errors", errors.length === 0, errors.join(" | ").slice(0, 200));
 } catch (e) {
   check("run", false, String(e.message || e));
