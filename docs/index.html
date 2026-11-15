@@ -44,12 +44,14 @@
 
     <section id="map-section" aria-label="Map">
       <h2>Map</h2>
-      <p class="hint">The map shows one month: the month of section 4, or the month you click in the calendar. Each grid cell is about 27 x 27 km (0.25°). <strong>Hotspots in the month</strong> colors the cells by their value (same values and colors as the calendar; the scale tops out at the 95th percentile of the cells). <strong>Compared with the usual</strong> colors each cell against the median of the same month in its earlier years, so it shows where the month was unusual. <strong>Places that burn year after year</strong> shows, in cells of about 1 km, in how many years since 2012 VIIRS detected fire there. Grey cells have no data, which is not zero fire. <span class="dot modis" aria-hidden="true"></span> MODIS and <span class="dot viirs" aria-hidden="true"></span> VIIRS detections are points at their real position; a number is a group of nearby detections of one sensor, so zoom in to separate them. Click the map before zooming with the mouse wheel. The layers button (top right) hides cells or points.</p>
+      <p class="hint">The map shows one month: the month of section 5, or the month you click in the calendar. Each grid cell is about 27 x 27 km (0.25°). <strong>Hotspots in the month</strong> colors the cells by their value (same values and colors as the calendar; the scale tops out at the 95th percentile of the cells). <strong>Compared with the usual</strong> colors each cell against the median of the same month in its earlier years, so it shows where the month was unusual. <strong>Places that burn year after year</strong> shows, in cells of about 1 km, in how many years since 2012 VIIRS detected fire there. <strong>Where to expect fire next season</strong> shows the chance of fire in each cell next year, with the method that won a test fixed in advance. Grey cells have no data, which is not zero fire. <span class="dot modis" aria-hidden="true"></span> MODIS and <span class="dot viirs" aria-hidden="true"></span> VIIRS detections are points at their real position; a number is a group of nearby detections of one sensor, so zoom in to separate them. Click the map before zooming with the mouse wheel. The layers button (top right) hides cells or points.</p>
       <div class="row no-print">
         <label>Map view <select autocomplete="off" id="map-mode">
           <option value="hotspots">Hotspots in the month</option>
           <option value="usual">Compared with the usual for that month</option>
           <option value="recurrence">Places that burn year after year (VIIRS, about 1 km, 2012-2025)</option>
+          <option value="outlook001">Where to expect fire next season (experimental, about 1 km)</option>
+          <option value="outlook005">Where to expect fire next season (experimental, about 5 km)</option>
         </select></label>
         <a id="firms-link" href="https://firms.modaps.eosdis.nasa.gov/map/" target="_blank" rel="noopener">Today's fires in this area on the NASA FIRMS Fire Map (near real-time, opens a new tab)</a>
       </div>
@@ -75,8 +77,15 @@
       <div id="season" class="chart" role="img" aria-label="Fire season start, peak and end month for each year"></div>
     </section>
 
+    <section id="outlook-section" aria-label="Outlook for the next fire season">
+      <h2>4. Outlook for the next fire season (experimental)</h2>
+      <p class="hint">How many hotspots to expect in August-October next year in the selected area, with the method that won a test fixed in advance on 13 past seasons of the 52 municipalities. Bars: what happened; diamonds: what the method would have forecast each year from earlier years only; the last diamond is the outlook, with the range in which 80% of this area's past seasons fell. Harmonized values, so the years before 2012 count too.</p>
+      <p id="outlook-text" role="status"></p>
+      <div id="outlook" class="chart" role="img" aria-label="Past forecasts against observed August-October hotspots, and the outlook for next year"></div>
+    </section>
+
     <section id="compare-section" aria-label="Month versus historical median">
-      <h2>4. The latest month compared with its historical median</h2>
+      <h2>5. The latest month compared with its historical median</h2>
       <p class="hint">The data ends at its cut-off date, so the latest month shown here is not the current calendar month.</p>
       <div class="row"><label>Month <select autocomplete="off" id="compare-month"></select></label></div>
       <p id="compare-text" role="status"></p>
@@ -86,7 +95,7 @@
     </section>
 
     <section id="downloads-section" aria-label="Downloads">
-      <h2>5. Downloads and briefing</h2>
+      <h2>6. Downloads and briefing</h2>
       <p>CSV files cover the selected cells and period and include the NASA FIRMS acknowledgment and the data cut-off date.</p>
       <p>
         <button type="button" id="csv-series" disabled>Monthly series of the area (CSV)</button>
@@ -97,7 +106,7 @@
         <button type="button" id="hotspots-download" disabled>Download hotspots (CSV)</button>
         <button type="button" id="hotspots-kml" disabled>Download hotspots (KML: Google Earth, Avenza, QGIS)</button>
       </p>
-      <p><button type="button" id="print-briefing">Print a briefing (map, calendar, fire season, comparison)</button></p>
+      <p><button type="button" id="print-briefing">Print a briefing (map, calendar, fire season, outlook, comparison)</button></p>
       <p id="hotspots-status" role="status" class="hint">The hotspot list holds the individual FIRMS detections in the selected cells and period. Count them first to see how many rows the file will have.</p>
     </section>
 
@@ -127,6 +136,7 @@
   <script src="js/calendar.js"></script>
   <script src="js/compare.js"></script>
   <script src="js/season.js"></script>
+  <script src="js/outlook.js"></script>
   <script src="js/hotspots.js"></script>
   <script src="js/export.js"></script>
   <script src="js/main.js"></script>

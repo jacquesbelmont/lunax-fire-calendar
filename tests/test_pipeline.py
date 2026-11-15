@@ -207,3 +207,29 @@ class RecurrenceTest(unittest.TestCase):
         row = rec[rec["cell_id"].eq(cid)].iloc[0]
         self.assertEqual(row["years"], in_years["acq_date"].str[:4].nunique())
         self.assertEqual(row["detections"], len(in_years))
+
+
+class CellOutlookTest(unittest.TestCase):
+    """DE-28: features come from earlier years only; the shown method follows the pre-registered rule."""
+
+    def test_features_and_rule(self):
+        import numpy as np  # noqa: E402
+        import cell_outlook as co  # noqa: E402
+        G = co.grid(0.05)
+        pts = co.export.reference_viirs()
+        counts = co.yearly_counts(pts, G)
+        X = co.features(counts, co.parent_means(G), 2021, G)
+        self.assertEqual(len(X), int(G["inside"].sum()))
+        # `last` of the busiest inside cell = log(1 + its reference detections in January-October 2021), recomputed from the points
+        k = int(np.argmax(X["last"].to_numpy()))
+        cid = G["ids"][G["inside"]][k]
+        r, c = (int(v) for v in cid.split("_"))
+        p = pts[pts["acq_date"].str[:4].eq("2021") & pts["acq_date"].str[5:7].astype(int).le(10)]
+        n = int(((np.floor((p["latitude"] + 90) / 0.05) == r) & (np.floor((p["longitude"] + 180) / 0.05) == c)).sum())
+        self.assertAlmostEqual(X["last"].iloc[k], np.log1p(n))
+        self.assertTrue(X["since"].between(0, 10).all() and X["rec"].between(0, 1).all() and X["dist"].between(0, 50).all())
+        h = json.loads((ROOT / "method" / "results" / "cell_outlook_hindcast.json").read_text())
+        for s in h["scales"].values():
+            best = "G" if s["pooled"]["log_loss"]["G"] <= 0.98 * s["pooled"]["log_loss"]["L"] else "L"
+            ok = all(d["capture"][best] > d["capture"]["P"] and d["log_loss"][best] < d["log_loss"]["B0"] for d in (s["pooled"], s["fresh"]))
+            self.assertEqual((s["best_model"], s["shown"]), (best, best if ok else "P"))

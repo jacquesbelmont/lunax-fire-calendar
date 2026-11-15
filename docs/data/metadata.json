@@ -180,6 +180,217 @@
       }
     }
   },
+  "outlook": {
+    "decision": "method/DECISIONS.md DE-27 (PROPOSED)",
+    "test_years": [
+      2013,
+      2025
+    ],
+    "fresh_year": 2026,
+    "pre_season": {
+      "test": {
+        "n": 572,
+        "male": {
+          "C": 0.7666,
+          "P": 0.43,
+          "P3": 0.4483
+        }
+      },
+      "fresh": {
+        "n": 52,
+        "male": {
+          "C": 2.4591,
+          "P": 0.7732,
+          "P3": 1.5007
+        }
+      },
+      "best_candidate": "P",
+      "chosen": "P",
+      "replaces_climatology": true
+    },
+    "early_season": {
+      "test": {
+        "n": 572,
+        "male": {
+          "C": 0.7666,
+          "R": 0.6915
+        }
+      },
+      "fresh": {
+        "n": 52,
+        "male": {
+          "C": 2.4591,
+          "R": 1.3067
+        }
+      },
+      "best_candidate": "R",
+      "chosen": "C",
+      "replaces_climatology": false
+    }
+  },
+  "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-28 (PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+      "001": {
+        "grid_deg": 0.01,
+        "cells": 196614,
+        "test_years": [
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2025
+        ],
+        "fresh_year": 2026,
+        "pooled": {
+          "capture": {
+            "P": 0.528481,
+            "L": 0.570694,
+            "G": 0.574996
+          },
+          "log_loss": {
+            "B0": 0.29873,
+            "L": 0.22756,
+            "G": 0.22537
+          }
+        },
+        "fresh": {
+          "capture": {
+            "P": 0.453865,
+            "L": 0.637305,
+            "G": 0.664171
+          },
+          "log_loss": {
+            "B0": 0.13243,
+            "L": 0.08772,
+            "G": 0.08238
+          }
+        },
+        "best_model": "L",
+        "shown": "L",
+        "calibration": [
+          {
+            "p_from": 0.0,
+            "p_to": 0.1,
+            "cells": 1129317,
+            "mean_p": 0.034,
+            "observed": 0.0274
+          },
+          {
+            "p_from": 0.1,
+            "p_to": 0.2,
+            "cells": 192362,
+            "mean_p": 0.1407,
+            "observed": 0.1257
+          },
+          {
+            "p_from": 0.2,
+            "p_to": 0.3,
+            "cells": 89160,
+            "mean_p": 0.2464,
+            "observed": 0.2082
+          },
+          {
+            "p_from": 0.3,
+            "p_to": 0.4,
+            "cells": 64678,
+            "mean_p": 0.3476,
+            "observed": 0.2957
+          },
+          {
+            "p_from": 0.4,
+            "p_to": 0.5,
+            "cells": 48002,
+            "mean_p": 0.4475,
+            "observed": 0.3965
+          },
+          {
+            "p_from": 0.5,
+            "p_to": 0.6,
+            "cells": 33621,
+            "mean_p": 0.546,
+            "observed": 0.525
+          },
+          {
+            "p_from": 0.6,
+            "p_to": 0.7,
+            "cells": 14384,
+            "mean_p": 0.6379,
+            "observed": 0.576
+          },
+          {
+            "p_from": 0.7,
+            "p_to": 0.8,
+            "cells": 1388,
+            "mean_p": 0.7211,
+            "observed": 0.5764
+          },
+          {
+            "p_from": 0.8,
+            "p_to": 0.9,
+            "cells": 0,
+            "mean_p": null,
+            "observed": null
+          },
+          {
+            "p_from": 0.9,
+            "p_to": 1.0,
+            "cells": 0,
+            "mean_p": null,
+            "observed": null
+          }
+        ]
+      },
+      "005": {
+        "grid_deg": 0.05,
+        "cells": 7847,
+        "test_years": [
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2025
+        ],
+        "fresh_year": 2026,
+        "pooled": {
+          "capture": {
+            "P": 0.540623,
+            "L": 0.514043,
+            "G": 0.478118
+          },
+          "log_loss": {
+            "B0": 0.68864,
+            "L": 0.44464,
+            "G": 0.44938
+          }
+        },
+        "fresh": {
+          "capture": {
+            "P": 0.436289,
+            "L": 0.508799,
+            "G": 0.465694
+          },
+          "log_loss": {
+            "B0": 0.62244,
+            "L": 0.4497,
+            "G": 0.41225
+          }
+        },
+        "best_model": "L",
+        "shown": "P",
+        "calibration": null
+      }
+    }
+  },
   "attribution": "We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Land, Atmosphere Near real-time Capability for Earth observations (LANCE) (https://earthdata.nasa.gov/lance) and NASA's Earth Science Data and Information System (ESDIS).",
   "disclaimer_url": "https://www.earthdata.nasa.gov/data/projects/lance#ed-lance-disclaimer",
   "ai_use": "AI tools used: Claude and Claude Code (Anthropic), for code, comparison of options for the method decisions, analyses and documentation. Every step is logged in AI_USE.md (https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/AI_USE.md). No AI-generated images, video or audio. Decisions were made by team members and are recorded in method/DECISIONS.md."
