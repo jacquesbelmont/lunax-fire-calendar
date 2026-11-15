@@ -1,6 +1,7 @@
 /*
  * Purpose: monthly calendar (year x month heatmap). No-data months are grey, never zero. Estimated months are
- *          separated by a dashed line. Accessible, perceptually uniform color ramp (Viridis).
+ *          separated by a dashed line. Accessible, perceptually uniform color ramp (Viridis). A click on a month shows
+ *          that month on the map (DE-21).
  * SCOPE: R3, R5, R6, R10, O2
  * Owner issue: JA-5, JA-7
  * AI-assisted code (Claude Code); logged in AI_USE.md.
@@ -9,8 +10,8 @@
   "use strict";
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-  /** rows: [{ym, value, lo, hi, estimated, inRange}] ; unit: text for the hover. */
-  function render(el, rows, unit) {
+  /** rows: [{ym, value, lo, hi, estimated, inRange}] ; unit: text for the hover; onMonthClick(ym): click on a month (DE-21). */
+  function render(el, rows, unit, onMonthClick) {
     const years = [...new Set(rows.map((r) => Number(r.ym.slice(0, 4))))].sort((a, b) => a - b);
     const yIdx = new Map(years.map((y, i) => [y, i]));
     const grid = () => years.map(() => new Array(12).fill(null));
@@ -51,7 +52,13 @@
       paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)", font: { color: LunaxTheme.text() },
       height: Math.max(360, years.length * 22 + 80),
     };
-    return Plotly.react(el, traces, layout, { responsive: true, displaylogo: false, displayModeBar: false });
+    return Plotly.react(el, traces, layout, { responsive: true, displaylogo: false, displayModeBar: false }).then(function () {
+      el.removeAllListeners("plotly_click"); // react keeps old listeners: one handler only
+      el.on("plotly_click", function (ev) {
+        const p = ev.points[0];
+        onMonthClick(p.y + "-" + String(MONTHS.indexOf(p.x) + 1).padStart(2, "0"));
+      });
+    });
   }
   window.LunaxTheme = {
     text: function () { return getComputedStyle(document.body).color; },

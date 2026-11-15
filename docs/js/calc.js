@@ -1,9 +1,9 @@
 /*
  * Purpose: pure calculations on docs/data/monthly_cells.csv (no DOM): parsing, area selection, area series,
- *          historical median and anomaly, CSV text. Runs in the browser and in Node (tests/js).
+ *          historical median and anomaly, CSV text, map layers. Runs in the browser and in Node (tests/js).
  * SCOPE: R3, R5, R6, R7, R8, R9, O3
  * Owner issue: JA-5, JA-6, JA-8
- * Rules: DE-13 (median/anomaly), DE-16 (uncertainty), DATA_CONTRACT.md (a). An empty value is NO DATA, never zero.
+ * Rules: DE-13 (median/anomaly), DE-16 (uncertainty), DE-21 (map layers), DATA_CONTRACT.md (a). An empty value is NO DATA, never zero.
  * AI-assisted code (Claude Code); logged in AI_USE.md.
  */
 (function (root, factory) {
@@ -182,7 +182,7 @@
 
   /**
    * Top of the map color scale: 95th percentile (nearest rank) of the cell values with data, so that one very active
-   * cell does not wash out the others (display choice, method/DECISIONS.md DE-20). Never below 1.
+   * cell does not wash out the others (display choice, method/DECISIONS.md DE-21). Never below 1.
    */
   function colorCap(values) {
     var v = values.filter(function (x) { return !Number.isNaN(x); }).sort(function (a, b) { return a - b; });
@@ -214,6 +214,16 @@
   /** CSS gradient of the reversed Viridis ramp, for the map legend. */
   function viridisReversedGradient() {
     return "linear-gradient(to right, " + VIRIDIS.map(function (s) { return s[1] + " " + ((1 - s[0]) * 100).toFixed(1) + "%"; }).reverse().join(", ") + ")";
+  }
+
+  /** DE-21: hotspot rows (filterHotspots output) as map points {lat, lon, sensor}. */
+  function hotspotPoints(header, lines) {
+    var h = header.split(","), la = h.indexOf("latitude"), lo = h.indexOf("longitude"), se = h.indexOf("sensor");
+    if (la < 0 || lo < 0 || se < 0) throw new Error("hotspot files: missing latitude, longitude or sensor");
+    return lines.map(function (l) {
+      var f = l.split(",");
+      return { lat: Number(f[la]), lon: Number(f[lo]), sensor: f[se] };
+    });
   }
 
   /** 90 % interval half-width from a summed variance. */
@@ -294,5 +304,5 @@
            estimatedBoundaryPath: estimatedBoundaryPath, medianAnomaly: medianAnomaly, halfWidth90: halfWidth90,
            seriesCsv: seriesCsv, fmt: fmt, SENSOR_COLUMNS: SENSOR_COLUMNS,
            comparedMonthIndex: comparedMonthIndex, cellMonthValues: cellMonthValues, colorCap: colorCap,
-           viridisReversed: viridisReversed, viridisReversedGradient: viridisReversedGradient };
+           viridisReversed: viridisReversed, viridisReversedGradient: viridisReversedGradient, hotspotPoints: hotspotPoints };
 });

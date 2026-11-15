@@ -125,3 +125,14 @@ test("the count before the download is given per sensor and never as a harmonize
   assert.ok(text.includes("Terra (MODIS) " + counts.Terra.toLocaleString("en-US")));
   assert.ok(text.includes("not a harmonized count"));
 });
+
+test("DE-21 map points: one point per row of the month, inside the study area, sensor MODIS or VIIRS", { skip }, () => {
+  const ym = data.months[data.nMonths - 1], index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+  const out = { header: null, lines: [] };
+  index.files.filter((e) => e.year === Number(ym.slice(0, 4))).forEach((e) => calc.filterHotspots(readText(e), allCells(), ym, ym, out));
+  const pts = calc.hotspotPoints(out.header, out.lines), [w, s, e, n] = meta.area.bbox_west_south_east_north;
+  assert.ok(pts.length > 0);
+  assert.strictEqual(pts.length, out.lines.length);
+  assert.deepStrictEqual([...new Set(pts.map((p) => p.sensor))].sort(), ["MODIS", "VIIRS"]);
+  assert.ok(pts.every((p) => p.lon >= w && p.lon <= e && p.lat >= s && p.lat <= n));
+});

@@ -29,4 +29,8 @@ footer { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 12px;
 .map-legend-bar { height: 10px; border-radius: 3px; margin: 4px 0 2px; }
 .map-legend-scale { display: flex; justify-content: space-between; }
 .map-legend-swatch { display: inline-block; width: 10px; height: 10px; vertical-align: middle; }
+/* DE-21 points: sensor colors as SENSOR_COLORS in docs/js/map.js */
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; vertical-align: middle; }
+.dot.modis, .cluster.modis { background: #0072B2; } .dot.viirs, .cluster.viirs { background: #D55E00; }
+.cluster { display: flex; align-items: center; justify-content: center; box-sizing: border-box; border: 2px solid #fff; border-radius: 10px; color: #fff; font: 600 11px/1 system-ui, sans-serif; box-shadow: 0 0 2px rgba(0,0,0,.5); }
 @media (max-width: 600px) { .map-legend { max-width: 160px; font-size: .7rem; } }
