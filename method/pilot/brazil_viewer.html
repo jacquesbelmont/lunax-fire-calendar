@@ -71,7 +71,7 @@ async function timed(label, url, fn, gz) {
   return out;
 }
 
-// the pilot now holds 2000-2025; this standalone viewer shows 2024 (the main app's Brazil view shows every month)
+// the pilot now holds 2000-11 to 2026-10; this standalone viewer shows 2024 (the main app's Brazil view shows every month)
 const series = (data, i, col) => data.months.map((m, k) => [m, data.columns[col][i * data.nMonths + k]]).filter((x) => x[0].startsWith("2024")).map((x) => x[1]);
 
 async function init() {

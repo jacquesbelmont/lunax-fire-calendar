@@ -20,25 +20,53 @@
 
   <main>
     <section id="controls" aria-label="Area and date range">
-      <h2>1. Choose an area and a period</h2>
-      <p class="hint">Choose a municipality, draw a rectangle on the map or enter its coordinates. Counts use detections inside the IBGE boundary of Rondônia.</p>
-      <div class="row">
-        <label>Municipality <select autocomplete="off" id="muni-select"><option value="">None: use the rectangle below</option></select></label>
-      </div>
-      <form id="bbox-form" class="row">
-        <label>West <input id="bbox-w" type="number" step="0.05" required></label>
-        <label>South <input id="bbox-s" type="number" step="0.05" required></label>
-        <label>East <input id="bbox-e" type="number" step="0.05" required></label>
-        <label>North <input id="bbox-n" type="number" step="0.05" required></label>
-        <button type="submit">Apply</button>
-        <button type="button" id="bbox-reset">Whole study area</button>
-      </form>
-      <div class="row">
-        <label>From <select autocomplete="off" id="range-from"></select></label>
-        <label>To <select autocomplete="off" id="range-to"></select></label>
-        <label>Series <select autocomplete="off" id="series-select"></select></label>
+      <h2 class="sr-only">1. Choose an area and a period</h2>
+      <!-- RA-11: one sticky toolbar (place, period, series, downloads); the place search appears with the local Brazil pilot -->
+      <div id="toolbar" class="toolbar no-print">
+        <div class="tb-group">
+          <nav id="crumbs" class="crumbs" aria-label="Where you are" hidden></nav>
+          <input id="place-search" type="search" list="place-list" placeholder="Search a state or municipality" autocomplete="off" aria-label="Search a place in Brazil" hidden>
+          <datalist id="place-list"></datalist>
+          <label class="inline">Municipality <select autocomplete="off" id="muni-select"><option value="">None: use the rectangle</option></select></label>
+        </div>
+        <div class="tb-group">
+          <div class="chips" id="period-chips" role="group" aria-label="Period">
+            <button type="button" data-period="all">All years</button>
+            <button type="button" data-period="viirs">2012 on (VIIRS)</button>
+            <button type="button" data-period="10y">Last 10 years</button>
+            <button type="button" data-period="12m">Last 12 months</button>
+          </div>
+          <label class="inline">From <select autocomplete="off" id="range-from"></select></label>
+          <label class="inline">To <select autocomplete="off" id="range-to"></select></label>
+        </div>
+        <div class="tb-group">
+          <label class="inline">Series <select autocomplete="off" id="series-select"></select></label>
+          <details class="menu" id="download-menu">
+            <summary>Download</summary>
+            <div class="menu-items">
+              <button type="button" data-click="csv-series">Monthly series (CSV)</button>
+              <button type="button" data-click="csv-cells">Values per grid cell (CSV)</button>
+              <button type="button" data-click="png-calendar">Calendar (PNG)</button>
+              <button type="button" data-click="png-compare">Comparison chart (PNG)</button>
+              <button type="button" data-click="print-briefing">Print a briefing</button>
+              <a href="#downloads-section">Hotspot list (CSV, KML): section 5</a>
+            </div>
+          </details>
+        </div>
       </div>
       <p class="hint" id="series-note"></p>
+      <details class="advanced no-print">
+        <summary>Rectangle by coordinates (or draw one on the map with the square tool)</summary>
+        <p class="hint">Counts use detections inside the IBGE boundary of the area. The rectangle selects whole grid cells by their centres.</p>
+        <form id="bbox-form" class="row">
+          <label>West <input id="bbox-w" type="number" step="0.05" required></label>
+          <label>South <input id="bbox-s" type="number" step="0.05" required></label>
+          <label>East <input id="bbox-e" type="number" step="0.05" required></label>
+          <label>North <input id="bbox-n" type="number" step="0.05" required></label>
+          <button type="submit">Apply</button>
+          <button type="button" id="bbox-reset">Whole study area</button>
+        </form>
+      </details>
       <p id="selection-info" role="status"></p>
       <div class="cards" aria-label="Summary of the selection">
         <a class="card" href="#compare-section"><span class="card-title">Focus month</span><span class="card-big" id="card-month-big"></span><span class="card-sub" id="card-month-sub"></span></a>
@@ -51,6 +79,7 @@
       <h2>Map</h2>
       <p class="hint">Choose what the map shows in the panel on the map (top right). The month views show the focus month (the latest month, or the month you click in the calendar or the comparison); their grid cells are about 27 x 27 km (0.25°), and grey cells have no data, which is not zero fire. <span class="dot modis" aria-hidden="true"></span> MODIS and <span class="dot viirs" aria-hidden="true"></span> VIIRS detections of the month are points at their real position; a number is a group of nearby detections of one sensor, so zoom in to separate them. Click the map before zooming with the mouse wheel. The layers button (top right, above the panel) hides cells, points or municipal borders and changes the background: street map, NASA Blue Marble, or the NASA satellite image of one day in true color or in false color, where burn scars appear deep or bright red (NASA Worldview layer description). The image day is the day of the map month with the most detections; choose another day in the box on the map, or click a detection to see the image of its day. Satellite images stop at zoom level 9 (about 300 m per pixel); closer, they are only enlarged.</p>
       <div id="map-panel" class="map-panel no-print">
+        <label class="inline place-pick" id="place-pick" hidden>Place <select id="place-select"></select></label>
         <details id="map-panel-details" open>
           <summary>Map view: <span id="map-view-name">Hotspots in the month</span></summary>
           <fieldset id="map-mode">
@@ -58,13 +87,11 @@
             <p class="panel-group">This month</p>
             <label class="view"><input type="radio" name="map-mode" value="hotspots" checked><span class="sw sw-hotspots" aria-hidden="true"></span><span><strong>Hotspots in the month</strong><small>Cells colored by the month's hotspots</small></span></label>
             <label class="view"><input type="radio" name="map-mode" value="usual"><span class="sw sw-usual" aria-hidden="true"></span><span><strong>Compared with the usual</strong><small>Above or below the median of the same month in earlier years</small></span></label>
-            <p class="panel-group">History, 2012-2025</p>
+            <p class="panel-group" id="group-history">History, 2012-2025</p>
             <label class="view"><input type="radio" name="map-mode" value="recurrence"><span class="sw sw-recurrence" aria-hidden="true"></span><span><strong>Places that burn year after year</strong><small>VIIRS, cells of about 1 km</small></span></label>
-            <p class="panel-group">Next season (experimental)</p>
+            <p class="panel-group" id="group-next">Next season (experimental)</p>
             <label class="view"><input type="radio" name="map-mode" value="outlook001"><span class="sw sw-outlook001" aria-hidden="true"></span><span><strong>Where to expect fire, about 1 km</strong><small>Chance per cell from a tested model</small></span></label>
             <label class="view"><input type="radio" name="map-mode" value="outlook005"><span class="sw sw-outlook005" aria-hidden="true"></span><span><strong>Where to expect fire, about 5 km</strong><small>Last year's fire, the best guide at this scale</small></span></label>
-            <p class="panel-group" id="brazil-group" hidden>Brazil pilot, 2000-2025 (local only)</p>
-            <label class="view" id="brazil-view" hidden><input type="radio" name="map-mode" value="brazil"><span class="sw sw-hotspots" aria-hidden="true"></span><span><strong>States and cells of Brazil</strong><small>VIIRS from 2012, raw MODIS before; click a state</small></span></label>
           </fieldset>
           <a id="firms-link" class="panel-link" href="https://firms.modaps.eosdis.nasa.gov/map/" target="_blank" rel="noopener">Today's fires here: NASA FIRMS Fire Map (near real-time, new tab)</a>
         </details>
@@ -72,7 +99,7 @@
       <div id="map" role="application" aria-label="Map for choosing the area, with the hotspots of one month"></div>
       <p class="hint" id="recurrence-note" role="status"></p>
       <p class="hint" id="map-note" role="status"></p>
-      <h3>Municipalities in the map month</h3>
+      <h3 id="ranking-title">Municipalities in the map month</h3>
       <p class="hint" id="ranking-caption"></p>
       <div class="table-wrap"><table id="ranking"></table></div>
     </section>
@@ -103,7 +130,7 @@
       </section>
       <section id="outlook-section" aria-label="Outlook for the next fire season">
         <h2>4. Next season outlook (experimental)</h2>
-        <p class="hint">How many hotspots to expect in August-October next year in the selected area, with the method that won a test fixed in advance on past seasons of the 52 municipalities. Bars: what happened; diamonds: what the method would have forecast from earlier years only; the last diamond is the outlook, with the range in which 80% of this area's past seasons fell.</p>
+        <p class="hint">How many hotspots to expect in August-October next year in the selected area, with the method that won a test fixed in advance on past seasons of the area's municipalities. Bars: what happened; diamonds: what the method would have forecast from earlier years only; the last diamond is the outlook, with the range in which 80% of this area's past seasons fell.</p>
         <p id="outlook-text" role="status"></p>
         <div id="outlook" class="chart" role="img" aria-label="Past forecasts against observed August-October hotspots, and the outlook for next year"></div>
       </section>
@@ -135,7 +162,7 @@
   <footer id="footer">
     <p id="attribution"></p>
     <p><a id="disclaimer-link" href="#">LANCE disclaimer</a>. This tool is not an official NASA product and does not imply NASA endorsement. Do not use it for the preservation of life or property.</p>
-    <p>Area boundary of Rondônia and municipal boundaries: IBGE, Malhas territoriais (<a href="https://servicodados.ibge.gov.br/api/docs/malhas?versao=3">API v3</a>), retrieved 2026-11-14 (state) and 2026-11-15 (municipalities); geometry used as published.</p>
+    <p id="boundary-credit">Area boundary of Rondônia and municipal boundaries: IBGE, Malhas territoriais (<a href="https://servicodados.ibge.gov.br/api/docs/malhas?versao=3">API v3</a>), retrieved 2026-11-14 (state) and 2026-11-15 (municipalities); geometry used as published.</p>
     <p>Map tiles &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Libraries: Leaflet, Leaflet.draw, Plotly.js (see <a href="https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/docs/lib/README.md">docs/lib/README.md</a>).</p>
     <p>Satellite images on the map (Blue Marble, true and false color of a day): we acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS) (<a href="https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs-api">GIBS</a>).</p>
     <p id="archive-footer"></p>

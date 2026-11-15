@@ -31,7 +31,8 @@ import export
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "method" / "results" / "cell_outlook_hindcast.json"
 INTERIM = ROOT / "data" / "interim"
-W, S, E, N = json.loads((ROOT / "config" / "area.json").read_text())["bbox_west_south_east_north"]
+BOX = tuple(json.loads((ROOT / "config" / "area.json").read_text())["bbox_west_south_east_north"])  # Rondonia (W, S, E, N)
+CELLS = ROOT / "docs" / "data" / "monthly_cells.csv"
 VALID = [y for y in range(2012, 2027) if y != 2023]  # DE-29: as DE-26, 2023 misses reference days in July and September
 TESTS, FRESH, NEXT = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2025], 2026, 2027
 SCALES = {"001": 0.01, "005": 0.05}
@@ -43,16 +44,18 @@ MODELS = {
 }
 
 
-def grid(g):
-    """Cell layout of scale g over the processing box (aligned with the global grid: the box edges are multiples of g)."""
+def grid(g, box=BOX, rings=None):
+    """Cell layout of scale g over the box (aligned with the global grid: the box edges are multiples of g); inside = the
+    cell centre is inside `rings` (default: Rondonia's IBGE boundary)."""
+    W, S, E, N = box
     nr, nc = round((N - S) / g), round((E - W) / g)
     r0, c0 = round((S + 90) / g), round((W + 180) / g)
     lat = S + (np.arange(nr) + 0.5) * g
     lon = W + (np.arange(nc) + 0.5) * g
     lat2, lon2 = np.meshgrid(lat, lon, indexing="ij")
-    inside = clean.inside_boundary(lon2.ravel(), lat2.ravel(), clean.load_boundary()).reshape(nr, nc)
+    inside = clean.inside_boundary(lon2.ravel(), lat2.ravel(), clean.load_boundary() if rings is None else rings).reshape(nr, nc)
     ids = np.char.add(np.char.add((r0 + np.arange(nr))[:, None].astype(str), "_"), (c0 + np.arange(nc))[None, :].astype(str))
-    return {"g": g, "nr": nr, "nc": nc, "r0": r0, "c0": c0, "lat": lat2, "lon": lon2, "inside": inside, "ids": ids}
+    return {"g": g, "box": box, "nr": nr, "nc": nc, "r0": r0, "c0": c0, "lat": lat2, "lon": lon2, "inside": inside, "ids": ids}
 
 
 def yearly_counts(pts, G):
@@ -70,10 +73,10 @@ def yearly_counts(pts, G):
     return out
 
 
-def parent_means(G):
+def parent_means(G, cells=CELLS):
     """{F: (nr, nc) array}: log1p of the mean January-October harmonized hotspots of the 0.25° parent cell over the
-    years 2001..F with complete windows (docs/data/monthly_cells.csv; inactive cells had no detection: 0)."""
-    mc = pd.read_csv(ROOT / "docs" / "data" / "monthly_cells.csv", usecols=["cell_id", "year_month", "viirs_eq"], dtype={"year_month": str})
+    years 2001..F with complete windows (monthly_cells.csv of the area; inactive cells had no detection: 0)."""
+    mc = pd.read_csv(cells, usecols=["cell_id", "year_month", "viirs_eq"], dtype={"year_month": str})
     mc = mc[mc["year_month"].str[5:7].astype(int).le(10)].assign(year=lambda d: d["year_month"].str[:4].astype(int))
     tot = mc.groupby(["cell_id", "year"])["viirs_eq"].agg(lambda v: v.sum() if len(v) == 10 and v.notna().all() else np.nan).unstack()
     pid = np.char.add(np.char.add(np.floor((G["lat"] + 90) / 0.25).astype(int).astype(str), "_"),
@@ -88,6 +91,7 @@ def parent_means(G):
 def features(counts, parent, f, G):
     """DE-29 features of every inside cell from year f and earlier (DataFrame in the order of the inside cells)."""
     a = counts[f]
+    S, N = G["box"][1], G["box"][3]
     km_y, km_x = G["g"] * 111.32, G["g"] * 111.32 * np.cos(np.radians((S + N) / 2))
     nb = ndimage.convolve(a, np.array([[1, 1, 1], [1, 0, 1], [1, 1, 1]]), mode="constant")
     dist = np.minimum(ndimage.distance_transform_edt(a == 0, sampling=(km_y, km_x)), 50.0)
@@ -161,13 +165,14 @@ def calibration(res, pairs, name, m_inside):
              "observed": round(float(y[b == k].mean()), 4) if (b == k).any() else None} for k in range(10)]
 
 
-def main():
-    pts = export.reference_viirs()
+def run(pts, box=BOX, rings=None, cells=CELLS):
+    """DE-29 for one area: the test per scale and the NEXT forecast. Returns (results, {scale key: forecast DataFrame})."""
+    forecasts = {}
     out = {"decision": "method/DECISIONS.md DE-29 (PROPOSED)", "window": "January-October", "valid_years": VALID,
            "target": "at least one reference VIIRS detection in the window", "features": FEATURES, "scales": {}}
     for key, g in SCALES.items():
-        G = grid(g)
-        counts, parent = yearly_counts(pts, G), parent_means(G)
+        G = grid(g, box, rings)
+        counts, parent = yearly_counts(pts, G), parent_means(G, cells)
         res, pairs = run_scale(G, counts, parent)
         s = summarize(res)
         s["calibration"] = {k: calibration(res, pairs, k, G["inside"]) for k in ("L", "G")}
@@ -183,6 +188,13 @@ def main():
             fc = pd.DataFrame({"cell_id": ids, "last": np.expm1(Xn["last"]).round().astype(int), "top": top})
         else:
             fc = pd.DataFrame({"cell_id": ids, "p": MODELS[s["shown"]]().fit(X[FEATURES], yb).predict_proba(Xn[FEATURES])[:, 1]})
+        forecasts[key] = fc
+    return out, forecasts
+
+
+def main():
+    out, forecasts = run(export.reference_viirs())
+    for key, fc in forecasts.items():
         fc.to_csv(INTERIM / f"cell_outlook_{NEXT}_{key}.csv", index=False)
     OUT.write_text(json.dumps(out, indent=1) + "\n")
     print(json.dumps({k: {x: v[x] for x in ("pooled", "fresh", "best_model", "shown")} for k, v in out["scales"].items()}, indent=1))

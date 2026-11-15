@@ -2,6 +2,7 @@
  * DE-28 pre-registered test of the fire-season outlook on the 52 municipalities (docs/data/municipalities.csv).
  * Uses the same functions as the app (docs/js/calc.js). Writes method/results/outlook_hindcast.json.
  * Run: node method/outlook_hindcast.js   (then python pipeline/export.py --check copies the summary into metadata.json)
+ *      node method/outlook_hindcast.js <series.csv> <out.json>   (RA-11, DE-33: the same test on another area's series)
  * Owner issue: RA-9 (#59). AI-assisted code (Claude Code); logged in AI_USE.md.
  */
 "use strict";
@@ -10,7 +11,9 @@ const path = require("node:path");
 const calc = require("../docs/js/calc.js");
 
 const root = path.resolve(__dirname, "..");
-const data = calc.parseCellsCsv(fs.readFileSync(path.join(root, "docs/data/municipalities.csv"), "utf8"), 0.25, "area_id");
+const [IN, OUT] = process.argv.length > 3 ? process.argv.slice(2, 4)
+  : [path.join(root, "docs/data/municipalities.csv"), path.join(root, "method/results/outlook_hindcast.json")];
+const data = calc.parseCellsCsv(fs.readFileSync(IN, "utf8"), 0.25, "area_id");
 const TEST = [2013, 2025], FRESH = 2026;
 const totals = data.cells.map((c, i) => calc.seasonTotals(data.months.map((ym, m) => ({ ym, value: data.columns.viirs_eq[i * data.nMonths + m] }))));
 function median(v) {
@@ -36,11 +39,12 @@ function choose(test, fresh, cands) {
 const preTest = compare(["C", "P", "P3"], ...TEST), preFresh = compare(["C", "P", "P3"], FRESH, FRESH);
 const earlyTest = compare(["C", "R"], ...TEST), earlyFresh = compare(["C", "R"], FRESH, FRESH);
 const out = {
-  decision: "method/DECISIONS.md DE-28 (PROPOSED)", areas: "52 municipalities, docs/data/municipalities.csv viirs_eq",
+  decision: "method/DECISIONS.md DE-28 (PROPOSED)",
+  areas: process.argv.length > 3 ? data.cells.length + " areas, " + path.relative(root, IN) + " viirs_eq" : "52 municipalities, docs/data/municipalities.csv viirs_eq",
   target: "August-October total", test_years: TEST, fresh_year: FRESH,
   error: "|ln((forecast + 1) / (observed + 1))|; MALE = median over municipality-years",
   pre_season: { test: preTest, fresh: preFresh, ...choose(preTest, preFresh, ["P", "P3"]) },
   early_season: { test: earlyTest, fresh: earlyFresh, ...choose(earlyTest, earlyFresh, ["R"]) },
 };
-fs.writeFileSync(path.join(root, "method/results/outlook_hindcast.json"), JSON.stringify(out, null, 2) + "\n");
+fs.writeFileSync(OUT, JSON.stringify(out, null, 2) + "\n");
 console.log(JSON.stringify(out, null, 1));

@@ -1,8 +1,9 @@
-"""RA-11 pilot (issue #66): Brazil, all years of the FIRMS country files on disk (2000-2025), to measure what a national
-version would cost. Measurement only: it does not change the method, the published app or docs/data.
-- 2012-02 to 2025: viirs_eq = the DE-11 reference VIIRS satellite (Suomi NPP to 2018-03, NOAA-20 from 2018-04), observed.
-- 2000-11 to 2012-01: raw MODIS counts only; viirs_eq is empty (not harmonized): converting them for Brazil needs ratios
-  per biome validated as in DE-15, a team decision. 2026 needs the FIRMS area API (no country files): not included.
+"""RA-11 pilot (issue #66): Brazil, 2000-11 to 2026-10: the FIRMS country files on disk (2000-2025) and, for 2026, the FIRMS
+area API over Brazil's box (DE-33; download.py --api-source ... --raw-dir data/pilot/brazil/raw). It does not change the
+method, the published app or docs/data.
+- 2012-02 to 2026-10: the DE-11 reference VIIRS satellite (Suomi NPP to 2018-03, NOAA-20 from 2018-04), observed; months
+  with near real-time rows are provisional (months.csv), as in aggregate.py.
+- 2000-11 to 2012-01: raw MODIS counts here; pipeline/pilot_packs.py converts them with each state's DE-31 ratios.
 
 Owner issue: RA-11. SCOPE: none in the hackathon scope (DE-1: Rondonia); post-submission exploration.
 AI-assisted code (Claude Code); logged in AI_USE.md.
@@ -38,11 +39,12 @@ from export import ATTRIBUTION, DISCLAIMER_URL
 ROOT = Path(__file__).resolve().parent.parent
 PILOT = ROOT / "data" / "pilot" / "brazil"
 OUT = ROOT / "method" / "results" / "pilot_brazil.json"
-YEARS = range(2000, 2026)  # the country files on disk; 2026 is API-only
+YEARS = range(2000, 2027)  # country files to 2025; 2026 from the area API (DE-33)
+API_RAW = ROOT / "data" / "pilot" / "brazil" / "raw"  # download.py --raw-dir: Rondonia's data/raw/api stays untouched
 SOURCES = ["modis", "viirs-snpp", "viirs-jpss1"]  # NOAA-21 has no country files (area API only): not in the pilot
 COUNTRIES = ("Brazil", "Bolivia")  # country files on disk; other neighbours were not downloaded (report)
 SATS = {"Terra": "terra", "Aqua": "aqua", "SNPP": "snpp", "NOAA20": "noaa20", "NOAA21": "noaa21"}
-MONTHS = [f"{y}-{m:02d}" for y in YEARS for m in range(1, 13) if f"{y}-{m:02d}" >= "2000-11"]
+MONTHS = [f"{y}-{m:02d}" for y in YEARS for m in range(1, 13) if "2000-11" <= f"{y}-{m:02d}" <= aggregate.DATA_END[:7]]
 POINT_COLUMNS = ["cell_id", "latitude", "longitude", "acq_date", "acq_time", "sat", "sensor", "confidence", "daynight", "frp",
                  "type", "version"]
 
@@ -125,20 +127,24 @@ def main(argv=None):
     by_state = {s["code"]: [m for m in munis if m["code"][:2] == s["code"]] for s in states}  # IBGE: municipality code starts with its state's
     for s in states:
         (PILOT / s["name"]).mkdir(parents=True, exist_ok=True)
-        for old in (PILOT / s["name"]).glob("hotspots_*.csv.gz"):
-            old.unlink()
-    head = ["# LUNAX RA-11 pilot (not the published app): Brazil {}, state {}, FIRMS country files, DE-5 cleaning",
+        for pattern in ("hotspots_*.csv.gz", "cell_outlook*"):  # DE-29 results of older data must not survive a rebuild
+            for old in (PILOT / s["name"]).glob(pattern):
+                old.unlink()
+    head = ["# LUNAX RA-11 pilot (not the published app): Brazil {}, state {}, {}, DE-5 cleaning",
             "# " + ATTRIBUTION, "# Disclaimer: " + DISCLAIMER_URL]
-    state_counts, cell_counts, muni_counts, coverage = [], {c: [] for c in s_code}, {c: [] for c in s_code}, []
+    state_counts, cell_counts, muni_counts, coverage, nrt_months = [], {c: [] for c in s_code}, {c: [] for c in s_code}, [], set()
     for year in YEARS:
         t = time.perf_counter()
-        for src in [s for s in SOURCES if (clean.RAW_DIR / "country" / s / str(year)).exists()]:  # one source-year at a time
+        raw_dir, route = (API_RAW, "api") if year >= 2026 else (clean.RAW_DIR, "country")
+        for src in [s for s in SOURCES if (raw_dir / route / s / str(year)).exists()]:  # one source-year at a time
             coverage += [(sat, year) for sat in aggregate.SOURCE_SATS[src]]
-            raw = clean.load_raw(src, year)
+            raw = clean.load_raw(src, year, raw_dir=raw_dir, route=route)
             # Brazil's file plus its neighbour's on disk (Bolivia): FIRMS's country does not follow the IBGE border, so the
-            # state polygons decide (Rondonia's pipeline keeps 964 Bolivia-file detections of 2024 inside its boundary)
-            raw = raw[raw["country"].isin(COUNTRIES)].reset_index(drop=True)
-            df, removed = clean.apply_cleaning_rules(raw, bbox, [], COUNTRIES)
+            # state polygons decide (Rondonia's pipeline keeps 964 Bolivia-file detections of 2024 inside its boundary).
+            # The area API has no country (its "country" is the file's source name): the box, then the state polygons.
+            countries = tuple(raw["country"].unique()) if route == "api" else COUNTRIES
+            raw = raw[raw["country"].isin(countries)].reset_index(drop=True)
+            df, removed = clean.apply_cleaning_rules(raw, bbox, [], countries)
             n_raw = len(raw)
             del raw  # the raw copy is not needed after cleaning (it was the memory peak)
             lon, lat = df["longitude"].to_numpy(), df["latitude"].to_numpy()
@@ -159,6 +165,8 @@ def main(argv=None):
             rows[f"{src} {year}"] = {"raw": int(n_raw), "clean": int(len(df)), "outside_states": int((~inside).sum()),
                                      "inside_from_bolivia_file": int((inside & df["country"].eq("Bolivia").to_numpy()).sum())}
             df = aggregate.assign_grid_cell(df[inside].assign(state=s_code[st[inside]], muni=mu[inside]))
+            nrt = df[df["processing"].eq("NRT")]
+            nrt_months |= set(zip(nrt["sat"], nrt["acq_date"].str[:7]))  # provisional months, as aggregate.py
             state_counts.append(df.assign(year_month=df["acq_date"].str[:7]).groupby(["state", "year_month", "sat"]).size().rename("count"))
             for code, g in df.groupby("state"):
                 g[POINT_COLUMNS + ["cell_lat", "cell_lon", "muni"]].to_csv(PILOT / names[code] / f"part_{year}_{src}.csv.gz", index=False)
@@ -176,13 +184,17 @@ def main(argv=None):
             muni_counts[s["code"]].append(d.assign(year_month=d["acq_date"].str[:7]).groupby(["muni", "year_month", "sat"]).size()
                                           .rename("count").reset_index())
             with gzip.open(out / f"hotspots_{year}.csv.gz", "wt", encoding="utf-8") as fh:
-                fh.write("\n".join([head[0].format(year, s["name"])] + head[1:]) + "\n")
+                fh.write("\n".join([head[0].format(year, s["name"], "FIRMS area API, near real-time rows provisional" if year >= 2026
+                                                    else "FIRMS country files")] + head[1:]) + "\n")
                 d.sort_values(["acq_date", "acq_time"])[POINT_COLUMNS].to_csv(fh, index=False)
         timing[str(year)] = round(time.perf_counter() - t, 1)
         print(year, timing[str(year)], "s", flush=True)
     t = time.perf_counter()
     per_state = pd.concat(state_counts).groupby(level=[0, 1, 2]).sum().reset_index()
     flags = aggregate.flag_missing_months(coverage, pd.read_csv(aggregate.MISSING_DAYS, dtype=str))
+    flags["provisional"] = [int(k in nrt_months) for k in zip(flags["sat"], flags["year_month"])]
+    flags = flags[flags["year_month"].ge("2000-11")]
+    flags[["year_month", "sat", "missing_days", "flagged", "provisional"]].to_csv(PILOT / "months.csv", index=False)  # (a2), for the packs
     files = {}
     path = PILOT / "states.csv"
     dense(per_state.rename(columns={"state": "area_id"}), "area_id", flags).to_csv(path, index=False)
@@ -225,12 +237,12 @@ def main(argv=None):
     total_hot = sum(v["hotspots_bytes"] for v in files.values() if isinstance(v, dict))
     result = {
         "issue": "RA-11 (#66)", "years": [YEARS[0], YEARS[-1]], "sources": SOURCES, "countries_read": list(COUNTRIES),
-        "note": "measurement only; viirs_eq = DE-11 reference VIIRS from 2012-02 (observed), empty before (raw MODIS only, "
-                "not harmonized for Brazil); 2026 not included (area API only)",
+        "note": "viirs_eq = DE-11 reference VIIRS from 2012-02 (observed), empty before (raw MODIS here; pilot_packs.py applies "
+                "the DE-31 state ratios); 2026 from the FIRMS area API over Brazil's box, to 2026-10-31 (DE-33)",
         "rows": rows, "nearest_vertex": nearest_n, "timing_s": {**timing, "total": round(time.perf_counter() - t0, 1)},
         "peak_rss_mb": round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1),
         "files_bytes": files, "hotspots_bytes_total": total_hot,
-        "pilot_dir_bytes": sum(f.stat().st_size for f in PILOT.rglob("*") if f.is_file()),
+        "pilot_dir_bytes": sum(f.stat().st_size for f in PILOT.rglob("*") if f.is_file() and f.relative_to(PILOT).parts[0] != "raw"),
         "rondonia_vs_pipeline": rondonia, "checks": checks,
     }
     OUT.write_text(json.dumps(result, indent=1) + "\n")

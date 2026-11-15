@@ -71,6 +71,19 @@ Paths: `docs/data/cell_outlook_001.csv` (0.01°) and `docs/data/cell_outlook_005
 
 Only cells with at least one detection are listed; a cell that is not listed had no detection, which is not proof of no fire. The sum of `detections` equals the reference detections of those years (`export.py`). `metadata.json` key `recurrence`: file, grid, years, excluded years, the satellite rule and the hindcast summary of DE-26.
 
+### Area packs (RA-11 Brazil pilot; local only, not published)
+Path: `data/pilot/brazil/` (git-ignored), written by `pipeline/pilot_packs.py`. Nothing here changes `docs/data`.
+- **One folder per state** (`<UF>/`, IBGE two-letter code) with the files of `docs/data` in the same formats:
+  - `monthly_cells.csv` (a), `months.csv` (a2), `area.geojson` (d, the state polygon), `municipalities.csv` (e), `municipalities.geojson` (f), `recurrence.csv` (g);
+  - `hotspots/index.json` and `hotspots/hotspots_<year>.csv.gz` (b): one file per year with every satellite, `source` = `all` in the index;
+  - `cell_outlook_001.csv` and `cell_outlook_005.csv` (h), when the state's DE-29 test was run (DE-33);
+  - `metadata.json` (c) with these extra keys: `area.code`, `area.level` (`state`), `state_test` (DE-31), `recurrence.decision` (DE-32). `outlook` and `cell_outlook` hold the state's own DE-33 results.
+- **2026** comes from the FIRMS area API over Brazil's box, to 2026-10-31; `months.csv` marks the near real-time months as provisional.
+- **`BR/`**, the national level: `units.csv` in format (e) with `area_id` = the IBGE state code, `units.geojson`, `area.geojson`, `months.csv` and `metadata.json` (`area.level` = `national`).
+- **`places.json`:** `[{type: "state" | "municipality", code, name, uf}]` for the place search.
+
+The app reads a pack only when it is served next to it (`docs/js/brazil.js`); Rondônia always uses `docs/data`.
+
 ### (b) Hotspot list per year (CSV export)
 Paths: `docs/data/hotspots/<instrument>_<year>.csv.gz` and `docs/data/hotspots/index.json`. Written by `pipeline/export_hotspots.py` (DE-17, R9). `<instrument>` is the FIRMS country-file instrument: `modis`, `viirs-snpp`, `viirs-jpss1` (NOAA-20), plus `viirs-jpss2` (NOAA-21); the NOAA-21 files and all 2026 files come from the area API. 54 files, 2,168,855 rows (`index.json`).
 Content: the detections kept by `clean.py` (standard data, `type` 0, inside the area boundary, no confidence filter). Each file is gzip text. It starts with `#` comment lines (FIRMS acknowledgment, disclaimer link, data cut-off date), then the column header, then one row per hotspot, sorted by date and time.

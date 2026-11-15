@@ -358,7 +358,14 @@ def recurrence_hindcast():
     6 of 2012-2021; share of each test year's detections in them, against persistence (the K cells with the most
     detections in 2021, ties by cell id) and the area share (K / cells with any detection in 2012-2021)."""
     import export  # matplotlib/scipy; only needed here
-    ref = export.reference_viirs()
+    out = recurrence_hindcast_numbers(export.reference_viirs())
+    (RESULTS / "recurrence_hindcast.json").write_text(json.dumps(out, indent=2) + "\n")
+    print(json.dumps(out, indent=1))
+
+
+def recurrence_hindcast_numbers(ref, fresh=True):
+    """The DE-26 hindcast on reference detections `ref`; fresh adds the 2026 check (the RA-11 pilot has no 2026)."""
+    import export
     train = list(range(2012, 2022))
     rec = export.recurrence(ref, train)
     prio = set(rec.loc[rec["years"] >= 6, "cell_id"])
@@ -375,10 +382,10 @@ def recurrence_hindcast():
     out = {"decision": "method/DECISIONS.md DE-26", "train_years": train, "k_rule": "cells with detections in >= 6 of 10 years",
            "k": k, "cells_with_any_detection_train": len(rec), "area_share": round(k / len(rec), 4),
            "by_test_year": {str(y): shares([y]) for y in tests}, "test_years_pooled": tests, "pooled": shares(tests),
-           "fresh_2026": {**shares([2026]), "note": "January to October 2026, provisional near real-time data from August"},
+           **({"fresh_2026": {**shares([2026]), "note": "January to October 2026, provisional near real-time data from August"}}
+              if fresh else {}),
            "excluded": {"2023": "reference satellite misses 4 days in July and 1 in September (docs/data/months.csv)"}}
-    (RESULTS / "recurrence_hindcast.json").write_text(json.dumps(out, indent=2) + "\n")
-    print(json.dumps(out, indent=1))
+    return out
 
 
 def main():

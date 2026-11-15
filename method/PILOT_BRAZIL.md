@@ -1,32 +1,56 @@
-# Brazil pilot, 2000–2025 (RA-11, issue #66)
+# Brazil pilot, 2000–2026 (RA-11, issue #66)
 
-Measurement only, after the hackathon submission. It changes nothing in the published app, in `docs/data` or in the method.
-- **Numbers:** `method/results/pilot_brazil.json` (2026-11-15).
-- **Data:** local only, in `data/pilot/brazil/` (git-ignored).
+After the hackathon submission. It changes nothing in the published app or in `docs/data`; the app shows Brazil only when the local data are served next to it.
+- **Numbers:** `method/results/pilot_brazil.json`, `state_ratios.json` (DE-31), `state_recurrence.json` (DE-32) and `state_outlook.json` (DE-33), all 2026-11-15.
+- **Data:** local only, in `data/pilot/brazil/` (git-ignored, about 0.7 GB).
 
 What each period contains:
-- **2012-02 to 2025:** the value is the DE-11 reference VIIRS satellite, observed (Suomi NPP to 2018-03, NOAA-20 from 2018-04). No harmonization fit is needed.
-- **2000-11 to 2012-01:** raw MODIS counts only, **not harmonized**. Our ratios were fitted and validated for Rondônia only; converting these years for Brazil needs ratios per biome, validated as in DE-15. That is a team decision.
-- **2026:** not included. There are no FIRMS country files; it needs the area API with a MAP_KEY.
+- **2012-02 to 2026-10:** the value is the DE-11 reference VIIRS satellite, observed (Suomi NPP to 2018-03, NOAA-20 from 2018-04). No harmonization fit is needed.
+- **2000-11 to 2012-01:** harmonized with **each state's own ratios** where they passed the DE-15 backcast test (DE-31, PROPOSED): 21 states. In the 6 that failed (AC, RR, CE, PB, PE, DF) these months stay raw MODIS, labelled not harmonized, and the national total is empty for them.
+- **2026 (to 2026-10-31, Rondônia's cut-off):** from the FIRMS area API over Brazil's box (DE-33), with Rondônia's dates and SP/NRT split. 186 requests of 5 days used 1,824 transactions (limit 5,000 per 10 minutes) and 170 MB. Near real-time months are provisional (VIIRS from August, MODIS from September). NOAA-21 was not downloaded: no computation uses it.
 
 ## How to evaluate it
-**In the main app.** Serve the repository root (not `docs/`), so the app can read the local pilot files next to it:
+Serve the repository root (not `docs/`), so the app can read the local packs next to it:
 ```
 python pipeline/download.py --ibge-brazil     # once: IBGE states and municipalities of Brazil (internet)
-python pipeline/pilot_brazil.py --check       # about 15 min; FIRMS country files 2000-2025 in data/raw/country/
+# once, with FIRMS_MAP_KEY in .env: 2026 over Brazil's box, into data/pilot/brazil/raw/ (Rondonia's data/raw/api is not touched)
+B="--bbox -74 -34 -28.75 5.5 --raw-dir data/pilot/brazil/raw"
+python pipeline/download.py --api-source MODIS_SP --dates 2026-01-01 2026-08-31 $B
+python pipeline/download.py --api-source MODIS_NRT --dates 2026-09-01 2026-10-31 $B
+python pipeline/download.py --api-source VIIRS_SNPP_SP --dates 2026-01-01 2026-07-31 $B
+python pipeline/download.py --api-source VIIRS_SNPP_NRT --dates 2026-08-01 2026-10-31 $B
+python pipeline/download.py --api-source VIIRS_NOAA20_SP --dates 2026-01-01 2026-07-31 $B
+python pipeline/download.py --api-source VIIRS_NOAA20_NRT --dates 2026-08-01 2026-10-31 $B
+python pipeline/pilot_brazil.py --check       # about 15 min; FIRMS country files 2000-2025 in data/raw/country/, 2026 from the API
+python pipeline/pilot_packs.py --check        # DE-31 ratios, DE-32 layers, DE-28 per state (DE-33), one pack per state, national pack
+# DE-29 per state (DE-33): independent packs, so several processes at once, largest first (memory is the limit)
+printf "%s\n" AM PA MT MG BA MS GO MA RS TO PI SP RR PR AC CE AP PE SC PB RN ES RJ AL SE DF |
+  OMP_NUM_THREADS=5 xargs -P 4 -I{} python pipeline/pilot_packs.py --cell-outlook {}
+python pipeline/pilot_packs.py --check        # again, to collect the DE-29 results in method/results/state_outlook.json
+# never run --check while --cell-outlook runs: both write the same metadata.json files
 python3 -m http.server 8766                   # from the repository root
 ```
-Then open http://localhost:8766/docs/. In the map panel, a group **"Brazil pilot, 2000-2025 (local only)"** appears with the view **"States and cells of Brazil"**:
-- **The month:** the same map shows the 27 states for the page's focus month, and a click on a month of the calendar changes it. From 2012 the value is VIIRS; before, raw Terra MODIS, labelled "not harmonized". For a 2026 month, the view uses the same month of 2025 and says so.
-- **A click on a state:** draws its 0.25° cells and municipal borders, with the map legend.
-- **A button under the map:** draws that month's detections of every satellite as one image.
+Then open http://localhost:8766/docs/. The app starts on Rondônia (the published pack) and shows what the published app does not:
+- **A breadcrumb** at the top, **Brazil › State › Municipality**, each level a button.
+- **A place search:** type a state or any of the 5,570 municipalities ("Altamira, PA").
+- **Brazil:** the 27 states colored for the focus month, a national calendar, cards and a ranking of states. A click on a state opens it.
+- **A state:** everything Rondônia has, with the state's own data: calendar, fire season, comparison, cards, the two month views, municipalities and their ranking, points, CSV, KML, print.
+  - **Places that burn year after year** (DE-32), with a note that follows the state's own test.
+  - **The forecasts** (DE-33): the next-season outlook card and "Where to expect fire" at about 1 km and 5 km, each with the state's own test result.
+- **Change state without leaving the map:** the **Place** box at the top of the map panel (also in full screen), or a click on a neighbouring state, drawn as a dashed outline.
 
-The published app does not have the pilot files, so this group stays hidden there (checked by `tests/e2e/app_smoke.mjs`).
+The toolbar (period chips, Download menu, place search) is part of the app for every area; on the published app the search and breadcrumb stay hidden (`tests/e2e/app_smoke.mjs`).
+Browser test of the packs, skipped without them: `node --experimental-websocket tests/e2e/brazil_packs.mjs`.
 
 **Standalone viewer:** `method/pilot/brazil_viewer.html` shows 2024 with a table of load times in your browser.
 
+## State ratios (DE-31) and places that burn year after year (DE-32)
+Both rules were written in `method/DECISIONS.md` before any state was computed.
+- **DE-31:** 21 states pass; AC, RR, CE, PB, PE and DF fail (bias or monthly error over the limits). Rondônia's own fit reproduces the published backcast (+0.6 %, MdAPE 13.2 %; ratios within 0.8 %).
+- **DE-32:** the pilot's Rondônia row reproduces DE-26 (11.8 % against 28.1 %; published 28.0 %). Elsewhere it differs: in 22 of the 27 states the cells that burned in at least 6 of 2012-2021 held more of the 2022-2025 detections than last year's top cells (for example Maranhão 19.7 % against 14.4 %, Pará 12.3 % against 17.2 %). The app's note states each area's own result.
+
 ## What was run
-- **Data:** FIRMS country files of **Brazil and Bolivia**, 2000–2025: MODIS; VIIRS Suomi NPP from 2012; NOAA-20 from 2018. NOAA-21 has no country file.
+- **Data:** FIRMS country files of **Brazil and Bolivia**, 2000–2025: MODIS; VIIRS Suomi NPP from 2012; NOAA-20 from 2018. 2026 from the area API (above). NOAA-21 is not used.
 - **One year and one source at a time,** through the unchanged DE-5 cleaning rules.
 - **Area:** a detection counts for Brazil if it falls inside an IBGE state polygon. Bolivia's file is read because FIRMS's country does not follow the IBGE border. Other neighbours were not downloaded.
 - **Assignment:** each detection goes to a state (27) and a municipality (5,570): IBGE malhas API v3, intermediate quality, with the DE-24 nearest-vertex rule for slivers.
@@ -68,11 +92,11 @@ Machine: 20 cores, 15 GB RAM, 24 GB free disk, unchanged after the run.
 - **Hosting:** 0.68 GB for all of Brazil, close to the GitHub Pages site limit (to check). Object storage behind a CDN is the safer choice (provider and limits to check).
 
 ## Decisions the team needs for a national version
-1. **Harmonization ratios per biome** (IBGE biomes) for 2000–2012, each validated with the DE-15 backcast protocol. A new DE. Until then, the pilot shows raw MODIS for those years.
+1. **Review DE-31 and DE-32** (PROPOSED). For the 6 states that failed DE-31, ratios per biome (IBGE biomes) are the next option to test.
 2. **Area attribution:** read the neighbouring countries' files for border states. The pilot did it for Bolivia; Paraguay, Argentina, Uruguay, Peru, Colombia, Venezuela, Guyana, Suriname and French Guiana were not downloaded.
 3. **The split:**
    - states for series and municipalities;
    - small tiles × month for points;
    - and whether to publish all satellites' points or only the reference satellite's.
 4. **Hosting** for about 0.7 GB of static files, and the update routine.
-5. **2026 and NOAA-21** through the area API for Brazil (5,000 transactions per 10 minutes; DATA_CONTRACT.md).
+5. **Review DE-33** (PROPOSED), and the update routine for 2026 onward (the area API, as above). NOAA-21 for Brazil is not downloaded.

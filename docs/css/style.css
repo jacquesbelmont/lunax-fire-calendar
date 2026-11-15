@@ -43,6 +43,8 @@ footer { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 12px;
 /* Map view panel inside the map (DE-22, DE-26, DE-29) */
 .map-panel { background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,.35); width: 280px; max-height: 70vh; overflow: auto; font-size: .82rem; }
 .map-panel summary { cursor: pointer; font-weight: 600; padding: 8px 10px; }
+.map-panel .place-pick { padding: 8px 10px 0; color: var(--fg); font-weight: 600; font-size: .82rem; }
+.map-panel .place-pick select { flex: 1; min-width: 0; }
 .map-panel fieldset { border: 0; margin: 0; padding: 0 4px 4px; }
 .map-panel .panel-group { margin: 8px 6px 2px; font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .map-panel label.view { flex-direction: row; align-items: center; gap: 8px; padding: 6px; border-radius: 6px; cursor: pointer; color: var(--fg); font-size: .82rem; line-height: 1.25; }
@@ -57,7 +59,7 @@ footer { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 12px;
 .sw-outlook001 { background: linear-gradient(to right, #d7b5d8, #df65b0, #dd1c77, #980043); }
 .sw-outlook005 { background: linear-gradient(to right, #d7b5d8 50%, #980043 50%); }
 .map-panel .panel-link { display: block; padding: 8px 10px; border-top: 1px solid var(--line); }
-.map-panel [hidden] { display: none !important; }
+[hidden] { display: none !important; } /* labels are flex boxes, which would otherwise show hidden ones */
 .leaflet-brazil-pane path:focus:not(:focus-visible) { outline: none; } /* RA-11: no focus box around a state clicked with the mouse */ /* RA-11: the Brazil pilot entries appear only with local pilot data */
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (max-width: 600px) { .map-panel { width: 220px; } }
@@ -98,3 +100,27 @@ body.printing #map { width: 680px; height: 520px; } /* page width; set by the "P
   .main-svg text { fill: #000 !important; }
   #map, .chart { break-inside: avoid; }
 }
+/* RA-11: sticky toolbar (place, period, series, downloads) */
+.toolbar { position: sticky; top: 0; z-index: 1100; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 8px 10px; margin: 12px 0 4px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.tb-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+label.inline { flex-direction: row; align-items: center; gap: 6px; color: var(--muted); }
+label.inline select { padding: 4px 8px; }
+.crumbs { font-size: .95rem; }
+.crumbs strong { color: var(--fg); }
+#place-search { width: 15em; padding: 5px 10px; border-radius: 16px; }
+.chips { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.chips button { background: transparent; color: var(--accent); border: 1px solid var(--line); border-radius: 14px; padding: 3px 10px; font-size: .82rem; }
+.chips button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.menu { position: relative; }
+.menu summary { list-style: none; cursor: pointer; padding: 5px 12px; border-radius: 6px; background: var(--accent); color: #fff; font-size: .9rem; }
+.menu summary::-webkit-details-marker { display: none; }
+.menu summary::after { content: " \25BE"; }
+.menu-items { position: absolute; right: 0; top: calc(100% + 4px); z-index: 1200; display: flex; flex-direction: column; min-width: 240px; padding: 6px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.menu-items button, .menu-items a { background: none; border: none; color: var(--fg); text-align: left; padding: 6px 8px; border-radius: 6px; font-size: .88rem; text-decoration: none; }
+.menu-items button:hover:not(:disabled), .menu-items a:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.menu-items button:disabled { color: var(--muted); cursor: default; }
+details.advanced { margin: 6px 0; font-size: .9rem; }
+details.advanced summary { cursor: pointer; color: var(--accent); }
+@media (max-width: 600px) { .toolbar { position: static; } #place-search { width: 100%; } .menu-items { left: 0; right: auto; } }
