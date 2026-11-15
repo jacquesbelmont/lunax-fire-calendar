@@ -2,19 +2,25 @@
 // DevTools protocol: no extra packages. It checks the parts a person would click: area by coordinates, period,
 // hotspot count, the CSV/PNG downloads (captured in the page, not saved), and the texts.
 // Usage: node tests/e2e/app_smoke.mjs [URL]   (default: the GitHub Pages URL)
+//   Node 22 or later (global WebSocket); on Node 20/21 run: node --experimental-websocket tests/e2e/app_smoke.mjs
+//   Chrome: set CHROME to the binary if it is not found (Linux: google-chrome, chromium or /snap/bin/chromium).
 // AI-assisted code (Claude Code); logged in AI_USE.md.
 import { spawn } from "node:child_process";
-import { mkdtempSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const URL_ = process.argv[2] || "https://jacquesbelmont.github.io/lunax-fire-calendar/";
-const CHROME = process.env.CHROME || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const CHROME = process.env.CHROME || ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser", "/snap/bin/chromium"].find((p) => existsSync(p));
+if (!CHROME) { console.error("Chrome not found: set CHROME to the browser binary."); process.exit(2); }
+if (typeof WebSocket === "undefined") { console.error("No global WebSocket: use Node 22+, or node --experimental-websocket."); process.exit(2); }
 const PORT = 9333;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+const PROFILE = mkdtempSync(join(tmpdir(), "lunax-e2e-"));
 const chrome = spawn(CHROME, ["--headless=new", "--disable-gpu", `--remote-debugging-port=${PORT}`,
-  `--user-data-dir=${mkdtempSync(join(tmpdir(), "lunax-e2e-"))}`, "--window-size=1280,2000", "about:blank"], { stdio: "ignore" });
+  `--user-data-dir=${PROFILE}`, "--window-size=1280,2000", "about:blank"], { stdio: "ignore" });
 
 let ws, id = 0;
 const pending = new Map();
@@ -104,6 +110,8 @@ try {
   check("run", false, String(e.message || e));
 } finally {
   chrome.kill();
+  await sleep(500);
+  rmSync(PROFILE, { recursive: true, force: true });
 }
 const failed = results.filter((r) => !r.ok).length;
 console.log(`\n${results.length - failed} passed, ${failed} failed`);

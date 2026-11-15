@@ -96,8 +96,10 @@ test("no boundary when no month is estimated", () => {
 });
 
 test("the comparison sentence says when the latest month is provisional", () => {
-  const base = { ym: "2026-10", value: 2734, median: 13000, nYears: 25, diff: -10266, ratio: 0.21, estimated: false };
+  // Real values: October 2026 vs the 25 earlier Octobers, whole area, summed from docs/data/monthly_cells.csv (viirs_eq).
+  const base = { ym: "2026-10", value: 2734, median: 12804.865639999995, nYears: 25, diff: -10070.865639999995, ratio: 0.21351258786031285, estimated: false };
   const prov = calc.monthComparisonText(Object.assign({}, base, { provisional: true }), "October", "hotspots");
+  assert.ok(prov.includes("median of 12805 (25 earlier years): -10071 (0.21 times the median)"));
   assert.ok(prov.includes("(provisional: near real-time data)"));
   assert.ok(prov.includes("can still change"));
   const fin = calc.monthComparisonText(Object.assign({}, base, { provisional: false }), "October", "hotspots");

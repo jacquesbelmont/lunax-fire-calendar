@@ -21,7 +21,7 @@
     }
     const withData = mine.filter((r) => !Number.isNaN(r.value));
     const traces = [{
-      type: "bar", x: withData.map((r) => r.ym.slice(0, 4)), y: withData.map((r) => r.value),
+      type: "bar", x: withData.map((r) => r.ym.slice(0, 4) + (r.provisional ? " prov." : "")), y: withData.map((r) => r.value),
       marker: { color: withData.map((r) => (r.estimated ? "#9ecae1" : "#0b5cad")) },
       error_y: { type: "data", visible: true, array: withData.map((r) => (Number.isNaN(r.hi) ? 0 : r.hi - r.value)), color: "#555" },
       hovertext: withData.map((r) => r.ym + ": " + f(r.value, 0) + " " + unit + (r.estimated ? " (estimated from MODIS)" : "") + (r.provisional ? " (provisional)" : "")),
