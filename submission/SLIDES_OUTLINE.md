@@ -20,7 +20,7 @@ Screenshots must be taken by a person from the published app (https://jacquesbel
 ## Slide 4 — What a fire manager sees
 - **Case (kept):** a rectangle near Porto Velho selects 33 grid cells. In September 2025 the app shows 309 observed hotspots against a median of 5,545 across 23 earlier Septembers: a month to check in satellite imagery and field reports.
 - **Where:** a municipality as the area (IBGE boundary). Porto Velho, October 2026: 1,352 hotspots against a usual 2,076 (provisional). Image: `submission/screenshots/app_porto_velho_map_2026-10.png`.
-- **When:** the fire season per year. In Porto Velho it typically runs from August to October, with the peak in August (median of 23 years). Image: `submission/screenshots/app_porto_velho_fire_season.png`.
+- **When:** the calendar outlines each year's fire season (dot = peak month). In Porto Velho it typically runs from August to October, with the peak in August (median of 23 years). Image: `submission/screenshots/app_porto_velho_calendar_season.png`.
 - **Where it burned before** (VIIRS, about 1 km): history, not a forecast; in the pre-registered test last year's fires were the better guide (28.0 % against 11.8 %). Image: `submission/screenshots/app_map_recurrence_2012-2025.png`.
 - Numbers: FACT_CHECK.md rows 27, 33, 35 and 36. The chart `porto_velho_september_2025.png` is no longer on the slide; the case numbers stay in the text.
 
