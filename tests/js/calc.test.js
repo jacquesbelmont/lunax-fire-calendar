@@ -201,11 +201,46 @@ test("DE-26 recurrence classes and Web Mercator cell placement", () => {
   const lines = fs.readFileSync(path.join(root, "docs/data/recurrence.csv"), "utf8").trim().split("\n").slice(1);
   let prevTop = -Infinity;
   for (const id of lines.map((l) => l.split(",")[0]).sort((a, b) => Number(b.split("_")[0]) - Number(a.split("_")[0]))) {
-    const [x, y, w, h] = calc.recurrenceCellRect(id, box, W, H);
+    const [x, y, w, h] = calc.gridCellRect(id, 0.01, box, W, H);
     assert.ok(x >= -1e-6 && x + w <= W + 1e-6 && y >= -1e-6 && y + h <= H + 1e-6 && h > 0, id + " inside the canvas");
     assert.ok(y >= prevTop - 1e-9, id + " rows go down as latitude goes down"); prevTop = y;
   }
   // a cell's top edge on the canvas equals the Web Mercator position of its north edge
-  const [, y] = calc.recurrenceCellRect("7900_11700", box, W, H), m = (lat) => Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
+  const [, y] = calc.gridCellRect("7900_11700", 0.01, box, W, H), m = (lat) => Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
   assert.ok(Math.abs(y - (m(box[3]) - m(-10.99)) / (m(box[3]) - m(box[1])) * H) < 1e-6);
+});
+
+// DE-28: the outlook functions on real data; the whole-state values recomputed by hand from the CSV sums.
+test("DE-28 season totals, forecasts and errors on the whole state", () => {
+  const all = calc.selectCells(data, meta.area.bbox_west_south_east_north);
+  const v = calc.areaSeries(data, all, "viirs_eq");
+  const rows = data.months.map((ym, i) => ({ ym: ym, value: v[i] }));
+  const totals = calc.seasonTotals(rows), at = (ym) => v[data.months.indexOf(ym)];
+  same(totals[2025].T, at("2025-08") + at("2025-09") + at("2025-10"), "T 2025");
+  assert.ok(Number.isNaN(totals[2023].T), "2023 has missing months: no target");
+  assert.ok(Number.isNaN(totals[2024].J), "February 2024 has missing data: no J");
+  same(calc.outlookForecast(totals, 2026, "P"), totals[2025].T, "P = previous year");
+  assert.ok(Number.isNaN(calc.outlookForecast(totals, 2024, "P")), "no P after a year without target");
+  const earlier = [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
+    .filter((y) => !Number.isNaN(totals[y].T)).map((y) => totals[y].T).sort((a, b) => a - b);
+  const h = earlier.length >> 1;
+  same(calc.outlookForecast(totals, 2023, "C"), earlier.length % 2 ? earlier[h] : (earlier[h - 1] + earlier[h]) / 2, "C 2023");
+  const e = calc.outlookErrors(totals, ["C", "P"], 2013, 2025);
+  assert.ok(!e.some((x) => x.year === 2023 || x.year === 2024), "years without a target or a P are left out");
+  e.forEach((x) => same(x.errors[1], Math.log((x.observed + 1) / (x.forecasts[1] + 1)), "signed error " + x.year));
+});
+
+test("DE-28 test result in metadata.json: P chosen pre-season, January-July update not adopted", () => {
+  const o = meta.outlook;
+  assert.strictEqual(o.pre_season.chosen, "P");
+  assert.ok(o.pre_season.test.male.P <= 0.9 * o.pre_season.test.male.C && o.pre_season.fresh.male.P < o.pre_season.fresh.male.C);
+  assert.strictEqual(o.early_season.chosen, "C");
+  assert.ok(o.early_season.test.male.R > 0.9 * o.early_season.test.male.C);
+});
+
+test("DE-29 chance classes: under 10% not drawn; edges at 10, 25, 50 and 75%", () => {
+  const cls = (p) => (calc.outlookClass(p) || [null])[0];
+  assert.deepStrictEqual([0.01, 0.099, 0.1, 0.25, 0.5, 0.749, 0.75, 1].map(cls), [null, null, 0.1, 0.25, 0.5, 0.5, 0.75, 0.75]);
+  const a = calc.gridCellRect("1530_2368", 0.05, meta.area.bbox_west_south_east_north, 1450, 1200), b = calc.gridCellRect("7650_11840", 0.01, meta.area.bbox_west_south_east_north, 1450, 1200);
+  assert.ok(Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[2] - 5 * b[2]) < 1e-6, "a 0.05° cell is 5 cells of 0.01° wide, same west edge");
 });

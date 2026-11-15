@@ -14,6 +14,8 @@ method/results/harmonize_model.json. Writes:
 - docs/data/months.csv: coverage and flags per satellite and month (DE-14).
 - docs/data/metadata.json: area, source, versions, period, coverage, method, data cut-off date, grid, attribution.
 - docs/data/municipalities.csv and municipalities.geojson: the same series per IBGE municipality (DE-24).
+- docs/data/cell_outlook_001.csv and cell_outlook_005.csv: where to expect fire next season (DE-29); needs
+  `python pipeline/cell_outlook.py` (method/results/cell_outlook_hindcast.json and data/interim/cell_outlook_2027_*.csv).
 - docs/data/recurrence.csv: 0.01° cells with the number of years with a reference VIIRS detection (DE-26); needs
   method/results/recurrence_hindcast.json from `python pipeline/validate.py --recurrence`.
 """
@@ -38,6 +40,9 @@ AREA = ROOT / "config" / "area.json"
 BOUNDARY = ROOT / "config" / "area_boundary.geojson"  # IBGE boundary of Rondonia (DE-1)
 MUNICIPALITIES = ROOT / "config" / "municipalities.geojson"  # IBGE municipal boundaries (DE-24)
 HINDCAST = ROOT / "method" / "results" / "recurrence_hindcast.json"  # DE-26, written by validate.py --recurrence
+OUTLOOK = ROOT / "method" / "results" / "outlook_hindcast.json"  # DE-28, written by node method/outlook_hindcast.js
+CELL_OUTLOOK = ROOT / "method" / "results" / "cell_outlook_hindcast.json"  # DE-29, written by pipeline/cell_outlook.py
+INTERIM = ROOT / "data" / "interim"
 RECURRENCE_GRID = 0.01  # DE-26: larger than every VIIRS pixel (max 0.80 km)
 RECURRENCE_YEARS = [y for y in range(2012, 2026) if y != 2023]  # DE-26: 2023 misses reference days in July and September
 MODEL = ROOT / "method" / "results" / "harmonize_model.json"
@@ -65,6 +70,14 @@ def hindcast_summary():
         raise FileNotFoundError(f"{HINDCAST.relative_to(ROOT)} missing: run pipeline/validate.py --recurrence first (DE-26)")
     h = json.loads(HINDCAST.read_text())
     return {k: h[k] for k in ("train_years", "k", "area_share", "test_years_pooled", "pooled", "fresh_2026")}
+
+
+def outlook_summary():
+    """DE-28 test result for the app: chosen method per moment and the pooled errors (node method/outlook_hindcast.js)."""
+    if not OUTLOOK.exists():
+        raise FileNotFoundError(f"{OUTLOOK.relative_to(ROOT)} missing: run node method/outlook_hindcast.js first (DE-28)")
+    h = json.loads(OUTLOOK.read_text())
+    return {k: h[k] for k in ("decision", "test_years", "fresh_year", "pre_season", "early_season")}
 
 
 def calibration_lambda():
@@ -163,6 +176,30 @@ def export_recurrence():
     return path
 
 
+def export_cell_outlook():
+    """(h) DE-29: cell_outlook_<scale>.csv from pipeline/cell_outlook.py: `cell_id,p` (chance, 3 decimals, p >= 0.01) when
+    a model passed the test, or `cell_id,last,top` (detections in the last year; top = 1 for the 10 % of cells ranked first as in the test) when
+    persistence is shown."""
+    paths = []
+    for key in ("001", "005"):
+        d = pd.read_csv(INTERIM / f"cell_outlook_2027_{key}.csv", dtype={"cell_id": str})
+        d = d[d["p"] >= 0.01].assign(p=d["p"].round(3)) if "p" in d else d[d["last"].gt(0) | d["top"].eq(1)]
+        path = DOCS_DATA / f"cell_outlook_{key}.csv"
+        d.to_csv(path, index=False)
+        paths.append(path)
+    return paths
+
+
+def cell_outlook_summary():
+    """DE-29 test result for the app: per scale, what is shown and the test numbers."""
+    if not CELL_OUTLOOK.exists():
+        raise FileNotFoundError(f"{CELL_OUTLOOK.relative_to(ROOT)} missing: run python pipeline/cell_outlook.py first (DE-29)")
+    h = json.loads(CELL_OUTLOOK.read_text())
+    return {"decision": h["decision"], "window": h["window"], "next_year": 2027, "feature_year": 2026,
+            "scales": {k: {x: s[x] for x in ("grid_deg", "cells", "test_years", "fresh_year", "pooled", "fresh", "best_model", "shown")}
+                       | {"calibration": s["calibration"].get(s["shown"])} for k, s in h["scales"].items()}}
+
+
 def export_months(flags):
     """(a2) months.csv: one row per satellite and covered month."""
     path = DOCS_DATA / "months.csv"
@@ -245,6 +282,8 @@ def export_metadata(harmonized):
             "detections": "reference VIIRS satellite of DE-11: S-NPP 2012-02 to 2018-03, NOAA-20 from 2018-04",
             "hindcast": hindcast_summary(),
         },
+        "outlook": outlook_summary(),  # DE-28 (PROPOSED)
+        "cell_outlook": cell_outlook_summary(),  # DE-29 (PROPOSED)
         "attribution": ATTRIBUTION,
         "disclaimer_url": DISCLAIMER_URL,
         "ai_use": AI_USE,
@@ -281,7 +320,8 @@ def main(argv=None):
     flags = pd.read_csv(FLAGS, dtype={"year_month": str})
     DOCS_DATA.mkdir(parents=True, exist_ok=True)
     paths = [export_monthly_counts(harmonized, calibration_lambda()), export_months(flags), export_metadata(harmonized),
-             export_area_boundary(), *export_municipalities(flags, calibration_lambda()), export_recurrence()]
+             export_area_boundary(), *export_municipalities(flags, calibration_lambda()), export_recurrence(),
+             *export_cell_outlook()]
     if a.check:
         check(harmonized, paths)
     for path in paths:

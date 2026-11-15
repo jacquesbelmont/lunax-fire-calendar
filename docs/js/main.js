@@ -1,7 +1,7 @@
 /*
  * Purpose: entry point; wires controls, map, calendar, comparison and downloads together.
  * SCOPE: R1, R3, R4, R5, R6, R7, R8, R9, R10, O1, O2, O3, O4
- * Owner issue: JA-5, JA-6, JA-7, RA-7 (DE-22 map view, DE-23 fire season, DE-25 print, KML and FIRMS link)
+ * Owner issue: JA-5, JA-6, JA-7, RA-7 (DE-22 map view, DE-23 fire season, DE-25 print, KML and FIRMS link), RA-8 (DE-26), RA-9 (DE-28 outlook)
  * AI-assisted code (Claude Code and Codex); logged in AI_USE.md.
  */
 (function () {
@@ -47,6 +47,9 @@
     return state.mapMonth !== null ? state.mapMonth : LunaxCalc.comparedMonthIndex(state.rows, Number($("compare-month").value));
   }
 
+  /** The view chosen in the map panel. */
+  const mapMode = () => document.querySelector('input[name="map-mode"]:checked').value;
+
   /**
    * Map colors and hover texts per selected cell for month index m (same column and per-cell numbers as the calendar):
    * DE-21 hotspots view, or DE-22 "Compared with the usual" classes.
@@ -58,7 +61,7 @@
     const status = row.estimated ? "Estimated from MODIS" : row.provisional ? "Provisional (near real-time data)" :
       column === "viirs_eq" ? "Observed (VIIRS)" : "Raw counts of one sensor";
     const noData = row.ym + ": no data (not zero)";
-    if ($("map-mode").value === "usual") {
+    if (mapMode() === "usual") {
       const classes = new Map(LunaxCalc.USUAL_CLASSES.map((c) => [c[0], c]));
       const usual = state.sel.map((i) => LunaxCalc.cellUsual(state.data, i, column, m));
       const keys = values.map((v, j) => LunaxCalc.usualClass(v, usual[j]));
@@ -74,52 +77,88 @@
       legend: { title: "Hotspots per cell, " + row.ym, status: status, cap: cap, unit: "hotspots" } };
   }
 
+  // DE-26 and DE-29: statewide cell layers drawn as one image; the other views color the selected cells.
+  const LAYER_VIEWS = ["recurrence", "outlook001", "outlook005"];
+
   function paintCells() {
-    const rec = $("map-mode").value === "recurrence"; // DE-26: a statewide layer instead of the selected cells
-    state.map.showSelection(state.muni ? null : state.bbox, rec ? [] : state.sel.map((i) => state.data.cells[i]),
-      rec ? recurrencePaint() : mapPaint(mapMonthIndex()));
+    const mode = mapMode(), layer = LAYER_VIEWS.includes(mode);
+    state.map.showSelection(state.muni ? null : state.bbox, layer ? [] : state.sel.map((i) => state.data.cells[i]),
+      layer ? { colors: [], tips: [], legend: layerSpec(mode).legend } : mapPaint(mapMonthIndex()));
     $("recurrence-note").textContent = "";
-    if (rec) showRecurrence(); else state.map.clearOverlay();
+    if (layer) showCellLayer(mode); else state.map.clearOverlay();
   }
 
-  function recurrencePaint() {
-    const r = state.meta.recurrence;
-    return { colors: [], tips: [], legend: { title: "Places that burn year after year", classes: LunaxCalc.RECURRENCE_CLASSES,
-      status: "Years with a VIIRS detection, of " + r.years.length + " (" + r.years[0] + "-" + r.years[r.years.length - 1] +
-        ", without 2023); 0.01° cells (about 1.1 km). Not drawn: no detection, which is not proof of no fire." } };
+  /** What each statewide layer reads and how it is drawn, hovered, explained (texts from metadata.json). */
+  function layerSpec(mode) {
+    const pct = (x) => (100 * x).toFixed(1) + "%";
+    if (mode === "recurrence") {
+      const r = state.meta.recurrence, n = r.years.length, h = r.hindcast;
+      return { file: r.file, grid: r.grid_deg,
+        color: (f) => (LunaxCalc.recurrenceClass(Number(f[1])) || [])[1],
+        tip: (f) => "Detections in " + f[1] + " of " + n + " years (" + Number(f[2]).toLocaleString("en-US") + " VIIRS detections)",
+        legend: { title: "Places that burn year after year", classes: LunaxCalc.RECURRENCE_CLASSES,
+          status: "Years with a VIIRS detection, of " + n + " (" + r.years[0] + "-" + r.years[n - 1] +
+            ", without 2023); 0.01° cells (about 1.1 km). Not drawn: no detection, which is not proof of no fire." },
+        note: "This map describes the past; it is not a forecast. Test (method/DECISIONS.md DE-26): the cells that burned in at least 6 of the years " +
+          h.train_years[0] + "-" + h.train_years[h.train_years.length - 1] + " (" + pct(h.area_share) + " of the cells with any detection) held " +
+          pct(h.pooled.recurrence) + " of the detections of " + h.test_years_pooled.join(", ") + ", little more than any cells of the same number would. " +
+          "The same number of cells that burned most in " + h.train_years[h.train_years.length - 1] + " held " + pct(h.pooled.persistence) +
+          ": for the next season, the previous year's fires were the better guide (see the views \"Where to expect fire\")." };
+    }
+    const co = state.meta.cell_outlook, key = mode.slice(-3), s = co.scales[key], km = key === "001" ? "about 1 km" : "about 5 km";
+    const test = "In a test fixed in advance (method/DECISIONS.md DE-29; each of " + s.test_years.join(", ") + " forecast from earlier years only), ";
+    if (s.shown === "P") {
+      return { file: "cell_outlook_" + key + ".csv", grid: s.grid_deg,
+        color: (f) => (f[2] === "1" ? "#980043" : "#d7b5d8"),
+        tip: (f) => f[1] + " VIIRS detections in January-October " + co.feature_year + (f[2] === "1" ? " (top 10% of cells)" : ""),
+        legend: { title: "Where to expect fire in " + co.next_year + " (" + km + ")", classes: [["top", "#980043", "Top 10% of cells by " + co.feature_year + " detections"],
+          ["other", "#d7b5d8", "Other cells with a detection in " + co.feature_year]],
+          status: "Last year's fire, the best guide at this scale in the test. " + co.feature_year + " is provisional (near real-time data from August)." },
+        note: test + "at " + km + " the statistical and machine-learning models did not beat last year's fire (" + pct(s.pooled.capture[s.best_model]) +
+          " against " + pct(s.pooled.capture.P) + " of the detections in the top 10% of cells), so this map shows last year's fire: the top 10% of cells by " +
+          "detections held " + pct(s.pooled.capture.P) + " of the next year's detections in the test years and " + pct(s.fresh.capture.P) + " in " + s.fresh_year + "." };
+    }
+    const cal = (s.calibration || []).find((b) => b.p_from === 0.4 && b.cells > 0);
+    return { file: "cell_outlook_" + key + ".csv", grid: s.grid_deg,
+      color: (f) => (LunaxCalc.outlookClass(Number(f[1])) || [])[1],
+      tip: (f) => "Chance of at least one VIIRS detection in January-October " + co.next_year + ": " + Math.round(100 * Number(f[1])) + "%",
+      legend: { title: "Where to expect fire in " + co.next_year + " (experimental, " + km + ")", classes: LunaxCalc.OUTLOOK_CLASSES,
+        status: "Chance of at least one VIIRS detection in January-October. From " + co.feature_year + " and earlier years (" +
+          co.feature_year + " is provisional). Not drawn: under 10% (hover a cell for its chance)." },
+      note: "This is a forecast, not a certainty. " + test + "the 10% of cells with the highest chance held " + pct(s.pooled.capture[s.shown]) +
+        " of the detections, against " + pct(s.pooled.capture.P) + " for the cells that burned most the year before; in " + s.fresh_year + ", " +
+        pct(s.fresh.capture[s.shown]) + " against " + pct(s.fresh.capture.P) + ". Model: " + (s.shown === "L" ? "logistic regression (statistics); " +
+        "gradient boosting (machine learning) was not clearly better" : "gradient boosting (machine learning)") + "." +
+        (cal ? " The chances run a little high: cells given about " + Math.round(100 * cal.mean_p) + "% burned in " + Math.round(100 * cal.observed) + "% of cases." : "") };
   }
 
-  /** DE-26: load recurrence.csv once, draw it on a canvas in the map's projection, show it with hover texts. */
-  async function showRecurrence() {
-    const r = state.meta.recurrence, box = state.meta.area.bbox_west_south_east_north;
+  /** Load a statewide layer once, draw it on a canvas in the map's projection, show it with hover texts and its note. */
+  async function showCellLayer(mode) {
+    const spec = layerSpec(mode), box = state.meta.area.bbox_west_south_east_north;
     try {
-      if (!state.recurrence) {
-        const resp = await fetch("data/" + r.file);
-        if (!resp.ok) throw new Error("Could not load data/" + r.file + " (" + resp.status + ").");
+      state.layers = state.layers || {};
+      if (!state.layers[mode]) {
+        const resp = await fetch("data/" + spec.file);
+        if (!resp.ok) throw new Error("Could not load data/" + spec.file + " (" + resp.status + ").");
         const rows = (await resp.text()).trim().split("\n").slice(1).map((l) => l.split(","));
-        const W = Math.round((box[2] - box[0]) / r.grid_deg) * 2, H = LunaxCalc.mercatorHeight(box, W);
+        const W = 1450, H = LunaxCalc.mercatorHeight(box, W); // 2 px per 0.01° cell, 10 px per 0.05° cell
         const canvas = document.createElement("canvas"), ctx = canvas.getContext("2d");
         canvas.width = W; canvas.height = H;
         rows.forEach(function (f) {
-          const cls = LunaxCalc.recurrenceClass(Number(f[1]));
-          if (!cls) return;
-          ctx.fillStyle = cls[1];
-          ctx.fillRect.apply(ctx, LunaxCalc.recurrenceCellRect(f[0], box, W, H));
+          const color = spec.color(f);
+          if (!color) return;
+          ctx.fillStyle = color;
+          ctx.fillRect.apply(ctx, LunaxCalc.gridCellRect(f[0], spec.grid, box, W, H));
         });
-        state.recurrence = { url: canvas.toDataURL(), byId: new Map(rows.map((f) => [f[0], f])) };
+        state.layers[mode] = { url: canvas.toDataURL(), byId: new Map(rows.map((f) => [f[0], f])) };
       }
-      if ($("map-mode").value !== "recurrence") return; // the view changed while loading
-      const n = r.years.length, g = r.grid_deg;
-      state.map.showOverlay(state.recurrence.url, [[box[1], box[0]], [box[3], box[2]]], function (ll) {
-        const f = state.recurrence.byId.get(Math.floor((ll.lat + 90) / g) + "_" + Math.floor((ll.lng + 180) / g));
-        return f ? "Detections in " + f[1] + " of " + n + " years (" + Number(f[2]).toLocaleString("en-US") + " VIIRS detections)" : null;
+      if (mapMode() !== mode) return; // the view changed while loading
+      const L_ = state.layers[mode], g = spec.grid;
+      state.map.showOverlay(L_.url, [[box[1], box[0]], [box[3], box[2]]], function (ll) {
+        const f = L_.byId.get(Math.floor((ll.lat + 90) / g) + "_" + Math.floor((ll.lng + 180) / g));
+        return f ? spec.tip(f) : null;
       });
-      const h = r.hindcast, pct = (x) => (100 * x).toFixed(1) + "%";
-      $("recurrence-note").textContent = "This map describes the past; it is not a forecast. Test (method/DECISIONS.md DE-26): the cells that " +
-        "burned in at least 6 of the years " + h.train_years[0] + "-" + h.train_years[h.train_years.length - 1] + " (" + pct(h.area_share) +
-        " of the cells with any detection) held " + pct(h.pooled.recurrence) + " of the detections of " + h.test_years_pooled.join(", ") +
-        ", little more than any cells of the same number would. The same number of cells that burned most in " +
-        h.train_years[h.train_years.length - 1] + " held " + pct(h.pooled.persistence) + ": for the next season, the previous year's fires were the better guide.";
+      $("recurrence-note").textContent = spec.note;
     } catch (err) {
       $("recurrence-note").textContent = String(err.message || err);
     }
@@ -275,8 +314,8 @@
     const info = $("selection-info");
     if (!hasCells) {
       info.textContent = "No grid cell centres inside this rectangle. Adjust the rectangle to select cells.";
-      Plotly.purge($("calendar")); Plotly.purge($("compare")); Plotly.purge($("season"));
-      $("compare-text").textContent = ""; $("season-text").textContent = "";
+      Plotly.purge($("calendar")); Plotly.purge($("compare")); Plotly.purge($("season")); Plotly.purge($("outlook"));
+      $("compare-text").textContent = ""; $("season-text").textContent = ""; $("outlook-text").textContent = "";
       return;
     }
     $("print-header").textContent = "Fire briefing. Area: " + areaLabel() + ". Period: " + state.data.months[Number($("range-from").value)] +
@@ -291,6 +330,9 @@
       if (m >= 0 && state.rows[m].inRange) { state.mapMonth = m; refreshMap(); } // months outside the period are ignored
     });
     LunaxSeason.render($("season"), $("season-text"), state.rows);
+    // DE-28: the outlook uses the harmonized series of the area whatever series is displayed
+    if ($("series-select").value === "viirs_eq") LunaxOutlook.render($("outlook"), $("outlook-text"), state.rows, state.meta.outlook);
+    else { Plotly.purge($("outlook")); $("outlook-text").textContent = "The outlook uses the harmonized series: choose it in section 1."; }
     LunaxCompare.render($("compare"), $("compare-text"), state.rows, Number($("compare-month").value), unit);
   }
 
@@ -336,7 +378,12 @@
       addOptions($("compare-month"), ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((n, i) => [String(i + 1), n]));
       $("compare-month").value = String(Number(data.months[data.months.length - 1].slice(5, 7)));
       state.map = LunaxMap.create("map", boundary, muniGeo, meta.grid.cell_size_deg, setBbox);
-      $("map-mode").addEventListener("change", () => state.rows && paintCells()); // DE-22: same month, other colors
+      state.map.addPanel($("map-panel"));
+      if (window.innerWidth < 600) $("map-panel-details").open = false; // phones: the panel starts closed
+      $("map-mode").addEventListener("change", function (e) { // DE-22, DE-26, DE-29: same month, other view
+        $("map-view-name").textContent = e.target.closest("label").querySelector("strong").textContent;
+        if (state.rows) paintCells();
+      });
       // DE-25: the map is resized to the page width first, so its tiles and cells are drawn before the browser prints.
       $("print-briefing").addEventListener("click", function () {
         document.body.classList.add("printing");

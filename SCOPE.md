@@ -32,6 +32,7 @@ Evidence: link to a file, PR or screenshot. "verified" = tested on the published
 | O2 | Accessible color ramps. | in progress | Viridis ramp, grey for no data, visible focus and dark-mode text; no color-vision test done yet (FACT_CHECK open item 5) |
 | O3 | A few key indices: anomalies against multi-year averages; number of fires detected. | verified | Anomaly (difference and ratio) vs the historical median and hotspot counts, shown in the app (browser test tests/e2e/app_smoke.mjs on the published site, 2026-11-15: 13/13 passed); DE-22: per-cell anomaly classes on the map (PR RA-7) |
 | O4 | Audience: early warning and emergency responders, scientists, land managers, firefighters. | in progress | Plain-English text for the app audience in method/HOW_IT_WORKS.md; to be checked by Tiara; PR RA-7 for fire managers: fire season by year (DE-23), "Compared with the usual" map and municipal ranking (DE-22, DE-24), print a briefing, KML for Google Earth/Avenza/QGIS and a link to the FIRMS Fire Map for today's fires (DE-25) |
+| O5 (proposed) | Experimental outlook for the next fire season (not in the challenge text; proposed by Rafael, pending team approval). | in progress | DE-28 (PROPOSED): pre-registered rolling-origin test on 52 municipalities, 2013-2025 and fresh 2026 (method/results/outlook_hindcast.json): the previous year's August-October (MALE 0.430, 2026: 0.773) beat the median of earlier years (0.767, 2026: 2.459); the January-July update was 9.8 % better, short of the 10 % required, so it is not used. App section 4 (docs/js/outlook.js), local browser test 2026-11-15; DE-29 (PROPOSED): where to expect fire next season, per cell: at about 1 km logistic regression shown (10 % of cells held 57.1 % of the test years' detections against 52.8 % for last year's cells; 2026: 63.7 % against 45.4 %; gradient boosting not clearly better), at about 5 km last year's fire shown (models did not beat it: 51.4 % against 54.1 %); method/results/cell_outlook_hindcast.json; map views; local browser test 2026-11-15 |
 
 ## Submission (2026 Project Submission Guide)
 
@@ -48,7 +49,7 @@ Evidence: link to a file, PR or screenshot. "verified" = tested on the published
 
 ## Out of scope (do not build)
 
-- Forecasting or probabilistic critical windows.
+- Forecasting or probabilistic critical windows. **Proposed change (DE-28, PR RA-9, pending team approval in review):** an experimental outlook of the next season's August-October hotspots, shown only with the method that won a pre-registered test (O5 below).
 - Comparisons with non-NASA fire databases.
 - Rainfall data.
 - HLS / Prithvi.

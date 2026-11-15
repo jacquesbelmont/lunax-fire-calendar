@@ -112,23 +112,35 @@ try {
   await evaluate(`(() => { [...document.querySelectorAll('.leaflet-control-layers-base label')].find((x) => /OpenStreetMap/.test(x.textContent)).querySelector('input').click(); return true; })()`);
 
   // DE-22: "Compared with the usual" view of the same month, then back to the hotspots view.
-  await evaluate(`(() => { const s = document.querySelector('#map-mode'); s.value = 'usual'; s.dispatchEvent(new Event('change')); return true; })()`);
+  await evaluate(`document.querySelector('input[name="map-mode"][value="usual"]').click(), true`);
   const legendU = await evaluate(`document.querySelector('#map-legend').textContent`);
   check("map view 'Compared with the usual' colors the same 376 cells with the DE-22 classes", /Compared with the usual, 2026-10/.test(legendU) &&
     /2 times usual or more/.test(legendU) && /Near usual/.test(legendU) && await evaluate(`document.querySelectorAll('#map path.map-cell').length`) === 376,
     legendU.slice(0, 90));
   // DE-26: places that burn year after year, a statewide image with its legend and the hindcast sentence.
-  await evaluate(`(() => { const s = document.querySelector('#map-mode'); s.value = 'recurrence'; s.dispatchEvent(new Event('change')); return true; })()`);
+  await evaluate(`document.querySelector('input[name="map-mode"][value="recurrence"]').click(), true`);
   await waitFor(`!!document.querySelector('#map img.recurrence-overlay') && /not a forecast/.test(document.querySelector('#recurrence-note').textContent)`);
   const legendR = await evaluate(`document.querySelector('#map-legend').textContent`);
   check("map view 'Places that burn year after year' draws the 1 km layer with its legend and test result", /Places that burn year after year/.test(legendR) &&
     /10-13 years/.test(legendR) && await evaluate(`document.querySelectorAll('#map path.map-cell').length`) === 0, legendR.slice(0, 80));
-  await evaluate(`(() => { const s = document.querySelector('#map-mode'); s.value = 'hotspots'; s.dispatchEvent(new Event('change')); return true; })()`);
+  await evaluate(`document.querySelector('input[name="map-mode"][value="hotspots"]').click(), true`);
+  // DE-29: where to expect fire next season, at about 1 km (model) and about 5 km (last year's fire, by the test).
+  for (const [mode, re] of [["outlook001", /Chance of at least one VIIRS detection/], ["outlook005", /Top 10% of cells by 2026 detections/]]) {
+    await evaluate(`document.querySelector('input[name="map-mode"][value="${mode}"]').click(), true`);
+    await waitFor(`!!document.querySelector('#map img.recurrence-overlay') && /test fixed in advance/.test(document.querySelector('#recurrence-note').textContent)`);
+    const lg = await evaluate(`document.querySelector('#map-legend').textContent`);
+    check("map view " + mode + " draws the forecast layer with its legend and test result", /Where to expect fire in 2027/.test(lg) && re.test(lg), lg.slice(0, 90));
+  }
+  await evaluate(`document.querySelector('input[name="map-mode"][value="hotspots"]').click(), true`);
   check("back to the hotspots view removes the 1 km layer", await evaluate(`!document.querySelector('#map img.recurrence-overlay') && document.querySelectorAll('#map path.map-cell').length === 376`));
   // DE-23 fire season of the whole area (values in tests/js/calc.test.js).
   const seasonText = await evaluate(`document.querySelector('#season-text').textContent`);
   check("fire season sentence and chart for the whole area", /median of 23 years\): starts in August, peaks in September and ends in October/.test(seasonText) &&
     await evaluate(`!!document.querySelector('#season .main-svg')`), seasonText.slice(0, 120));
+  // DE-28: outlook for the next season, whole state.
+  const outlookText = await evaluate(`document.querySelector('#outlook-text').textContent`);
+  check("outlook for August-October 2027 with its method, range and test result", /^Outlook for August-October 2027 \(experimental\): about [\d,.]+ hotspots \(80% of past seasons/.test(outlookText) &&
+    /previous year's August-October/.test(outlookText) && await evaluate(`!!document.querySelector('#outlook .main-svg')`), outlookText.slice(0, 140));
   // DE-25: FIRMS link centred on the selection; print button present.
   check("FIRMS Fire Map link centred on the selected area", /^https:\/\/firms\.modaps\.eosdis\.nasa\.gov\/map\/#d:24hrs;@-63\.\d+,-10\.\d+,\d+\.0z$/.test(
     await evaluate(`document.querySelector('#firms-link').href`)), await evaluate(`document.querySelector('#firms-link').href`));

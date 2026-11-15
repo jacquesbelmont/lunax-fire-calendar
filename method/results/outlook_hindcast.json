@@ -1,0 +1,51 @@
+{
+  "decision": "method/DECISIONS.md DE-28 (PROPOSED)",
+  "areas": "52 municipalities, docs/data/municipalities.csv viirs_eq",
+  "target": "August-October total",
+  "test_years": [
+    2013,
+    2025
+  ],
+  "fresh_year": 2026,
+  "error": "|ln((forecast + 1) / (observed + 1))|; MALE = median over municipality-years",
+  "pre_season": {
+    "test": {
+      "n": 572,
+      "male": {
+        "C": 0.7666,
+        "P": 0.43,
+        "P3": 0.4483
+      }
+    },
+    "fresh": {
+      "n": 52,
+      "male": {
+        "C": 2.4591,
+        "P": 0.7732,
+        "P3": 1.5007
+      }
+    },
+    "best_candidate": "P",
+    "chosen": "P",
+    "replaces_climatology": true
+  },
+  "early_season": {
+    "test": {
+      "n": 572,
+      "male": {
+        "C": 0.7666,
+        "R": 0.6915
+      }
+    },
+    "fresh": {
+      "n": 52,
+      "male": {
+        "C": 2.4591,
+        "R": 1.3067
+      }
+    },
+    "best_candidate": "R",
+    "chosen": "C",
+    "replaces_climatology": false
+  }
+}
