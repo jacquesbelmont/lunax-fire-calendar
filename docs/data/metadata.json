@@ -113,5 +113,6 @@
     "area.geojson": "IBGE boundary of the area (DE-1); draw it and mark everything outside as outside the area"
   },
   "attribution": "We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Land, Atmosphere Near real-time Capability for Earth observations (LANCE) (https://earthdata.nasa.gov/lance) and NASA's Earth Science Data and Information System (ESDIS).",
-  "disclaimer_url": "https://www.earthdata.nasa.gov/data/projects/lance#ed-lance-disclaimer"
+  "disclaimer_url": "https://www.earthdata.nasa.gov/data/projects/lance#ed-lance-disclaimer",
+  "ai_use": "AI tools used: Claude and Claude Code (Anthropic), for code, comparison of options for the method decisions, analyses and documentation. Every step is logged in AI_USE.md (https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/AI_USE.md). No AI-generated images, video or audio. Decisions were made by team members and are recorded in method/DECISIONS.md."
 }

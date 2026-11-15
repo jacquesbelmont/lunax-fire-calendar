@@ -5,18 +5,13 @@ A web app showing a monthly burning-activity calendar built on a harmonized NASA
 
 Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logos are used; no endorsement implied.
 
-## Status (2026-11-14)
-- **Decisions:** [method/DECISIONS.md](method/DECISIONS.md), PR #27.
-  - Demo area: **Rondônia, Brazil** (IBGE boundary).
-  - Target scale: **VIIRS 375 m equivalent**, built from both sensors.
-  - Monthly calendar.
-  - Data from the FIRMS country CSVs (2000-2025); the FIRMS API only for 2026 and NOAA-21.
-- **Pipeline:** implemented and run on real FIRMS data, 2000-11 to 2025-12. Under review in PRs #28-#34, to merge in order.
-  - MODIS-only months (2000-11 to 2012-01) are converted to the VIIRS scale with a ratio per month of year, learned where both sensors overlap. It was selected by a pre-registered backcast: bias of the total +0.6 % on 2012-2014; see [method/VALIDATION.md](method/VALIDATION.md).
-  - Method and limitations: [method/METHOD.md](method/METHOD.md).
-- **App data:** `docs/data/` (format in [DATA_CONTRACT.md](DATA_CONTRACT.md)), written by `pipeline/export.py` (PR #31).
-- **App:** the page in `docs/` is still a skeleton (JA-5 to JA-7).
-- **Not yet:** 2026 and NOAA-21 (need the FIRMS API), the hotspot CSV download (R9).
+## Status (2026-11-15)
+- **Published:** https://jacquesbelmont.github.io/lunax-fire-calendar/ (GitHub Pages from `main`, folder `/docs`).
+- **What the app does:** map with the study-area boundary and area selection (rectangle or latitude/longitude); monthly calendar (month x year) of harmonized hotspot counts; the latest month compared with the historical median; period selection; downloads (monthly series, values per grid cell, hotspot list, chart PNG) with the FIRMS acknowledgment and the data cut-off date.
+- **Data:** NASA FIRMS standard data for Rondônia, Brazil, 2000-11 to 2025-12 (archived data, cut-off 2025-12-31). 2026 and NOAA-21 are not included (they need the FIRMS API).
+- **Method:** MODIS-only months (2000-11 to 2012-01) are converted to the VIIRS 375 m scale with a ratio per month of year, learned where both sensors overlap (2015-2025). Selected by a pre-registered backcast: bias of the total +0.6% on 2012-2014. See [method/METHOD.md](method/METHOD.md), [method/VALIDATION.md](method/VALIDATION.md) and [method/DECISIONS.md](method/DECISIONS.md).
+- **Plain-English explanation:** [method/HOW_IT_WORKS.md](method/HOW_IT_WORKS.md).
+- **Submission drafts:** [submission/](submission/) (project page, slides outline, fact check, checklist).
 
 ## Structure
 - `pipeline/` — Python pipeline (runs offline, writes to `docs/data/`). See [pipeline/README.md](pipeline/README.md).
@@ -58,7 +53,7 @@ Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logo
    then open http://localhost:8000 (opening `index.html` via `file://` will not load data).
 
 ## AI use
-AI assistance is logged in [AI_USE.md](AI_USE.md). AI is not used to come up with the solution idea.
+Tools: Claude and Claude Code (Anthropic), used for code, comparison of options for the method decisions, analyses and documentation. Every AI-assisted step is logged in [AI_USE.md](AI_USE.md), and AI-assisted code carries a header comment. No AI-generated images, video or audio, and no NASA logos. The decisions on the area, the target scale and the method were made by team members and are recorded with who chose in [method/DECISIONS.md](method/DECISIONS.md); the AI drafted options and ran analyses. The Space Apps rule is that AI is not used to come up with the solution idea: the team confirms this in [submission/FACT_CHECK.md](submission/FACT_CHECK.md) (open item 4).
 
 ## License
 Apache-2.0 (see [LICENSE](LICENSE)). Vendored libraries keep their own licenses ([docs/lib/README.md](docs/lib/README.md)).
