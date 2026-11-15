@@ -27,7 +27,7 @@
    "year": 2001,
    "file": "modis_2001.csv.gz",
    "rows": 6206,
-   "bytes": 82897
+   "bytes": 82896
   },
   {
    "source": "modis",
@@ -41,7 +41,7 @@
    "year": 2003,
    "file": "modis_2003.csv.gz",
    "rows": 43658,
-   "bytes": 550764
+   "bytes": 550765
   },
   {
    "source": "modis",
@@ -55,7 +55,7 @@
    "year": 2005,
    "file": "modis_2005.csv.gz",
    "rows": 71460,
-   "bytes": 890851
+   "bytes": 890850
   },
   {
    "source": "modis",
@@ -76,42 +76,42 @@
    "year": 2008,
    "file": "modis_2008.csv.gz",
    "rows": 19629,
-   "bytes": 253250
+   "bytes": 253249
   },
   {
    "source": "modis",
    "year": 2009,
    "file": "modis_2009.csv.gz",
    "rows": 9341,
-   "bytes": 123848
+   "bytes": 123850
   },
   {
    "source": "modis",
    "year": 2010,
    "file": "modis_2010.csv.gz",
    "rows": 32533,
-   "bytes": 414037
+   "bytes": 414038
   },
   {
    "source": "modis",
    "year": 2011,
    "file": "modis_2011.csv.gz",
    "rows": 11483,
-   "bytes": 152009
+   "bytes": 152010
   },
   {
    "source": "modis",
    "year": 2012,
    "file": "modis_2012.csv.gz",
    "rows": 15463,
-   "bytes": 199547
+   "bytes": 199548
   },
   {
    "source": "modis",
    "year": 2013,
    "file": "modis_2013.csv.gz",
    "rows": 7015,
-   "bytes": 93903
+   "bytes": 93904
   },
   {
    "source": "modis",
@@ -132,7 +132,7 @@
    "year": 2016,
    "file": "modis_2016.csv.gz",
    "rows": 21469,
-   "bytes": 277018
+   "bytes": 277019
   },
   {
    "source": "modis",
@@ -167,7 +167,7 @@
    "year": 2021,
    "file": "modis_2021.csv.gz",
    "rows": 19734,
-   "bytes": 253743
+   "bytes": 253742
   },
   {
    "source": "modis",
@@ -181,7 +181,7 @@
    "year": 2023,
    "file": "modis_2023.csv.gz",
    "rows": 14214,
-   "bytes": 186424
+   "bytes": 186425
   },
   {
    "source": "modis",
@@ -195,21 +195,28 @@
    "year": 2025,
    "file": "modis_2025.csv.gz",
    "rows": 3082,
-   "bytes": 43199
+   "bytes": 43203
+  },
+  {
+   "source": "modis",
+   "year": 2026,
+   "file": "modis_2026.csv.gz",
+   "rows": 2148,
+   "bytes": 33403
   },
   {
    "source": "viirs-jpss1",
    "year": 2018,
    "file": "viirs-jpss1_2018.csv.gz",
    "rows": 61395,
-   "bytes": 698751
+   "bytes": 698750
   },
   {
    "source": "viirs-jpss1",
    "year": 2019,
    "file": "viirs-jpss1_2019.csv.gz",
    "rows": 79455,
-   "bytes": 879550
+   "bytes": 879549
   },
   {
    "source": "viirs-jpss1",
@@ -230,7 +237,7 @@
    "year": 2022,
    "file": "viirs-jpss1_2022.csv.gz",
    "rows": 85450,
-   "bytes": 962369
+   "bytes": 962368
   },
   {
    "source": "viirs-jpss1",
@@ -251,7 +258,35 @@
    "year": 2025,
    "file": "viirs-jpss1_2025.csv.gz",
    "rows": 13176,
-   "bytes": 155451
+   "bytes": 155453
+  },
+  {
+   "source": "viirs-jpss1",
+   "year": 2026,
+   "file": "viirs-jpss1_2026.csv.gz",
+   "rows": 9090,
+   "bytes": 108025
+  },
+  {
+   "source": "viirs-jpss2",
+   "year": 2024,
+   "file": "viirs-jpss2_2024.csv.gz",
+   "rows": 83750,
+   "bytes": 907906
+  },
+  {
+   "source": "viirs-jpss2",
+   "year": 2025,
+   "file": "viirs-jpss2_2025.csv.gz",
+   "rows": 12377,
+   "bytes": 147846
+  },
+  {
+   "source": "viirs-jpss2",
+   "year": 2026,
+   "file": "viirs-jpss2_2026.csv.gz",
+   "rows": 8477,
+   "bytes": 101924
   },
   {
    "source": "viirs-snpp",
@@ -272,21 +307,21 @@
    "year": 2014,
    "file": "viirs-snpp_2014.csv.gz",
    "rows": 45475,
-   "bytes": 530484
+   "bytes": 530483
   },
   {
    "source": "viirs-snpp",
    "year": 2015,
    "file": "viirs-snpp_2015.csv.gz",
    "rows": 90362,
-   "bytes": 1031489
+   "bytes": 1031490
   },
   {
    "source": "viirs-snpp",
    "year": 2016,
    "file": "viirs-snpp_2016.csv.gz",
    "rows": 79589,
-   "bytes": 899156
+   "bytes": 899157
   },
   {
    "source": "viirs-snpp",
@@ -314,21 +349,21 @@
    "year": 2020,
    "file": "viirs-snpp_2020.csv.gz",
    "rows": 77462,
-   "bytes": 873050
+   "bytes": 873049
   },
   {
    "source": "viirs-snpp",
    "year": 2021,
    "file": "viirs-snpp_2021.csv.gz",
    "rows": 75041,
-   "bytes": 835113
+   "bytes": 835114
   },
   {
    "source": "viirs-snpp",
    "year": 2022,
    "file": "viirs-snpp_2022.csv.gz",
    "rows": 86963,
-   "bytes": 974873
+   "bytes": 974872
   },
   {
    "source": "viirs-snpp",
@@ -349,7 +384,14 @@
    "year": 2025,
    "file": "viirs-snpp_2025.csv.gz",
    "rows": 12562,
-   "bytes": 147997
+   "bytes": 147999
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2026,
+   "file": "viirs-snpp_2026.csv.gz",
+   "rows": 9388,
+   "bytes": 110738
   }
  ]
 }

@@ -12,11 +12,11 @@ The exact versions used in the setup are in `requirements.lock.txt`. Put `FIRMS_
 |---|------|-------|--------|-------------|
 | 1 | `config.py` (imported by the others) | `.env`, `config/area.json` | settings | JA-2 |
 | 2 | `check_availability.py` | FIRMS `data_availability` | SP/NRT date ranges per sensor (record in DATA_CONTRACT.md) | JA-2 |
-| 3 | `download.py` | FIRMS country yearly CSVs (no key) and the `missing_data` table; the API route (2026, NOAA-21) is not implemented yet | `data/raw/country/<source>/<year>/*.csv`, `data/raw/missing_days.csv` (git-ignored) | JA-2, JA-4 |
-| 4 | `clean.py` | `data/raw/country/<source>/<year>/*.csv` | `data/interim/clean/<source>_<year>.csv.gz` (git-ignored); `method/results/cleaning_log.csv` | RA-1 |
-| 5 | `aggregate.py` | `data/interim/clean/*.csv.gz`; `data/raw/missing_days.csv` (from `download.py`) | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv` (git-ignored) | RA-2 |
+| 3 | `download.py` | FIRMS country yearly CSVs (no key) and the `missing_data` table; FIRMS area API with `--api-source` (MAP_KEY; NOAA-21 and 2026) | `data/raw/country/<source>/<year>/*.csv`, `data/raw/api/<source>/<year>/*.csv`, `data/raw/missing_days.csv` (git-ignored) | JA-2, JA-4; API route RA-3 |
+| 4 | `clean.py` | `data/raw/<route>/<source>/<year>/*.csv` (`--route country` or `api`) | `data/interim/clean/<source>_<year>.csv.gz` (git-ignored); `method/results/cleaning_log.csv` | RA-1 |
+| 5 | `aggregate.py` | `data/interim/clean/*.csv.gz`; `data/raw/missing_days.csv` (from `download.py`); `DATA_END` = last downloaded day (move it with each new download) | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv` (git-ignored) | RA-2 |
 | 6 | `harmonize.py` | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv` | `data/interim/harmonized.csv.gz` (git-ignored); `method/results/harmonize_model.json` | RA-2, DE-2 |
-| 7 | `validate.py` | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv`, `data/interim/harmonized.csv.gz` | `method/results/` (validation_metrics.json, loyo.csv, continuity.csv, annual_ratio.csv), `method/figures/`; summary in `method/VALIDATION.md` | RA-3 |
+| 7 | `validate.py` | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv`, `data/interim/harmonized.csv.gz` | `method/results/` (validation_metrics.json, loyo.csv, continuity.csv, continuity_noaa21.csv, annual_ratio.csv), `method/figures/`; summary in `method/VALIDATION.md` | RA-3 |
 | 8 | `export.py` | `data/interim/harmonized.csv.gz`, `data/interim/month_flags.csv`, `config/area.json` | `docs/data/monthly_cells.csv`, `docs/data/months.csv`, `docs/data/metadata.json` (DATA_CONTRACT.md) | RA-2 |
 | 9 | `export_hotspots.py` | `data/interim/clean/*.csv.gz` | `docs/data/hotspots/<instrument>_<year>.csv.gz`, `docs/data/hotspots/index.json` (R9, DE-17) | JA-6 |
 

@@ -2,7 +2,7 @@
 
 Owner issue: RA-3 (Rafael). Figures in method/figures/, results in method/results/.
 Protocol: method/DECISIONS.md DE-15, fixed before the results were seen. Code: `pipeline/validate.py`.
-Data: FIRMS country CSVs (standard processing), only detections inside the IBGE boundary of Rondônia (DE-1), 2000-11 to 2025-12.
+Data: FIRMS country CSVs (standard processing), only detections inside the IBGE boundary of Rondônia (DE-1), 2000-11 to 2025-12; NOAA-21 from the FIRMS area API (standard processing), 2024-01-17 to 2025-12-31. This is the DE-15 period: the 2026 months in the app (partly provisional near real-time data) are left out of the validation (`VALIDATION_END` in `pipeline/validate.py`).
 Every number below comes from `method/results/validation_metrics.json` unless another file is named.
 
 ## Held-out years
@@ -33,7 +33,7 @@ Figure: `method/figures/backcast.png`.
 
 ## Before/after harmonization (jump when VIIRS enters)
 
-- **Without correction**, the series would jump when VIIRS enters. In 2012-2014 the raw reference VIIRS total is 3.82 times the raw MODIS (Terra + Aqua) total.
+- **Without correction**, the series would jump when VIIRS enters. In 2012-2014 the raw reference VIIRS total is 3.81 times the raw MODIS (Terra + Aqua) total.
 - **After harmonization** the jump is gone. In the backcast years the converted MODIS total is within +0.6 % of the observed VIIRS total.
 - Figure: `method/figures/before_after.png` (area totals per month, baseline vs harmonized). Months with missing data are gaps, not zeros.
 
@@ -47,7 +47,9 @@ Figure: `method/figures/backcast.png`.
 - **S-NPP vs NOAA-20:** monthly area totals over the 83 months where both are valid (`method/results/continuity.csv`).
   - Ratio NOAA-20/S-NPP of the totals: 0.992. Monthly median 1.001, interquartile range 0.95 to 1.05.
   - The two satellites are on the same scale, so no correction factor is applied (DE-11). Figure: `method/figures/continuity.png`.
-- **NOAA-21:** not in the FIRMS country CSVs; needs API data from 2024-01 (DE-8). TODO(RA-3): add when the API route exists.
+- **NOAA-20 vs NOAA-21:** monthly area totals over the 21 months where both are valid, 2024-04 to 2025-12 (`method/results/continuity_noaa21.csv`). NOAA-21 is flagged in 2024-01 to 2024-03 (start on 2024-01-17 and FIRMS missing days), and NOAA-20 in 2024-02.
+  - Ratio NOAA-21/NOAA-20 of the totals: 0.956. Monthly median 0.958, interquartile range 0.82 to 1.02.
+  - NOAA-21 counts about 4.4 % fewer hotspots than NOAA-20 in this area. NOAA-21 is only a check (DE-11), so no correction is applied and the series does not change. A factor is needed before NOAA-21 replaces NOAA-20 as the reference. Figure: `method/figures/continuity.png` (lower panel).
 
 ## Uncertainty
 
@@ -66,16 +68,22 @@ Figure: `method/figures/backcast.png`.
 - Backcast trained on 2015-2019: bias -1.0 %, MdAPE 9.8 %.
 - Backcast trained on 2020-2025: bias +2.5 %, MdAPE 17.5 %.
 - The leave-one-year-out bias tends to fall with the year, but not significantly (Spearman rho = -0.35, p = 0.22, 14 years).
-- The production fit (2015-2025) is between the two. Changing the window now would mean choosing after seeing the test, so it is reported here, not changed. Decision for the team.
+- The production fit (2015-2025) is between the two. Changing the window now would mean choosing after seeing the test, so the team kept 2015-2025 (DE-15).
 
-**Low-confidence VIIRS detections** (DE-10):
-- They are 6.2 % (S-NPP) and 6.6 % (NOAA-20) of the VIIRS detections in the area.
-- Removing them from the reference changes the backcast bias from +0.6 % to +1.2 % and the MdAPE from 13.3 % to 12.9 % (area level). The no-filter choice does not change the conversion materially.
-- MODIS is not filtered, because its class cut-offs are not verified.
+**Low-confidence detections** (DE-10; `sensitivity.low_confidence`), backcast at area level:
+- VIIRS low (class `l`) are 6.2 % (S-NPP) and 6.6 % (NOAA-20) of the VIIRS detections in the area. MODIS low (confidence C < 30 %, MODIS C6/C6.1 user guide Table 11) are 6.6 % (Terra) and 4.3 % (Aqua) of the MODIS detections.
+
+| Low-confidence detections removed | Relative bias of the total | MdAPE of monthly area totals |
+|---|---|---|
+| None (production) | +0.6 % | 13.3 % |
+| VIIRS low, from the reference | +1.2 % | 12.9 % |
+| MODIS low, from the predictor | +1.1 % | 11.6 % |
+| Both | +1.7 % | 11.0 % |
+
+- The no-filter choice does not change the conversion materially for either sensor.
 
 **Grid size** (DE-12): not run. The ratio per month of year is fitted on area sums, so k and every area total are the same for any cell size; only the split of a total between cells changes.
 
 ## Not done yet
 
-- **NOAA-21 continuity:** needs API data (DE-8).
 - **Calibrated intervals:** still slightly below 90 % in the backcast (see Uncertainty).

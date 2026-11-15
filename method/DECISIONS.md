@@ -7,25 +7,26 @@ PROPOSED rows become DECIDED when the team approves them in PR review. PR #27 wa
 | ID | Date/time (UTC-4) | Decision | Options considered | Chosen by | Justification | Evidence | Status |
 |----|-------------------|----------|--------------------|-----------|---------------|----------|--------|
 | DE-1 | 2026-11-14 17:10 | Demo area: **Rondônia, Brazil**, as given by the IBGE state boundary. Only detections inside the boundary are kept. Outside it is "outside the area", never zero fire. Processing box (`config/area.json`): the boundary's bbox aligned to 0.25° cells, W -67, S -13.75, E -59.75, N -7.75 | Whole North Region; one northern state (Rondônia) | Jacques (suggested), Rafael (agreed) | Rondônia is in the Amazon, has a lot of burning and is our region: 13,176 to 90,362 VIIRS hotspots a year inside the boundary in 2012-2025. A single region is acceptable (discussions/2016) | IBGE: https://servicodados.ibge.gov.br/api/v3/malhas/estados/11?formato=application/vnd.geo+json ; [details](#de-1-demo-area) | DECIDED |
-| DE-1b | 2026-11-14 17:10 | Bolivia: also keep the detections of Bolivia's FIRMS country file that fall inside the processing box, so the demo is international | A: Rondônia only; B: Rondônia + the Bolivian part of the box | - (team to decide) | A follows DE-1 literally and keeps the scope. B makes the demo international at no method cost (+0.7 GB of raw files) | [details](#de-1-demo-area) | OPEN |
+| DE-1b | 2026-11-14 17:10 | Bolivia: **not added** (option A, Rondônia only). Detections of Bolivia's FIRMS country file count only where they fall inside the Rondônia boundary | A: Rondônia only; B: Rondônia + the Bolivian part of the box | Rafael, Jacques | A follows DE-1 literally and keeps the scope; it is the current implementation | [details](#de-1-demo-area) | DECIDED |
 | DE-2 | 2026-11-14 15:44 | Target scale: **VIIRS-equivalent** (monthly counts of VIIRS 375 m hotspots per grid cell). Both sensors are used: MODIS-only months are converted to the VIIRS scale with a model learned where both sensors overlap | MODIS-equivalent; VIIRS-equivalent (both acceptable if justified, per challenge author) | Rafael (agreed with Jacques) | The challenge author asks for continuity with NOAA-20 and NOAA-21 (VIIRS); MODIS is retiring; MODIS and VIIRS overlap in FIRMS since 2012-01-20 | https://github.com/nasa/spaceapps/discussions/1879 ; [details](#de-2-target-scale) | DECIDED |
 | DE-3 | 2026-11-14 15:44 | Calendar time step: monthly | Monthly (recommended by the challenge author); weekly only if easy to read | Team (AGENTS.md rule 5) | Recommended by the challenge author; already a project rule | https://github.com/nasa/spaceapps/discussions/1879 | DECIDED |
-| DE-4 | 2026-11-14 15:44 | SP for each satellite up to its last SP date; NRT only after that date, flagged `provisional` | SP only; NRT only; SP then NRT | Rafael (to confirm with Jacques) | FIRMS advises standard data for scientific analysis; NRT is replaced by SP after about 2-5 months | method/FIRMS_REFERENCE.md section 6 ; [details](#de-4-sp-vs-nrt) | DECIDED |
+| DE-4 | 2026-11-14 15:44 | SP for each satellite up to its last SP date; NRT only after that date, flagged `provisional` | SP only; NRT only; SP then NRT | Rafael, Jacques | FIRMS advises standard data for scientific analysis; NRT is replaced by SP after about 2-5 months | method/FIRMS_REFERENCE.md section 6 ; [details](#de-4-sp-vs-nrt) | DECIDED |
 | DE-5 | 2026-11-14 17:10 | Cleaning rules: normalize schema, clip to the processing box and then to the IBGE boundary of Rondônia (DE-1), period, `type` (DE-9), no confidence/day-night filter (DE-10), exact duplicates, SP/NRT split (DE-4), log of removed rows | See details | Rafael | Only rules traceable to DE-4, DE-9 and DE-10; every removal is counted | [details](#de-5-cleaning-rules) | DECIDED |
 | DE-6 | 2026-11-14 16:37 | Harmonization method: **ratio per month of year** (option 2), selected by the DE-15 backcast. The negative binomial count regression (option 3, registered as main) failed validation. ML only as RA-6 challenger | Global ratio; ratio per month of year; quantile mapping; count regression; ML | Rafael (by the pre-registered DE-15 rule) | Backcast 2012-2014: bias of the total +0.6 % (ratio) vs +143 % (NB regression); the ratio is also the simplest | method/results/validation_metrics.json (PR #32) ; [details](#de-6-harmonization-method) | DECIDED |
-| DE-7 | | App libraries: Leaflet 1.x (map), Leaflet.draw (rectangle selection), Plotly.js (calendar heatmap, charts, PNG download), vendored in docs/lib/ | | Jacques | | docs/lib/README.md | DECIDED |
-| DE-8 | 2026-11-14 17:10 | Data route: FIRMS **country yearly summary CSVs** (standard processing, no MAP_KEY) for the history 2000-2025; FIRMS **area API** (MAP_KEY) only for 2026 and NOAA-21 | Country yearly CSVs; area API; Archive Download (see method/FIRMS_REFERENCE.md sections 3.1-3.3) | Jacques, Rafael | The CSVs need no key and are complete standard years (2025 files: 365 days for MODIS and NOAA-20, checked 2026-11-14). 2026 and NOAA-21 are not in them, so only those use the API. Implemented in `pipeline/download.py` (JA-2) | method/FIRMS_REFERENCE.md ; https://firms.modaps.eosdis.nasa.gov/data/country/ | DECIDED |
+| DE-7 | | App libraries: Leaflet 1.x (map), Leaflet.draw (rectangle selection), Plotly.js (calendar heatmap, charts, PNG download), vendored in docs/lib/ | | Jacques | | docs/lib/README.md ; implemented in PR #37 | DECIDED |
+| DE-8 | 2026-11-14 17:10 | Data route: FIRMS **country yearly summary CSVs** (standard processing, no MAP_KEY) for the history 2000-2025; FIRMS **area API** (MAP_KEY) only for 2026 and NOAA-21 | Country yearly CSVs; area API; Archive Download (see method/FIRMS_REFERENCE.md sections 3.1-3.3) | Jacques, Rafael | The CSVs need no key and are complete standard years (2025 files: 365 days for MODIS and NOAA-20, checked 2026-11-14). 2026 and NOAA-21 are not in them, so only those use the API. Implemented in `pipeline/download.py` (JA-2); the area API route (`--api-source`) was added in RA-3 on 2026-11-15 and used for NOAA-21 (2024-01-17 to 2025-12-31) and for 2026 (all satellites, to 2026-10-31; standard processing, then NRT flagged provisional, DE-4) | method/FIRMS_REFERENCE.md ; https://firms.modaps.eosdis.nasa.gov/data/country/ | DECIDED |
 | DE-9 | 2026-11-14 17:10 | `type`: keep only 0 (presumed vegetation fire) in SP data. NRT months (no `type`) are flagged `provisional`, with no mask | Type 0 only; all types; all types in the data with type 0 as the default app view (suggested by Jacques); type 0 plus a static-location mask for NRT | Rafael | **Impact under 0.5 % overall:** `type` ≠ 0 is 0.48 % of the detections inside the boundary, from 0.28 % (MODIS) to 0.64 % (S-NPP). Keeping all types would need a second harmonized series per type for this difference | method/results/cleaning_log.csv ; method/FIRMS_REFERENCE.md sections 5, 8 ; [details](#de-9-type-values) | DECIDED |
 | DE-10 | 2026-11-14 15:44 | No confidence filter in v1 (keep the column; sensitivity test in RA-3). No day/night filter (keep the column) | Filter low confidence; no filter. Day only; night only; both | Rafael | MODIS (0-100) and VIIRS (l/n/h) confidence are not comparable; thresholds must be chosen empirically (FAQ); the NRT day/night flag differs from SP | method/FIRMS_REFERENCE.md section 5 ; [details](#de-10-confidence-and-daynight) | DECIDED |
 | DE-11 | 2026-11-14 16:37 | Terra-only conversion for 2000-11 to 2002-06 (and months with Aqua flagged); Terra + Aqua conversion for 2002-07 to 2012-01; native VIIRS from 2012-02: S-NPP to 2018-03, NOAA-20 from 2018-04, NOAA-21 as check and backup | Sum all satellites; Aqua only; one model per MODIS configuration; Terra only | Rafael | No artificial step when a satellite is added; no double counting; keeps the Terra-only months | method/FIRMS_REFERENCE.md section 2 ; [details](#de-11-satellites-per-era) | DECIDED |
-| DE-12 | 2026-11-14 15:44 | Grid: 0.25° cells aligned globally (candidate, to confirm with real data) | 0.1°; 0.25°; 0.5° | Rafael (to confirm with Jacques) | Cells much larger than the MODIS pixel; fewer zero cells for the model; export size; to confirm by measuring | [details](#de-12-grid) | DECIDED |
-| DE-13 | 2026-11-14 15:44 | Historical median = median of the same month in all previous years, excluding months flagged missing; anomaly = difference and ratio (ratio only if median > 0) | All previous years; all years except the current one; fixed baseline period | Rafael (to confirm with Jacques) | Literal reading of R7; same rules in Python and JS (JA-8) | [details](#de-13-historical-median-and-anomaly) | DECIDED |
+| DE-12 | 2026-11-14 15:44 | Grid: 0.25° cells aligned globally | 0.1°; 0.25°; 0.5° | Rafael, Jacques | Cells much larger than the MODIS pixel; fewer zero cells for the model; export size; with the ratio method area totals do not depend on the cell size (method/VALIDATION.md) | [details](#de-12-grid) | DECIDED |
+| DE-13 | 2026-11-14 15:44 | Historical median = median of the same month in all previous years, excluding months flagged missing; anomaly = difference and ratio (ratio only if median > 0) | All previous years; all years except the current one; fixed baseline period | Rafael, Jacques | Literal reading of R7; same rules in Python and JS (JA-8) | [details](#de-13-historical-median-and-anomaly) | DECIDED |
 | DE-14 | 2026-11-14 15:44 | Missing-data flag: a month is flagged for a satellite if at least one day is missing; store `missing_days`; no rescaling in v1 | ≥ 1 missing day; share-of-days threshold; flag and rescale; flag and fill with converted MODIS | Rafael | Simple and follows AGENTS.md rule 6: missing data never becomes zero fire | method/FIRMS_REFERENCE.md section 7 ; [details](#de-14-missing-data-flag) | DECIDED |
 | DE-15 | 2026-11-14 15:44 | Validation protocol: backcast (train 2015-2025, test 2012-2014), leave-one-year-out, VIIRS continuity, sensitivity tests, selection rule fixed in advance | See details | Rafael | Tests the conversion in the direction it is used (backwards in time), with real VIIRS as reference | [details](#de-15-validation-protocol) | DECIDED |
 | DE-16 | 2026-11-14 16:54 | Uncertainty calibration: one variance inflation factor lambda (= 11.5), fitted on leave-one-year-out area totals 2015-2025, tested on 2012-2014 | Model variance only; one factor lambda; correlated error term; no intervals | Rafael | Model variance covered only 41 % of area totals; with lambda, 85 % (area) and 85 % (cell) in the backcast; the app keeps summing variances | method/results/uncertainty_calibration.json (PR #32) ; [details](#de-16-uncertainty-calibration) | DECIDED |
 
 ---
-| DE-17 | 2026-11-15 00:59 | Hotspot list for the CSV download (R9): one gzip file per FIRMS instrument and year in `docs/data/hotspots/<instrument>_<year>.csv.gz` (+ `index.json`), only the rows kept by the cleaning rules (SP, `type` 0, inside the Rondônia boundary), no confidence filter, with an attribution and cut-off header; the app reads only the years of the chosen period, keeps the selected cells, and shows the row count before the download | Monthly counts only (declare the limitation); per-year gzip files filtered in the browser; server-side filtering (not possible on GitHub Pages) | Jacques (proposed); Rafael to approve | R9 asks for a CSV of the hotspots found in the search; the files reuse the rows and `cell_id` of the pipeline, so they agree with `monthly_cells.csv` by construction and by test | estimated size about 25 MB (measured bytes per row x `rows_kept` of `method/results/cleaning_log.csv`; to be replaced by the real total); [details](#de-17-hotspot-list-for-the-csv-download) | PROPOSED |
+| DE-17 | 2026-11-15 00:59 | Hotspot list for the CSV download (R9): one gzip file per FIRMS instrument and year in `docs/data/hotspots/<instrument>_<year>.csv.gz` (+ `index.json`), only the rows kept by the cleaning rules (SP, `type` 0, inside the Rondônia boundary), no confidence filter, with an attribution and cut-off header; the app reads only the years of the chosen period, keeps the selected cells, and shows the row count before the download | Monthly counts only (declare the limitation); per-year gzip files filtered in the browser; server-side filtering (not possible on GitHub Pages) | Jacques (proposed); approved by Rafael | R9 asks for a CSV of the hotspots found in the search; the files reuse the rows and `cell_id` of the pipeline, so they agree with `monthly_cells.csv` by construction and by test | 54 files (with NOAA-21 and 2026), 2,168,855 rows, 25,300,584 bytes (`docs/data/hotspots/index.json`); [details](#de-17-hotspot-list-for-the-csv-download) | DECIDED |
+| DE-20 | 2026-11-15 10:01 | Data end on the **last complete month** at the time of download (`DATA_END` in `pipeline/aggregate.py`, now 2026-10-31). A partial current month is not downloaded or shown; each new complete month is added by a new download, a new `DATA_END` and a rerun | Last complete month; include the partial month and mark it "partial" (new flag in months.csv and the app); include it and flag it as missing (DE-14 as is, shown grey) | Rafael | A partial month is not comparable with full months in the calendar or with the historical median (R7); under DE-14 it would be flagged and shown grey anyway. The NRT data of the current month stay available in FIRMS | method/METHOD.md (data period) ; README.md (Updating) | DECIDED |
 
 ## Decision details
 
@@ -51,8 +52,8 @@ PROPOSED rows become DECIDED when the team approves them in PR review. PR #27 wa
   - `clean.py` keeps only the detections inside the IBGE boundary (point in polygon). A cell that crosses the boundary counts only its detections inside Rondônia.
   - `export.py` writes the boundary to `docs/data/area.geojson`. The app draws it and marks everything outside as "outside the area".
 
-**DE-1b, Bolivia (OPEN, the team decides):**
-- **Option A, Rondônia only:** as above. This is Jacques's preference and the current implementation.
+**DE-1b, Bolivia (DECIDED 2026-11-15: option A):**
+- **Option A, Rondônia only:** as above. This is Jacques's preference and the current implementation. Chosen.
 - **Option B, Rondônia + the Bolivian part of the box:** Rafael's earlier wish for an international demo.
   - Also keep the detections of Bolivia's FIRMS country file that fall inside the box. The country comes from the file, so no other boundary data is needed. Other Brazilian states stay out.
   - Bolivia's raw files are about 0.7 GB for 2000-2025 (MODIS 147 MB, S-NPP 309 MB, NOAA-20 241 MB; FIRMS index, 2026-11-14).
@@ -79,7 +80,9 @@ PROPOSED rows become DECIDED when the team approves them in PR review. PR #27 wa
 
 **Supporting external sources:**
 - NASA plans to end Terra MODIS data collection in January 2027 and Aqua MODIS around September 2027; both are "running low on fuel and experiencing orbital drift" (CAMS, 2026-02-25, https://atmosphere.copernicus.eu/drifting-away-modis-cams-global-fire-assimilation-system).
-- VIIRS 375 m detects smaller fires than MODIS 1 km (Schroeder, Oliva, Giglio, Csiszar 2014, Remote Sensing of Environment 143:85-96, doi:10.1016/j.rse.2013.12.008). TODO(verify): read the full paper before quoting details - https://directreadout.sci.gsfc.nasa.gov/publications_documents/Schroeder_et_al_2014b_RSE.pdf
+- VIIRS 375 m detects smaller fires than MODIS 1 km. Schroeder, Oliva, Giglio, Csiszar 2014, Remote Sensing of Environment 143:85-96, doi:10.1016/j.rse.2013.12.008 (full paper read 2026-11-15, https://directreadout.sci.gsfc.nasa.gov/publications_documents/Schroeder_et_al_2014b_RSE.pdf):
+  - introduction: "Improved spatial resolution enables detection of smaller fires of the same temperature, as well as refined mapping of larger fires";
+  - abstract: "VIIRS 375 m fire data showed significantly superior mapping capabilities compared to current MODIS fire detection data".
 
 **Costs we accept, and mitigations:**
 - 2000-11 to 2012-01 are estimates extrapolated backwards in time and cannot be checked against VIIRS directly. Mitigation: backcast test inside the overlap (DE-15); these months are flagged `estimated` and shown with uncertainty.
@@ -105,11 +108,11 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
    - `satellite` → Terra, Aqua, SNPP, NOAA20, NOAA21.
      - Observed in the country CSVs downloaded 2026-11-14: `Terra` and `Aqua` (modis_2013_Brazil.csv, modis_2025_Brazil.csv), `N` (viirs-snpp_2013_Brazil.csv), `N20` (viirs-jpss1_2025_Brazil.csv).
      - The FIRMS attribute page uses `T`/`A` for MODIS and `N`/`N20`/`N21` for VIIRS (https://www.earthdata.nasa.gov/data/tools/firms/active-fire-data-attributes-modis-viirs). Both forms are accepted.
-     - TODO(verify): API and NRT values.
+     - FIRMS public NRT files (2026-11-15): `T`/`A` for MODIS, `N20`/`N21` for VIIRS (FIRMS_REFERENCE section 13, item 3). The area API (checked 2026-11-15) writes `Terra`/`Aqua` for MODIS in SP and NRT, and `N`/`N20`/`N21` for VIIRS.
    - `acq_time` read as text HHMM.
    - `processing` (SP/NRT) from the `version` suffix. Standard processing carries the collection only; NRT, RT and URT add a suffix (FIRMS attribute page).
-     - Observed SP values: MODIS `6.2` (2013) and `61.03` (2025); VIIRS `2`.
-     - TODO(verify): meaning of `6.2` and `61.03` - FIRMS.
+     - Observed SP values: MODIS `6.2` (2000-2017), `6.03` (2018-2022) and `61.03` (2023-2025) in the Brazil and Bolivia files; VIIRS `2`.
+     - Meaning, by the MCD14ML naming (collection, then product version, MODIS user guide section 5.5.1): `6.03` = Collection 6 version 03, `61.03` = Collection 6.1 version 03, `6.2` most likely Collection 6 version 2. This is our reading; FIRMS does not document the field this way (FIRMS_REFERENCE section 13, item 1).
    - `route` (country CSV or API).
 2. Clip to the processing box with half-open intervals (west ≤ lon < east, south ≤ lat < north), so no detection is counted twice at an edge. Then keep only detections inside the IBGE boundary of Rondônia (point in polygon, DE-1).
 3. Keep dates from 2000-11-01 to the data cut-off date.
@@ -156,7 +159,7 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
   - By the DE-15 rule, **option 2 is the production method** (`pipeline/harmonize.py`): it is both the best and the simplest.
   - The cell climatology is therefore not used, and the export still lists active cells only.
   - A Poisson version of option 3 was tried only after seeing the results, as a diagnostic: bias +4.7 %, MdAPE 32.6 %. It is not used for selection.
-  - **Uncertainty for option 2:** variance mu + alpha·mu², with alpha by the method of moments. It under-covers in validation (method/VALIDATION.md); calibration is a TODO in RA-3.
+  - **Uncertainty for option 2:** variance mu + alpha·mu², with alpha by the method of moments. It under-covers in validation (method/VALIDATION.md); it is calibrated with one factor lambda (DE-16).
 
 ### DE-9 `type` values
 
@@ -185,7 +188,8 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
 - **Considered on review** (Jacques): keep all types in the data and make type 0 the default app view, since "burning activity" is not limited to vegetation fire.
   - Not chosen: every number would then need a second harmonized series (one k per type), and a second set of export columns, for a difference under 0.5 %.
   - The impact of dropping `type` ≠ 0 is stated here and in method/METHOD.md.
-- TODO(verify): meaning of the `type` codes for VIIRS in the documentation - FIRMS_REFERENCE section 13, item 2.
+- VIIRS uses the MODIS `type` codes: "0 = presumed vegetation fire, 1 = active volcano, 2 = other static land source, 3 = offshore detection (includes all detections over water)" (VIIRS C2 375 m User Guide 1.2, section 3.2.2; FIRMS_REFERENCE section 13, item 2).
+- MODIS `type` before 2018 may come from an older product version with less refined typing (FIRMS_REFERENCE section 13, item 1). `type` ≠ 0 is at most 1.36 % of the MODIS detections inside the area in any year (`method/results/cleaning_log.csv`).
 
 ### DE-10 Confidence and day/night
 
@@ -193,7 +197,7 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
   - Keep the original value and a normalized class; sensitivity test with and without the low class in RA-3 (DE-15).
   - Why: MODIS (0-100) and VIIRS (l/n/h) confidence are not comparable, so any filter would differ by sensor. The FAQ says the meaning may vary by region and thresholds must be chosen empirically (FIRMS_REFERENCE section 5).
   - Cost: more false alarms are kept.
-  - TODO(verify): MODIS class cut-offs - the FIRMS attribute page lists the three classes but not their limits; check the MODIS C6.1 user guide.
+  - MODIS class cut-offs: low 0 % ≤ C < 30 %, nominal 30 % ≤ C < 80 %, high 80 % ≤ C ≤ 100 % (MODIS C6/C6.1 Active Fire Product User's Guide 1.0, Table 11). Not used in v1 (no filter).
   - **Low-confidence night pixels (VIIRS):** the FIRMS attribute page says they "occur only over the geographic area extending from 11deg E to 110 deg W and 7 deg N to 55 deg S" (South Atlantic Magnetic Anomaly), may be false alarms, and "have been removed from the NRT data distributed by FIRMS". Brazil is inside that area.
     - Measured: 0 such rows in the SP files viirs-snpp_2013_Brazil.csv and viirs-jpss1_2025_Brazil.csv.
     - So SP and NRT are consistent and no extra rule is needed.
@@ -209,7 +213,7 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
 | 2000-11 to 2002-06 (20 months, derived) | Terra, converted with a Terra-only ratio |
 | 2002-07 to 2012-01 | Terra + Aqua (both MODIS), converted with a Terra + Aqua ratio. If Aqua is flagged in a month, the Terra-only ratio is used |
 | 2012-02 to 2018-03 | S-NPP (native VIIRS) |
-| 2018-04 onwards | NOAA-20 (native VIIRS); NOAA-21 as a check and backup |
+| 2018-04 onwards | NOAA-20 (native VIIRS); NOAA-21 as a check (raw counts in the app; the backup is not implemented: the only NOAA-20 flagged month since 2024, 2024-02, is flagged for NOAA-21 too) |
 
 - **How:**
   - Both models are trained in the overlap, where Terra and Aqua still operate. Each model is used only for the satellite configuration it was trained on.
@@ -221,17 +225,18 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
   - One model per configuration: chosen. Uses all MODIS data and creates no step at 2002-07, at the cost of two models.
   - Terra only: constant, but its morning overpass differs from VIIRS and it ends in January 2027.
 - A Space Apps navigator (not official) wrote in discussions/1879: "Different platforms have different overpass times, and ignoring that could create artificial trends."
-- TODO(verify): Aqua `satellite` value and NOAA-21 naming - FIRMS_REFERENCE section 13, items 3 and 5.
+- `satellite` values: `Terra`/`Aqua` in the country files, `T`/`A` in the NRT files; NOAA-21 is `N21` (FIRMS_REFERENCE section 13, items 3 and 5).
 
 ### DE-12 Grid
 
-- **Proposal:** 0.25° cells aligned globally; row = floor((lat + 90) / 0.25), column = floor((lon + 180) / 0.25), half-open. A candidate, to be confirmed with real data together with Jacques.
+- **Proposal:** 0.25° cells aligned globally; row = floor((lat + 90) / 0.25), column = floor((lon + 180) / 0.25), half-open. Used by the pipeline and the app.
 - **Criteria:**
   - MODIS position uncertainty: 1 km nominal pixel, larger toward the scan edge (`scan`/`track` columns), so cells must be much larger than a pixel.
   - Smaller cells mean more zeros and a noisier conversion.
   - Export size ≈ active cells × 313 months (derived). The DE-6 cell climatology makes MODIS-era months dense for active cells, so area (DE-1) and cell size both matter.
   - Smaller cells give finer area selection (R4).
 - **Check before deciding:** sparse export size, share of zero cell-months, and backcast error at 0.1°, 0.25° and 0.5° (RA-3).
+  - **Result:** not needed with the ratio method (DE-6): it is fitted on area sums, so every area total is the same for any cell size (method/VALIDATION.md).
 
 ### DE-13 Historical median and anomaly
 
@@ -239,7 +244,7 @@ With Jacques; used by JA-6 and JA-8.
 
 - **Median for month m of year Y:** median of the harmonized counts of month m in all years before Y, excluding months flagged missing (DE-14).
   - `estimated` months are included and marked.
-  - Shown only if at least N years are available (N to be fixed by the team); the number of years used is shown.
+  - Shown when at least one previous year is available (N = 1, as implemented in `docs/js/calc.js`); the number of years used is shown next to it.
 - **Options:**
   - All previous years: the literal "historical" of R7, with few values in the early years. Chosen.
   - All years except Y: uses the future.
@@ -257,7 +262,7 @@ With Jacques; used by JA-6 and JA-8.
   - Flags are per satellite and month for the whole area, because FIRMS lists gaps per satellite.
   - Relevant satellites: in native VIIRS months, the reference VIIRS satellite; in converted months, Terra and Aqua.
   - Flagged months are never shown as zero and are excluded from the median (DE-13). A missing cell row in an unflagged month means zero detections.
-- **Sources of missing days:** FIRMS `missing_data` (FIRMS_REFERENCE section 7). The MODIS gaps from the archive README (2007, 2009) are TODO(verify) with daily counts - FIRMS_REFERENCE section 13, item 8.
+- **Sources of missing days:** FIRMS `missing_data` (FIRMS_REFERENCE section 7). The MODIS gaps from the archive README (2007, 2009) do not show as whole missing days in the daily counts of the Brazil files, so no month is flagged for them (FIRMS_REFERENCE section 13, item 8).
 - **Options:**
   - ≥ 1 missing day: simple and follows AGENTS.md rule 6, but a 1-day gap flags a whole month. Chosen.
   - Threshold on the share of missing days: fewer flags, one more parameter.
@@ -279,17 +284,17 @@ Fixed before any test result is seen.
 - **VIIRS continuity:** monthly S-NPP/NOAA-20 ratio from 2018-04 to 2025; NOAA-20/NOAA-21 from 2024-01. Tolerance ±X % (X to be fixed by the team); outside it, a correction factor is added.
 - **Sensitivity:** confidence filter (DE-10), grid size (DE-12), training window (orbital drift).
 - **Selection:** the simplest method within a margin of the best backcast score wins. ML must beat the count regression by a margin fixed in advance (to be fixed by the team).
-- **Values still to fix (team):** training and test years if different from above, tolerance X, ML margin, minimum years N (DE-13).
+- **Values fixed (2026-11-15):** training 2015-2025 and test 2012-2014 as above; tolerance X not needed while NOAA-21 is only a check (NOAA-20/S-NPP is within 1 %, and NOAA-21 is not used for `viirs_eq`; results below); ML margin not needed (RA-6 not pursued); minimum years N = 1 (DE-13).
 - **Results (2026-11-14):** see method/VALIDATION.md and method/results/ (PR #32).
   - **Backcast:** the ratio per month of year was selected (DE-6).
   - **Leave-one-year-out (ratio):** yearly bias -9.7 % to +7.9 %.
   - **VIIRS continuity:** NOAA-20/S-NPP over 83 months: total ratio 0.992, monthly median 1.001 (interquartile range 0.95-1.05). The total and the median are within 1 % of 1, so no correction factor is needed for any tolerance X ≥ 1 %.
   - **Sensitivity** (PR #32):
     - **Training window:** trained on 2015-2019 the backcast bias is -1.0 %; on 2020-2025 it is +2.5 %. The leave-one-year-out bias tends to fall with the year, but not significantly (Spearman -0.35, p = 0.22); a possible sign of MODIS orbital drift.
-    - **Decision for the team:** keep 2015-2025 (current) or move to an earlier window. Changing it now would be a choice made after seeing the test results.
-    - **Low-confidence VIIRS:** no material effect (+0.6 % → +1.2 %).
+    - **Decided (2026-11-15):** keep 2015-2025, the window fixed before the results. Moving it now would be a choice made after seeing the test results.
+    - **Low-confidence detections:** no material effect. Backcast bias +0.6 % → +1.2 % without VIIRS low, +1.1 % without MODIS low (C < 30 %), +1.7 % without both (`validation_metrics.json` → `sensitivity.low_confidence`).
     - **Grid size:** area totals do not depend on it.
-  - **Not done yet:** NOAA-21 continuity (needs API data).
+  - **NOAA-21 continuity (2026-11-15, FIRMS area API, standard processing):** NOAA-21/NOAA-20 over the 21 months where both are valid (2024-04 to 2025-12): total ratio 0.956, monthly median 0.958 (interquartile range 0.82-1.02) (`validation_metrics.json` → `continuity.noaa21`, `method/results/continuity_noaa21.csv`). NOAA-21 counts about 4.4 % fewer hotspots than NOAA-20 here. It is not used for `viirs_eq` (DE-11), so nothing changes in the series. If NOAA-21 ever replaces NOAA-20 as the reference, a correction factor (or the tolerance X) has to be decided first.
 
 ### DE-16 Uncertainty calibration
 
@@ -308,7 +313,7 @@ Fixed before any test result is seen.
 ### DE-17 Hotspot list for the CSV download
 - **Problem:** the challenge asks for a downloadable CSV of the hotspots detected in a search (R9). The app has only monthly counts per cell.
 - **Proposal:**
-  - `pipeline/export_hotspots.py` writes `docs/data/hotspots/<instrument>_<year>.csv.gz` from `data/interim/clean/`, plus `index.json` (source, year, rows, bytes). Instruments are the FIRMS country-file names: `modis`, `viirs-snpp`, `viirs-jpss1`.
+  - `pipeline/export_hotspots.py` writes `docs/data/hotspots/<instrument>_<year>.csv.gz` from `data/interim/clean/`, plus `index.json` (source, year, rows, bytes). Instruments are the FIRMS country-file names: `modis`, `viirs-snpp`, `viirs-jpss1`, plus `viirs-jpss2` for NOAA-21 (area API, 2024-2025).
   - Rows: `cell_id, latitude, longitude, acq_date, acq_time, sat, sensor, confidence, daynight, frp, type, version`. They are the rows kept by `clean.py` (DE-4, DE-5, DE-9, DE-10): standard data, `type` 0, inside the boundary, no confidence filter. The `cell_id` is the one of `aggregate.py`.
   - Each file starts with comment lines: FIRMS acknowledgment, disclaimer link and data cut-off date.
   - In the app, a button counts the rows of the selected cells and period (it reads only the yearly files of the period), shows the number, and then enables the download. The downloaded CSV carries the same header plus the area and period. Above 1,000,000 matching rows the app asks for a smaller area or period, to protect browser memory.
@@ -316,11 +321,11 @@ Fixed before any test result is seen.
   - Monthly counts only, and say so in the app and the slides: no extra files, but R9 stays unmet.
   - Per-year gzip files filtered in the browser (proposed): works on GitHub Pages without a server; size is the cost.
   - Filter on a server: not available with GitHub Pages and a server would need maintenance.
-- **Size:** measured on real files: 11.8 bytes per row (NOAA-20 2025, 13,176 rows) and 13.4 bytes per row (MODIS 2013, 7,015 rows). With the `rows_kept` of `cleaning_log.csv` (MODIS 616,190; S-NPP 895,976; NOAA-20 531,459; total 2,043,625) the estimate is about 25 MB for the 48 files. The real total replaces this estimate after the full run. TODO(verify): GitHub Pages and repository size limits - GitHub documentation.
+- **Size:** measured on real files: 11.8 bytes per row (NOAA-20 2025, 13,176 rows) and 13.4 bytes per row (MODIS 2013, 7,015 rows). With the `rows_kept` of `cleaning_log.csv` (MODIS 616,190; S-NPP 895,976; NOAA-20 531,459; total 2,043,625) the estimate was about 25 MB for the 48 files. Real total after the full run: 48 files, 2,043,625 rows, 23,890,631 bytes; with NOAA-21 and 2026 (2026-11-15): 54 files, 2,168,855 rows, 25,300,584 bytes (`docs/data/hotspots/index.json`). GitHub limits: a published Pages site "may be no larger than 1 GB", source repositories have "a recommended limit of 1 GB" (https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits), and files larger than 100 MiB are blocked (https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github). The largest hotspot file is about 1 MB.
 - **Checks (tests):** `tests/test_export_hotspots.py` and `tests/js/hotspots.test.js` verify that
   - the count per cell, month and satellite equals the raw columns of `monthly_cells.csv` wherever that file has data;
   - the rows per instrument and year equal `rows_kept` of `cleaning_log.csv`;
   - every instrument-year of the log has a file (this test fails until the full set is generated);
   - every file has the attribution header.
   Months flagged as missing have hotspot rows but an empty raw column in `monthly_cells.csv`; they are not compared.
-- **Limits:** only the cleaned rows are exported, so the file is not the full FIRMS list (no `type` other than 0, nothing outside the boundary). The list is the same archived data as the rest of the app (cut-off 2025-12-31).
+- **Limits:** only the cleaned rows are exported, so the file is not the full FIRMS list (no `type` other than 0 in standard rows, nothing outside the boundary). The list is the same archived data as the rest of the app (cut-off 2026-10-31); NRT rows (version ending in NRT, August to October 2026) are provisional and have no `type`.

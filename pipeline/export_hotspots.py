@@ -7,7 +7,7 @@ Reads data/interim/clean/<source>_<year>.csv.gz (clean.py output: SP data, type 
 no confidence filter) and writes, for each one:
     docs/data/hotspots/<source>_<year>.csv.gz   comment header (acknowledgment, cut-off date) + one row per hotspot
     docs/data/hotspots/index.json               source, year, rows and bytes of every file (the app reads it)
-`<source>` is the FIRMS country-file instrument: modis, viirs-snpp, viirs-jpss1.
+`<source>` is the FIRMS instrument folder: modis, viirs-snpp, viirs-jpss1 (country files), viirs-jpss2 (NOAA-21, area API).
 Rows keep the cell_id of aggregate.py, so the app selects them with the same cells as monthly_cells.csv.
 Like export.py, this is code that writes into docs/data/ (AGENTS.md rule 7).
 
@@ -32,17 +32,19 @@ META_PATH = ROOT / "docs" / "data" / "metadata.json"
 
 COLUMNS = ["cell_id", "latitude", "longitude", "acq_date", "acq_time", "sat", "sensor", "confidence",
            "daynight", "frp", "type", "version"]
-CLEAN_NAME = re.compile(r"^(modis|viirs-snpp|viirs-jpss1)_(\d{4})\.csv\.gz$")
+CLEAN_NAME = re.compile(r"^(modis|viirs-snpp|viirs-jpss1|viirs-jpss2)_(\d{4})\.csv\.gz$")
 
 
-def build_header(meta, source, year):
+def build_header(meta, source, year, nrt=False):
     """Comment lines at the top of every file: acknowledgment, disclaimer link and data cut-off date."""
     return [f"# LUNAX Fire Calendar: hotspots, {source} {year}",
             f"# {meta['attribution']}",
             f"# Disclaimer: {meta['disclaimer_url']}",
             f"# Data cut-off date: {meta['data_cutoff_date']} ({meta['archived']})",
             "# Rows: FIRMS standard-processing detections inside the study area boundary, type 0 (presumed vegetation fire), "
-            "no confidence filter (method/DECISIONS.md DE-5, DE-9, DE-10). Sensors are never to be summed."]
+            "no confidence filter (method/DECISIONS.md DE-5, DE-9, DE-10). Sensors are never to be summed."] + (
+        ["# Rows whose version ends in NRT are near real-time data after the last standard-processing date: "
+         "provisional, no type (DE-4, DE-9)."] if nrt else [])
 
 
 def hotspot_rows(clean):
@@ -84,13 +86,14 @@ def update_index(entries, out_dir=OUT_DIR):
 def export_one(source, year, meta, clean_dir=CLEAN_DIR, out_dir=OUT_DIR):
     rows = hotspot_rows(read_clean(Path(clean_dir) / f"{source}_{year}.csv.gz"))
     name = f"{source}_{year}.csv.gz"
-    size = write_hotspot_file(rows, build_header(meta, source, year), Path(out_dir) / name)
+    nrt = rows["version"].str.endswith("NRT").any()
+    size = write_hotspot_file(rows, build_header(meta, source, year, nrt), Path(out_dir) / name)
     return {"source": source, "year": year, "file": name, "rows": int(len(rows)), "bytes": int(size)}
 
 
 def main(argv=None):
     p = argparse.ArgumentParser(description="Write docs/data/hotspots/ from the cleaned files.")
-    p.add_argument("--source", choices=["modis", "viirs-snpp", "viirs-jpss1"])
+    p.add_argument("--source", choices=["modis", "viirs-snpp", "viirs-jpss1", "viirs-jpss2"])
     p.add_argument("--year", type=int)
     a = p.parse_args(argv)
     meta = json.loads(META_PATH.read_text())

@@ -80,6 +80,15 @@
     return out;
   }
 
+  /** Set of year_month values with provisional = 1 for any satellite in months.csv (near real-time data, DE-4). */
+  function provisionalMonths(text) {
+    var lines = text.trim().split("\n"), h = lines[0].split(","), iy = h.indexOf("year_month"), ip = h.indexOf("provisional");
+    if (iy < 0 || ip < 0) throw new Error("months.csv: missing year_month or provisional column");
+    var out = new Set();
+    lines.slice(1).forEach(function (l) { var f = l.split(","); if (f[ip] === "1") out.add(f[iy]); });
+    return out;
+  }
+
   /** A month is estimated (converted from MODIS) if any selected cell is estimated. */
   function estimatedMonths(data, sel) {
     var nM = data.nMonths, out = new Array(nM).fill(false);
@@ -142,8 +151,10 @@
   function seriesCsv(meta, rows, label) {
     var head = ["# " + meta.title, "# Area: " + label, "# Data cut-off date: " + meta.data_cutoff_date + " (" + meta.archived + ")",
                 "# " + meta.attribution, "# Disclaimer: " + meta.disclaimer_url,
-                "# Empty value = no data (never zero fire). estimated=1: converted from MODIS (see method/METHOD.md).",
-                "year_month,value,ci90_low,ci90_high,estimated,median_same_month,n_years_median,anomaly_diff,anomaly_ratio"];
+                "# Empty value = no data (never zero fire). estimated=1: converted from MODIS (see method/METHOD.md)."];
+    var prov = rows.filter(function (r) { return r.provisional; }).map(function (r) { return r.ym; });
+    if (prov.length) head.push("# Provisional months (FIRMS near real-time data, replaced later by standard data): " + prov.join(" "));
+    head.push("year_month,value,ci90_low,ci90_high,estimated,median_same_month,n_years_median,anomaly_diff,anomaly_ratio");
     var body = rows.map(function (r) {
       return [r.ym, fmt(r.value, 3), fmt(r.lo, 3), fmt(r.hi, 3), r.estimated ? 1 : 0, fmt(r.median, 3), r.nYears,
               fmt(r.diff, 3), fmt(r.ratio, 4)].join(",");
@@ -182,6 +193,7 @@
   }
 
   return { parseCellsCsv: parseCellsCsv, filterHotspots: filterHotspots, hotspotsCsv: hotspotsCsv, selectCells: selectCells, areaSeries: areaSeries,
-           estimatedMonths: estimatedMonths, firstObservedMonth: firstObservedMonth, estimatedBoundaryPath: estimatedBoundaryPath, medianAnomaly: medianAnomaly, halfWidth90: halfWidth90,
+           estimatedMonths: estimatedMonths, provisionalMonths: provisionalMonths, firstObservedMonth: firstObservedMonth,
+           estimatedBoundaryPath: estimatedBoundaryPath, medianAnomaly: medianAnomaly, halfWidth90: halfWidth90,
            seriesCsv: seriesCsv, fmt: fmt, SENSOR_COLUMNS: SENSOR_COLUMNS };
 });

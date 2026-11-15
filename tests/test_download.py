@@ -87,6 +87,24 @@ class RetryTests(unittest.TestCase):
         self.assertEqual(session.get.call_count, download.RETRIES)
 
 
+class AreaApiTests(unittest.TestCase):
+    def test_windows_cover_each_day_once(self):
+        w = download.api_windows("2024-01-17", "2024-02-02")
+        days = [d for first, n in w for d in download.pd.date_range(first, periods=n)]
+        self.assertEqual(days, list(download.pd.date_range("2024-01-17", "2024-02-02")))
+        self.assertTrue(all(1 <= n <= download.API_MAX_DAYS for _, n in w))
+
+    def test_errors_never_show_the_key(self):
+        session = mock.Mock()
+        session.get.side_effect = download.requests.ConnectionError("x")
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(download.time, "sleep"), \
+                self.assertRaises(RuntimeError) as cm:
+            download.download_area_api("VIIRS_NOAA21_SP", "2024-01-17", "2024-01-17", (-67, -13.75, -59.75, -7.75),
+                                       "KEY123", d, session)
+        self.assertNotIn("KEY123", str(cm.exception))
+        self.assertIsNone(cm.exception.__cause__)
+
+
 class MissingDaysTests(unittest.TestCase):
     def test_parses_sp_and_nrt_items(self):
         df = download.parse_missing_days({"success": True, "html": REAL_HTML})

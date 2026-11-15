@@ -1,21 +1,24 @@
-"""Download FIRMS data into data/raw/ (country yearly CSV route) and the FIRMS missing-days table.
+"""Download FIRMS data into data/raw/ (country yearly CSVs; area API for NOAA-21) and the FIRMS missing-days table.
 
-Owner issues: JA-2 (code), JA-4 (full download). SCOPE: R2, S4.
+Owner issues: JA-2 (code), JA-4 (full download); area API route for NOAA-21: RA-3. SCOPE: R2, S4.
 AI-assisted code (Claude Code); logged in AI_USE.md.
 
-Route: FIRMS country yearly summary files (standard processing, no MAP_KEY), see
-method/FIRMS_REFERENCE.md section 3.1. Layout mirrors the FIRMS URL path and is what clean.py reads:
+Routes (DE-8), layouts read by clean.py:
+- FIRMS country yearly summary files (standard processing, no MAP_KEY), method/FIRMS_REFERENCE.md section 3.1:
     data/raw/country/<source>/<year>/<source>_<year>_<Country>.csv
-    data/raw/missing_days.csv   (columns: sat, date, processing)  -> read by aggregate.py
-The API route (needed for 2026 and NOAA-21) is not implemented yet.
+- FIRMS area API (MAP_KEY in .env), for NOAA-21 (no country files) and for 2026 (section 3.3):
+    data/raw/api/<source>/<year>/<source>_<year>_<API source>.csv   (bbox of config/area.json)
+- data/raw/missing_days.csv   (columns: sat, date, processing)  -> read by aggregate.py
 
 Usage:
     python pipeline/download.py --countries Brazil Bolivia [--sources modis viirs-snpp viirs-jpss1] [--years 2000 2025]
     python pipeline/download.py --missing-days-only
+    python pipeline/download.py --api-source VIIRS_NOAA21_SP --dates 2024-01-17 2025-12-31
 Files already in the cache with the size listed in the FIRMS index are skipped.
 """
 import argparse
 import html
+import io
 import json
 import re
 import time
@@ -35,6 +38,13 @@ RETRIES = 4
 BACKOFF_SECONDS = 2.0
 PAUSE_SECONDS = 0.2  # courtesy pause between requests
 TIMEOUT_SECONDS = 120
+# A call with DATE returns DATE .. DATE + DAY_RANGE - 1, DAY_RANGE 1..5 (https://firms.modaps.eosdis.nasa.gov/api/area/).
+AREA_API_URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv/{key}/{source}/{bbox}/{days}/{date}"
+API_MAX_DAYS = 5
+# Area API source -> data/raw/api/<folder>, named like the country folders (viirs-jpss1 = NOAA-20, viirs-jpss2 = NOAA-21).
+API_FOLDERS = {f"{s}_{p}": folder for s, folder in (("MODIS", "modis"), ("VIIRS_SNPP", "viirs-snpp"),
+                                                    ("VIIRS_NOAA20", "viirs-jpss1"), ("VIIRS_NOAA21", "viirs-jpss2"))
+               for p in ("SP", "NRT")}
 
 # Names in the missing_data table -> normalized satellite names used by clean.py and aggregate.py.
 MISSING_DATA_SATELLITES = {
@@ -143,13 +153,57 @@ def download_missing_days(raw_dir=RAW_DIR, session=None):
     return days
 
 
+def api_windows(start, end):
+    """(first day, number of days) windows of at most API_MAX_DAYS days that cover start..end exactly once."""
+    days = pd.date_range(start, end, freq="D")
+    return [(d.strftime("%Y-%m-%d"), min(API_MAX_DAYS, len(days) - i))
+            for i, d in enumerate(days) if i % API_MAX_DAYS == 0]
+
+
+def download_area_api(source, start, end, bbox, key, raw_dir=RAW_DIR, session=None):
+    """Fetch start..end from the FIRMS area API and write one CSV per year. Returns {path: rows}.
+
+    The MAP_KEY is part of the URL, so no message raised here may contain the URL."""
+    frames = []
+    for first, n in api_windows(start, end):
+        url = AREA_API_URL.format(key=key, source=source, bbox=",".join(f"{v:g}" for v in bbox), days=n, date=first)
+        try:
+            text = fetch_with_retries(url, session).text
+        except RuntimeError:
+            raise RuntimeError(f"FIRMS area API failed: {source} {first} (+{n} days)") from None
+        if not text.startswith("latitude"):  # e.g. an "Invalid MAP_KEY" answer
+            raise RuntimeError(f"FIRMS area API did not return CSV: {source} {first}")
+        frames.append(pd.read_csv(io.StringIO(text), dtype=str))
+        time.sleep(PAUSE_SECONDS)
+    df = pd.concat(frames, ignore_index=True)
+    folder = API_FOLDERS[source]
+    written = {}
+    for year, rows in df.groupby(df["acq_date"].str[:4]):
+        path = Path(raw_dir) / "api" / folder / year / f"{folder}_{year}_{source}.csv"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".part")
+        rows.to_csv(tmp, index=False)
+        tmp.replace(path)
+        written[path] = len(rows)
+    return written
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description="Download FIRMS country yearly CSVs and the missing-days table.")
     p.add_argument("--countries", nargs="+", help="country names as in the FIRMS index, e.g. Brazil Bolivia")
     p.add_argument("--sources", nargs="+", choices=SOURCES, default=list(SOURCES))
     p.add_argument("--years", nargs=2, type=int, metavar=("FIRST", "LAST"))
     p.add_argument("--missing-days-only", action="store_true")
+    p.add_argument("--api-source", choices=list(API_FOLDERS), help="FIRMS area API source (needs FIRMS_MAP_KEY)")
+    p.add_argument("--dates", nargs=2, metavar=("FIRST", "LAST"), help="YYYY-MM-DD range for --api-source")
     a = p.parse_args(argv)
+    if a.api_source:
+        if not a.dates:
+            p.error("--dates is required with --api-source")
+        from config import load_area, load_map_key
+        for path, n in download_area_api(a.api_source, *a.dates, load_area()["bbox"], load_map_key()).items():
+            print(f"{path.relative_to(ROOT)}: {n} rows")
+        return
     if not a.missing_days_only:
         if not a.countries:
             p.error("--countries is required (or use --missing-days-only)")

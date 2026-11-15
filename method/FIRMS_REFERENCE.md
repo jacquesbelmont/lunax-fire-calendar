@@ -162,8 +162,8 @@ Observed values: MODIS `satellite` = `Terra`; MODIS `version` = `6.2`; VIIRS `sa
 in both sensors; `acq_time` is HHMM in UTC with leading zeros (store it as text).
 
 Differences between these files and the attribute documentation (write code against real files):
-- Docs: MODIS satellite `A`/`T`. File: `Terra`. TODO(verify) the Aqua value and the API/NRT format.
-- Docs: MODIS version strings for Collection 6.1. File: `6.2`. TODO(verify) its meaning.
+- Docs: MODIS satellite `A`/`T`. Country files: `Terra`/`Aqua`; NRT files: `T`/`A` (section 13, item 3).
+- Docs: MODIS version strings for Collection 6.1. Country files: `6.2`, `6.03`, `61.03` (meaning: section 13, item 1).
 - Docs: VIIRS version `1.0`/`1.0NRT`. Files: `2` (Collection 2).
 - Docs list no standard-only VIIRS field. VIIRS standard files do contain `type`.
 
@@ -182,7 +182,7 @@ the FIRMS FAQ.
 - `daynight`: D = day, N = night. FAQ: the NRT flag is based on the satellite orbit and differs from
   the standard method.
 - `type` (standard data): 0 = presumed vegetation fire, 1 = active volcano, 2 = other static land
-  source, 3 = offshore. This is the MODIS definition; TODO(verify) that VIIRS uses the same codes.
+  source, 3 = offshore. VIIRS uses the same codes (section 13, item 2).
 - NRT data do not attribute static sources or hotspot type (FAQ).
 - A detection is the center of a pixel flagged as containing one or more fires; FIRMS cannot determine
   the exact location or size of the fire; several detections in a line generally mark a fire front (FAQ).
@@ -219,8 +219,8 @@ standard date of each satellite.
 
 The archive README (November 2026) also lists MODIS gaps: end of June to beginning of July 2001; some
 data throughout 2002; some data from mid-August 2007; part of 2009-04-21 and all of 2009-04-22; and
-warns that some erroneous data may be present. The 2007 and 2009 gaps are not in the table:
-TODO(verify) with daily counts.
+warns that some erroneous data may be present. The 2007 and 2009 gaps are not in the table; daily
+counts do not show them as whole missing days (section 13, item 8).
 
 The FAQ warns that the data carry no information on cloud cover or missing data: a day without
 detections is not proof of zero fire.
@@ -257,9 +257,8 @@ Uncompressed CSV size in MB per year:
   2018:69 2019:117 2020:134 2021:107 2022:119 2023:107 2024:163 2025:70
 
 Total about 3.2 GB for all of Brazil; a smaller area is filtered after download. The 2000 MODIS file
-starts on 2000-11-01 (Terra) and is a partial year. The 2025 files were updated on 2026-10-10:
-TODO(verify) that they cover January to December 2025 (check min and max `acq_date`) before computing
-2025 statistics.
+starts on 2000-11-01 (Terra) and is a partial year. The 2025 files were updated on 2026-10-10; the
+MODIS, S-NPP and NOAA-20 Brazil files cover 2025-01-01 to 2025-12-31 (section 13, item 4).
 
 ## 10. Attribution and disclaimers to reuse
 
@@ -313,6 +312,25 @@ runnable in Google Colab:
 - **Item 4:** answered for MODIS and NOAA-20. modis_2025_Brazil.csv and viirs-jpss1_2025_Brazil.csv cover 2025-01-01 to 2025-12-31 with 365 distinct days. S-NPP 2025 was not checked this way.
 - **Item 5:** the attribute page gives the satellite code `N21` for NOAA-21. The archive file naming is still open.
 - **Additional fact, VIIRS confidence:** the attribute page says low-confidence night pixels occur only in the South Atlantic Magnetic Anomaly area (11°E to 110°W, 7°N to 55°S) and "have been removed from the NRT data distributed by FIRMS". The SP files viirs-snpp_2013_Brazil.csv and viirs-jpss1_2025_Brazil.csv have 0 such rows.
+
+**Progress on 2026-11-15** (Rafael). Sources: the MODIS and VIIRS user guides linked from the FIRMS FAQ ("Where can I find the MODIS and VIIRS Active Fire User guides?", https://www.earthdata.nasa.gov/data/tools/firms/faq), the FIRMS public NRT files, the country files in `data/raw/country/`, and the FIRMS API with a MAP_KEY (`data_availability`, `area`). All items are answered except the archive file naming in item 5 (not needed: NOAA-21 comes from the area API).
+- **Item 1, MODIS `version`:** the Brazil and Bolivia country files carry `6.2` for 2000-2017, `6.03` for 2018-2022 and `61.03` for 2023-2025.
+  - The MCD14ML files are named `MCD14ML.YYYYMM.CCC.VV`, where CCC is the collection and VV "the product version (currently "03") within a Collection" (MODIS C6/C6.1 Active Fire Product User's Guide 1.0, section 5.5.1, https://www.earthdata.nasa.gov/s3fs-public/2023-09/MODIS_C6_C6.1_Fire_User_Guide_1.0.pdf).
+  - Our reading: `6.03` = Collection 6, version 03; `61.03` = Collection 6.1, version 03; `6.2` most likely Collection 6, version 2. FIRMS does not document the field this way for the country files.
+  - The guide (section 5.5.2) says version 3 "incorporates significantly improved typing of hot spots". If `6.2` is version 2, the 2000-2017 rows carry the older `type`. `type` ≠ 0 is at most 1.36 % of the MODIS detections inside the area in any year (2018; `method/results/cleaning_log.csv`).
+- **Item 2, VIIRS `type`:** the VIIRS guide lists "0 = presumed vegetation fire, 1 = active volcano, 2 = other static land source, 3 = offshore detection (includes all detections over water)" (VIIRS Collection 2 375 m Active Fire User Guide 1.2, section 3.2.2, https://www.earthdata.nasa.gov/s3fs-public/2025-06/VIIRS_C2_AF-375m_User_Guide_1.2.pdf). These are the MODIS codes.
+- **Item 3, satellite in NRT files:** the FIRMS public NRT files for South America (last 24 h, downloaded 2026-11-15) write `T` and `A` (MODIS, version `6.1NRT`), `N20` and `N21` (VIIRS, version `2.0NRT`), with no `type` column:
+  - https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_South_America_24h.csv
+  - https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_South_America_24h.csv
+  - https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-21-viirs-c2/csv/J2_VIIRS_C2_South_America_24h.csv
+  - Area API answers (checked 2026-11-15 with a MAP_KEY) write MODIS `satellite` as `Terra`/`Aqua` in both SP and NRT, VIIRS as `N`, `N20`, `N21`; NRT answers keep `instrument` but have no `type`.
+- **Item 4:** S-NPP too: viirs-snpp_2025_Brazil.csv covers 2025-01-01 to 2025-12-31 with 365 distinct days.
+- **Item 5:** `N21` confirmed in the NOAA-21 NRT file and in the area API answers (`VIIRS_NOAA21_SP`, version `2`). The archive file naming is not checked; NOAA-21 is downloaded from the area API.
+- **Item 7:** `data_availability` (`ALL`, 2026-11-15) lists `VIIRS_NOAA21_SP` from 2023-03-01 to 2026-07-31 and `VIIRS_NOAA21_NRT` from 2024-01-17 to 2026-11-15; the full table is in DATA_CONTRACT.md. The area API answers carry the VIIRS country-file columns (including `instrument` and `type`), but `acq_time` without leading zeros (e.g. `541`); `pipeline/clean.py` pads it.
+- **Item 8, MODIS gaps of 2007 and 2009:** daily counts of modis_2007_Brazil.csv and modis_2009_Brazil.csv show no day with zero Terra or Aqua detections. On 2009-04-21 and 2009-04-22 they are Terra 87 and 88, Aqua 65 and 94, in the range of the days around them (Terra 10-115, Aqua 43-222 from 2009-04-14 to 2009-04-28). The gaps are not visible as whole missing days, so no month is flagged for them; gaps of part of a day cannot be seen this way.
+- **MODIS confidence classes:** low 0 % ≤ C < 30 %, nominal 30 % ≤ C < 80 %, high 80 % ≤ C ≤ 100 % (MODIS guide, Table 11).
+- **Item 6:** the FIRMS page (https://www.earthdata.nasa.gov/data/tools/firms, 2026-11-15) now links the "Suomi NPP data announcement" at https://www.earthdata.nasa.gov/data/alerts-outages/reminder-new-suomi-npp-observations-cease-november-2-2026, which agrees with November 2 (`SAT_END` in `pipeline/aggregate.py` counts that partial day as missing).
+- **Aqua start:** the first Aqua `acq_date` in the 2002 country files (Brazil + Bolivia) is 2002-07-04, with 1,141 detections that day, while Terra has 498-580 detections per day on 2002-07-01..03. `SAT_START` in `pipeline/aggregate.py` uses 2002-07-04; July 2002 was already flagged for Aqua.
 
 ## 14. Decisions this reference does not make (record them in method/DECISIONS.md)
 

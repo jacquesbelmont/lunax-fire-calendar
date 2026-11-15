@@ -74,7 +74,8 @@ test("counts per cell, month and satellite equal monthly_cells.csv (where it has
       sats.add(f[5]);
     });
     // satellites of this source (a file with no row for a satellite still has to match its zero counts)
-    const satsOfSource = { modis: ["Terra", "Aqua"], "viirs-snpp": ["SNPP"], "viirs-jpss1": ["NOAA20"] }[e.source];
+    const satsOfSource = { modis: ["Terra", "Aqua"], "viirs-snpp": ["SNPP"], "viirs-jpss1": ["NOAA20"],
+      "viirs-jpss2": ["NOAA21"] }[e.source];  // same as SOURCE_SATS in pipeline/aggregate.py
     let checked = 0;
     for (const sat of satsOfSource) {
       const column = data.columns[SAT_COLUMN[sat]];

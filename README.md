@@ -7,11 +7,12 @@ Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logo
 
 ## Status (2026-11-15)
 - **Published:** https://jacquesbelmont.github.io/lunax-fire-calendar/ (GitHub Pages from `main`, folder `/docs`).
-- **What the app does:** map with the study-area boundary and area selection (rectangle or latitude/longitude); monthly calendar (month x year) of harmonized hotspot counts; the latest month compared with the historical median; period selection; downloads (monthly series, values per grid cell, hotspot list, chart PNG) with the FIRMS acknowledgment and the data cut-off date.
-- **Data:** NASA FIRMS standard data for Rondônia, Brazil, 2000-11 to 2025-12 (archived data, cut-off 2025-12-31). 2026 and NOAA-21 are not included (they need the FIRMS API).
-- **Method:** MODIS-only months (2000-11 to 2012-01) are converted to the VIIRS 375 m scale with a ratio per month of year, learned where both sensors overlap (2015-2025). Selected by a pre-registered backcast: bias of the total +0.6% on 2012-2014. See [method/METHOD.md](method/METHOD.md), [method/VALIDATION.md](method/VALIDATION.md) and [method/DECISIONS.md](method/DECISIONS.md).
+- **What the app does:** map with the study-area boundary and area selection (rectangle or latitude/longitude); monthly calendar (month x year) of harmonized hotspot counts; the latest month compared with the historical median; period selection; per-sensor view (Terra, Aqua, S-NPP, NOAA-20, NOAA-21); downloads (monthly series, values per grid cell, hotspot list, chart PNG) with the FIRMS acknowledgment and the data cut-off date.
+- **Data:** NASA FIRMS data for Rondônia, Brazil, 2000-11 to 2026-10 (archived data, cut-off 2026-10-31): country CSVs (standard processing) for 2000-2025 and the FIRMS area API for NOAA-21 (from 2024) and for 2026. August to October 2026 are near real-time data, marked provisional in the app.
+- **Method:** MODIS-only months (2000-11 to 2012-01) are converted to the VIIRS 375 m scale with a ratio per month of year, learned where both sensors overlap (2015-2025). Selected by a pre-registered backcast: bias of the total +0.6% on 2012-2014. VIIRS continuity: NOAA-20/S-NPP 0.992 (83 months), NOAA-21/NOAA-20 0.956 (21 months). See [method/METHOD.md](method/METHOD.md), [method/VALIDATION.md](method/VALIDATION.md) and [method/DECISIONS.md](method/DECISIONS.md) (all decisions DECIDED).
 - **Plain-English explanation:** [method/HOW_IT_WORKS.md](method/HOW_IT_WORKS.md).
 - **Submission drafts:** [submission/](submission/) (project page, slides outline, fact check, checklist).
+- **Updating:** a new month needs `pipeline/download.py --api-source` for the new dates, a new `DATA_END` in `pipeline/aggregate.py` and a pipeline rerun (see [pipeline/README.md](pipeline/README.md)).
 
 ## Structure
 - `pipeline/` — Python pipeline (runs offline, writes to `docs/data/`). See [pipeline/README.md](pipeline/README.md).
@@ -37,7 +38,8 @@ Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logo
    - `check_availability.py` and `download.py` are JA-2/JA-4. `download.py` writes `data/raw/country/<instrument>/<year>/*.csv` and `data/raw/missing_days.csv`.
    - The rest, after the download:
    ```
-   # one instrument-year at a time (MODIS 2000-2025, VIIRS S-NPP 2012-2025, NOAA-20 2018-2025)
+   # one instrument-year at a time (MODIS 2000-2025, VIIRS S-NPP 2012-2025, NOAA-20 2018-2025);
+   # area API data with --route api: viirs-jpss2 (NOAA-21) 2024-2025, and all four instruments for 2026
    python pipeline/clean.py --source modis --year 2005 --bbox -67 -13.75 -59.75 -7.75 --check
    python pipeline/aggregate.py --check
    python pipeline/harmonize.py --check

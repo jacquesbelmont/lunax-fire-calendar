@@ -11,9 +11,9 @@ from config import load_map_key
 URL = "https://firms.modaps.eosdis.nasa.gov/api/data_availability/csv/{key}/{sensor}"
 
 
-def fetch_data_availability(sensor="all"):
+def fetch_data_availability(sensor="ALL"):
     """Return the CSV text (data_id, min_date, max_date per dataset).
-    TODO(verify): `all` vs `ALL` - the official notebook uses lowercase."""
+    `ALL` as listed on https://firms.modaps.eosdis.nasa.gov/api/data_availability/ (checked 2026-11-15)."""
     try:
         resp = requests.get(URL.format(key=load_map_key(), sensor=sensor), timeout=60)
         resp.raise_for_status()
