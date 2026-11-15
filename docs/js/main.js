@@ -40,6 +40,18 @@
     });
   }
 
+  /** Map colors: per-cell values of the month shown in the comparison (same column and month as the calendar). */
+  function mapPaint() {
+    const m = LunaxCalc.comparedMonthIndex(state.rows, Number($("compare-month").value));
+    if (m < 0) return null;
+    const column = $("series-select").value, row = state.rows[m];
+    const values = LunaxCalc.cellMonthValues(state.data, state.sel, column, m).map((c) => c.value);
+    const cap = LunaxCalc.colorCap(values);
+    const status = row.estimated ? "Estimated from MODIS" : row.provisional ? "Provisional (near real-time data)" :
+      column === "viirs_eq" ? "Observed (VIIRS)" : "Raw counts of one sensor";
+    return { values: values, cap: cap, legend: { title: "Hotspots per cell, " + row.ym, status: status, cap: cap, unit: "hotspots" } };
+  }
+
   function areaLabel() {
     const b = state.bbox.map((v) => LunaxCalc.fmt(v, 4));
     return state.meta.area.name + "; rectangle west " + b[0] + ", south " + b[1] + ", east " + b[2] + ", north " + b[3];
@@ -85,7 +97,7 @@
     const hasCells = cells.length > 0;
     state.rows = hasCells ? buildRows() : null;
     SELECTION_BUTTONS.forEach((id) => { $(id).disabled = !hasCells; });
-    state.map.showSelection(state.bbox, cells);
+    state.map.showSelection(state.bbox, cells, hasCells ? mapPaint() : null);
     const info = $("selection-info");
     if (!hasCells) {
       info.textContent = "No grid cell centres inside this rectangle. Adjust the rectangle to select cells.";

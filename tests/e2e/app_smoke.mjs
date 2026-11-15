@@ -84,6 +84,15 @@ try {
   check("comparison text names a provisional month", /provisional/.test(await evaluate(`document.querySelector('#compare-text').textContent`)),
     (await evaluate(`document.querySelector('#compare-text').textContent`)).slice(0, 90));
 
+  const legend0 = await evaluate(`document.querySelector('#map-legend').textContent`);
+  const cells0 = await evaluate(`document.querySelectorAll('#map path.map-cell').length`);
+  check("map colors the 376 cells for the compared month (2026-10, provisional) with a legend", cells0 === 376 &&
+    /Hotspots per cell, 2026-10/.test(legend0) && /Provisional/.test(legend0) && /no data/.test(legend0), cells0 + " cells; " + legend0.slice(0, 80));
+  await evaluate(`(() => { const s = document.querySelector('#compare-month'); s.value = '9'; s.dispatchEvent(new Event('change')); return true; })()`);
+  const legend9 = await evaluate(`document.querySelector('#map-legend').textContent`);
+  check("map follows the comparison month (September)", /Hotspots per cell, 2026-09/.test(legend9), legend9.slice(0, 60));
+  await evaluate(`(() => { const s = document.querySelector('#compare-month'); s.value = '10'; s.dispatchEvent(new Event('change')); return true; })()`);
+
   // Area by coordinates (R4, O1): a 2x2 degree square north of the area.
   await selectArea(-65, -9.75, -63, -7.75);
   const info1 = await evaluate(`document.querySelector('#selection-info').textContent`);
@@ -134,7 +143,8 @@ try {
   const allExportsDisabled = `${JSON.stringify([...exportIds, "hotspots-download"])}.every(id => document.getElementById(id).disabled)`;
   check("empty selection disables every export and clears both charts", await evaluate(`(
     ${allExportsDisabled} && !document.querySelector('#calendar .main-svg, #compare .main-svg') &&
-    /No grid cell/.test(document.querySelector('#selection-info').textContent)
+    /No grid cell/.test(document.querySelector('#selection-info').textContent) &&
+    document.querySelectorAll('#map path.map-cell').length === 0 && document.querySelector('#map-legend').hidden
   )`));
   await evaluate(`new Promise((resolve) => { window.__releaseCount(); setTimeout(resolve, 0); })`);
   check("a late hotspot count leaves the empty selection disabled", await evaluate(`(
