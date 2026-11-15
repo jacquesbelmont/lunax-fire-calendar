@@ -9,12 +9,39 @@ Changing any format here requires updating this file and telling the other side.
 ## Output files
 
 ### (a) Monthly counts per grid cell
-Path: TODO(verify): file name - decide in JA-3
-Content: monthly hotspot counts per grid cell, harmonized and per sensor, plus a flag for months with missing satellite data.
+Path: `docs/data/monthly_cells.csv`. Proposed by Rafael on issue #5 and implemented in `pipeline/export.py`; to be approved by Jacques (JA-3).
+Content: one row per **active cell** (at least one detection by any satellite in any month) and month. Only detections inside the area boundary (`docs/data/area.geojson`, DE-1) are counted.
+- Cells inside the boundary without a row had no detection in any month.
+- Everything outside the boundary is **outside the area**, never zero fire.
+- A cell that crosses the boundary counts only its detections inside it.
+
+Grid: DE-12 (0.25° cells; see `metadata.json` → `grid`).
+**An empty value means no data and is never zero fire** (AGENTS.md rule 6).
 
 | Column | Type | Unit | Description |
 |--------|------|------|-------------|
-| TODO(verify) | | | Fill from real FIRMS headers (JA-2) and the grid decision in method/DECISIONS.md |
+| `cell_id` | text | - | `<row>_<col>` with row = floor((lat+90)/0.25), col = floor((lon+180)/0.25). Cell centre: lat = (row+0.5)·0.25−90, lon = (col+0.5)·0.25−180 |
+| `year_month` | text | YYYY-MM | Month (UTC acquisition dates) |
+| `viirs_eq` | float | hotspots | Harmonized count on the VIIRS 375 m scale (DE-2). Empty = no data |
+| `viirs_eq_var` | float | hotspots² | Calibrated variance of `viirs_eq` (DE-16); 0 for observed (native VIIRS) months. For an area: 90 % interval = sum(`viirs_eq`) ± 1.645·sqrt(sum(`viirs_eq_var`)) |
+| `estimated` | 0/1 | - | 1 = converted from MODIS (2000-11 to 2012-01, DE-6/DE-11) |
+| `terra`, `aqua`, `snpp`, `noaa20`, `noaa21` | int | hotspots | Raw count per satellite, for the per-sensor view (JA-7). Empty = satellite not covered or month flagged. Never sum MODIS and VIIRS columns |
+
+### (a2) Coverage and flags per satellite and month
+Path: `docs/data/months.csv`.
+
+| Column | Type | Unit | Description |
+|--------|------|------|-------------|
+| `year_month` | text | YYYY-MM | Month |
+| `sat` | text | - | Terra, Aqua, SNPP, NOAA20 or NOAA21 |
+| `missing_days` | int | days | FIRMS missing days + days outside the satellite's operating window (DE-14) |
+| `flagged` | 0/1 | - | 1 = at least one missing day; the calendar marks the month, never as zero |
+| `provisional` | 0/1 | - | 1 = month contains NRT data (DE-4) |
+
+A satellite-month absent from this file has no data.
+
+### (d) Area boundary
+Path: `docs/data/area.geojson`. This is the IBGE boundary of Rondônia (DE-1), a GeoJSON FeatureCollection with one Polygon. The source URL and retrieval date are in the feature `properties`. The app draws it and marks everything outside it as "outside the area".
 
 ### (b) Hotspot list per year (CSV export)
 Path: TODO(verify): file naming - decide in JA-3
@@ -27,6 +54,7 @@ Content: hotspots per year, used for the CSV download (R9).
 ### (c) metadata.json
 Path: `docs/data/metadata.json`
 Fields (names TODO(verify) in JA-3; attribution = exact FIRMS acknowledgment text): area; source; product; version; time period; geographic coverage; method; data cut-off date; FIRMS attribution.
+Implemented in `pipeline/export.py` with keys: `title`, `area` (`name`, `bbox_west_south_east_north`, `source_countries`), `source` (`name`, `url`, `product`, `files`, `satellites`, `versions_by_satellite`), `period` (`first_month`, `last_month`), `data_cutoff_date`, `archived`, `grid`, `method`, `files`, `attribution` (exact FIRMS acknowledgment), `disclaimer_url`.
 
 ## FIRMS API facts
 
