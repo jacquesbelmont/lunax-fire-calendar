@@ -112,3 +112,16 @@ test("the CSV for download carries attribution, period and the column header", (
   assert.ok(csv.includes(meta.attribution) && csv.includes("2020-01 to 2020-12") && csv.includes(meta.data_cutoff_date));
   assert.ok(csv.trim().endsWith("a,b\n1,2"));
 });
+
+test("the count before the download is given per sensor and never as a harmonized total", () => {
+  const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+  const sel = new Set(calc.selectCells(data, [-65, -9.75, -63, -7.75]).map((i) => data.cells[i].id));
+  const out = { header: null, lines: [] };
+  index.files.filter((e) => e.year === 2025).forEach((e) => calc.filterHotspots(readText(e), sel, "2025-01", "2025-12", out));
+  const counts = calc.countBySatellite(out.header, out.lines);
+  assert.strictEqual(Object.values(counts).reduce((a, b) => a + b, 0), out.lines.length);
+  const text = calc.hotspotCountText(counts, out.lines.length, "2025-01", "2025-12");
+  assert.ok(text.startsWith(out.lines.length.toLocaleString("en-US") + " rows in the hotspot list"));
+  assert.ok(text.includes("Terra (MODIS) " + counts.Terra.toLocaleString("en-US")));
+  assert.ok(text.includes("not a harmonized count"));
+});

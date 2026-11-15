@@ -59,8 +59,9 @@
       const res = await LunaxHotspots.load(state.hotspotIndex, state.sel.map((i) => state.data.cells[i].id), from, to,
         (d, t) => { status.textContent = "Reading files " + d + " of " + t + "..."; });
       state.hotspots = { res: res, from: from, to: to };
-      status.textContent = res.lines.length.toLocaleString("en-US") + " hotspots in the selected cells, " + from + " to " + to +
-        " (" + res.files + " yearly files, " + (res.bytes / 1e6).toFixed(1) + " MB read). Press Download to save them.";
+      status.textContent = (res.lines.length ? LunaxCalc.hotspotCountText(LunaxCalc.countBySatellite(res.header, res.lines), res.lines.length, from, to)
+        : "No hotspot rows in the selected cells, " + from + " to " + to + ".") +
+        " (" + res.files + " yearly files, " + (res.bytes / 1e6).toFixed(1) + " MB read)." + (res.lines.length ? " Press Download to save them." : "");
       $("hotspots-download").disabled = res.lines.length === 0;
     } catch (err) {
       status.textContent = String(err.message || err);
