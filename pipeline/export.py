@@ -37,6 +37,11 @@ ATTRIBUTION = ("We acknowledge the use of data and/or imagery from NASA's Fire I
                "Capability for Earth observations (LANCE) (https://earthdata.nasa.gov/lance) and NASA's Earth "
                "Science Data and Information System (ESDIS).")
 DISCLAIMER_URL = "https://www.earthdata.nasa.gov/data/projects/lance#ed-lance-disclaimer"
+AI_USE = ("AI tools used: Claude and Claude Code (Anthropic), for code, comparison of options for the method decisions, "
+          "analyses and documentation. Every step is logged in AI_USE.md "
+          "(https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/AI_USE.md). "
+          "No AI-generated images, video or audio. Decisions were made by team members and are recorded in "
+          "method/DECISIONS.md.")
 SAT_COLUMNS = {"Terra": "terra", "Aqua": "aqua", "SNPP": "snpp", "NOAA20": "noaa20", "NOAA21": "noaa21"}
 
 
@@ -106,7 +111,7 @@ def export_metadata(harmonized):
         },
         "period": {"first_month": harmonized["year_month"].min(), "last_month": harmonized["year_month"].max()},
         "data_cutoff_date": clean["acq_date"].max(),
-        "archived": "Archived FIRMS data, not live; see data_cutoff_date.",
+        "archived": "Archived FIRMS data, not live.",
         "grid": {"cell_size_deg": 0.25, "origin_lon_lat": [-180, -90],
                  "cell_id": "<row>_<col>, row = floor((lat+90)/0.25), col = floor((lon+180)/0.25)",
                  "area_rule": "a cell belongs to a selected area if its centre is inside the rectangle"},
@@ -136,6 +141,7 @@ def export_metadata(harmonized):
         },
         "attribution": ATTRIBUTION,
         "disclaimer_url": DISCLAIMER_URL,
+        "ai_use": AI_USE,
     }
     path = DOCS_DATA / "metadata.json"
     path.write_text(json.dumps(meta, indent=2, ensure_ascii=False) + "\n")

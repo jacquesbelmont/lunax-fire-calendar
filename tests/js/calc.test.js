@@ -79,3 +79,18 @@ test("provisional months are the months.csv rows with provisional = 1 (DE-4)", (
   assert.strictEqual(text.split("\n")[0], "year_month,sat,missing_days,flagged,provisional");
   assert.deepStrictEqual([...calc.provisionalMonths(text)].sort(), [...want].sort());
 });
+
+test("dashed boundary of the estimated months is at the first VIIRS-observed month (2012-02), not at a no-data month", () => {
+  const all = data.cells.map((c, i) => i);
+  const est = calc.estimatedMonths(data, all);
+  const rows = data.months.map((ym, i) => ({ ym: ym, estimated: est[i] }));
+  assert.strictEqual(rows.find((r) => !r.estimated).ym, "2001-06"); // the trap: a month with no data is not estimated
+  assert.strictEqual(calc.firstObservedMonth(rows), "2012-02");
+  const years = [...new Set(data.months.map((m) => Number(m.slice(0, 4))))];
+  assert.strictEqual(years[12], 2012);
+  assert.strictEqual(calc.estimatedBoundaryPath(years, "2012-02"), "M -0.5 12.5 L 0.5 12.5 L 0.5 11.5 L 11.5 11.5");
+});
+
+test("no boundary when no month is estimated", () => {
+  assert.strictEqual(calc.firstObservedMonth([{ ym: "2020-01", estimated: false }, { ym: "2020-02", estimated: false }]), null);
+});

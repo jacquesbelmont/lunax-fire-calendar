@@ -6,19 +6,13 @@ A web app showing a monthly burning-activity calendar built on a harmonized NASA
 Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logos are used; no endorsement implied.
 
 ## Status (2026-11-15)
-- **App online:** https://jacquesbelmont.github.io/lunax-fire-calendar/
-- **Decisions:** [method/DECISIONS.md](method/DECISIONS.md); all DECIDED.
-  - Demo area: **Rondônia, Brazil** (IBGE boundary).
-  - Target scale: **VIIRS 375 m equivalent**, built from both sensors.
-  - Monthly calendar.
-  - Data from the FIRMS country CSVs (2000-2025) and the FIRMS area API (NOAA-21 from 2024; all satellites for 2026).
-- **Pipeline:** implemented and run on real FIRMS data, 2000-11 to 2026-10 (PRs #28-#34 merged; NOAA-21 and 2026 in PR #41). August to October 2026 are provisional near real-time data.
-  - MODIS-only months (2000-11 to 2012-01) are converted to the VIIRS scale with a ratio per month of year, learned where both sensors overlap. It was selected by a pre-registered backcast: bias of the total +0.6 % on 2012-2014; see [method/VALIDATION.md](method/VALIDATION.md).
-  - VIIRS continuity: NOAA-20/S-NPP 0.992 (83 months), NOAA-21/NOAA-20 0.956 (21 months).
-  - Method and limitations: [method/METHOD.md](method/METHOD.md).
-- **App data:** `docs/data/` (format in [DATA_CONTRACT.md](DATA_CONTRACT.md)), written by `pipeline/export.py` and `pipeline/export_hotspots.py` (hotspot CSV download, R9, DE-17).
-- **App:** map with area selection, monthly calendar, comparison with the historical median, per-sensor view and downloads (JA-5 to JA-8, PR #37).
-- **Updating:** data stop on 2026-10-31. A new month needs `pipeline/download.py --api-source` for the new dates, a new `DATA_END` in `pipeline/aggregate.py` and a pipeline rerun (see [pipeline/README.md](pipeline/README.md)).
+- **Published:** https://jacquesbelmont.github.io/lunax-fire-calendar/ (GitHub Pages from `main`, folder `/docs`).
+- **What the app does:** map with the study-area boundary and area selection (rectangle or latitude/longitude); monthly calendar (month x year) of harmonized hotspot counts; the latest month compared with the historical median; period selection; per-sensor view (Terra, Aqua, S-NPP, NOAA-20, NOAA-21); downloads (monthly series, values per grid cell, hotspot list, chart PNG) with the FIRMS acknowledgment and the data cut-off date.
+- **Data:** NASA FIRMS data for Rondônia, Brazil, 2000-11 to 2026-10 (archived data, cut-off 2026-10-31): country CSVs (standard processing) for 2000-2025 and the FIRMS area API for NOAA-21 (from 2024) and for 2026. August to October 2026 are near real-time data, marked provisional in the app.
+- **Method:** MODIS-only months (2000-11 to 2012-01) are converted to the VIIRS 375 m scale with a ratio per month of year, learned where both sensors overlap (2015-2025). Selected by a pre-registered backcast: bias of the total +0.6% on 2012-2014. VIIRS continuity: NOAA-20/S-NPP 0.992 (83 months), NOAA-21/NOAA-20 0.956 (21 months). See [method/METHOD.md](method/METHOD.md), [method/VALIDATION.md](method/VALIDATION.md) and [method/DECISIONS.md](method/DECISIONS.md) (all decisions DECIDED).
+- **Plain-English explanation:** [method/HOW_IT_WORKS.md](method/HOW_IT_WORKS.md).
+- **Submission drafts:** [submission/](submission/) (project page, slides outline, fact check, checklist).
+- **Updating:** a new month needs `pipeline/download.py --api-source` for the new dates, a new `DATA_END` in `pipeline/aggregate.py` and a pipeline rerun (see [pipeline/README.md](pipeline/README.md)).
 
 ## Structure
 - `pipeline/` — Python pipeline (runs offline, writes to `docs/data/`). See [pipeline/README.md](pipeline/README.md).
@@ -60,7 +54,7 @@ Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logo
    then open http://localhost:8000 (opening `index.html` via `file://` will not load data).
 
 ## AI use
-AI assistance is logged in [AI_USE.md](AI_USE.md). AI is not used to come up with the solution idea.
+Tools: Claude and Claude Code (Anthropic), used for code, comparison of options for the method decisions, analyses and documentation. Every AI-assisted step is logged in [AI_USE.md](AI_USE.md), and AI-assisted code carries a header comment. No AI-generated images, video or audio, and no NASA logos. The decisions on the area, the target scale and the method were made by team members and are recorded with who chose in [method/DECISIONS.md](method/DECISIONS.md); the AI drafted options and ran analyses. The Space Apps rule is that AI is not used to come up with the solution idea: the team confirms this in [submission/FACT_CHECK.md](submission/FACT_CHECK.md) (open item 4).
 
 ## License
 Apache-2.0 (see [LICENSE](LICENSE)). Vendored libraries keep their own licenses ([docs/lib/README.md](docs/lib/README.md)).

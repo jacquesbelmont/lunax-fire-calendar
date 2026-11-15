@@ -33,12 +33,10 @@
       const prov = rows.some((r) => r.provisional && Number(r.ym.slice(0, 4)) === y);
       return String(y) + (est ? " est." : "") + (prov ? " prov." : "");
     });
-    const firstNative = rows.find((r) => !r.estimated);
-    const shapes = [];
-    if (firstNative && rows.some((r) => r.estimated)) {
-      const r = yIdx.get(Number(firstNative.ym.slice(0, 4))), c = Number(firstNative.ym.slice(5, 7)) - 1;
+    const shapes = [], firstObserved = LunaxCalc.firstObservedMonth(rows);
+    if (firstObserved) {
       shapes.push({ type: "path", line: { color: "#d62728", width: 2, dash: "dash" },
-        path: "M -0.5 " + (r + 0.5) + " L " + (c - 0.5) + " " + (r + 0.5) + " L " + (c - 0.5) + " " + (r - 0.5) + " L 11.5 " + (r - 0.5) });
+        path: LunaxCalc.estimatedBoundaryPath(years, firstObserved) });
     }
     const traces = [
       { type: "heatmap", z: mask, x: MONTHS, y: years.map(String), text: text, hoverinfo: "text", showscale: false,
