@@ -5,6 +5,7 @@ __pycache__/
 .ipynb_checkpoints/
 data/raw/*
 !data/raw/.gitkeep
+data/interim/
 .DS_Store
 node_modules/
 *.tgz

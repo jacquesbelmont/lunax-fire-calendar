@@ -306,6 +306,14 @@ runnable in Google Colab:
 7. Date range of `VIIRS_NOAA21_SP` in the API: check with data_availability.
 8. MODIS 2007 and 2009 gaps from the README that are missing from the table.
 
+**Progress on 2026-11-14** (Rafael). Checked on real FIRMS country CSVs and on the FIRMS attribute page (https://www.earthdata.nasa.gov/data/tools/firms/active-fire-data-attributes-modis-viirs). Still to be confirmed by Tiara.
+- **Item 1:** `version` values seen in the MODIS files are `6.2` (2013), `61.03` (2025) and also `6.03` in other years. None has the NRT suffix, so all are standard processing (the attribute page says NRT/RT/URT add a suffix). The meaning of the numbers is still open.
+- **Item 2:** VIIRS files use the same `type` values as MODIS: 0, 2 and 3 in viirs-snpp_2013_Brazil.csv and viirs-jpss1_2025_Brazil.csv. The meaning for VIIRS is still to confirm in the documentation.
+- **Item 3:** the country CSVs write `Terra` and `Aqua` in full (modis_2013_Brazil.csv, modis_2025_Brazil.csv); the attribute page says `T`/`A`. The API and NRT format is still open.
+- **Item 4:** answered for MODIS and NOAA-20. modis_2025_Brazil.csv and viirs-jpss1_2025_Brazil.csv cover 2025-01-01 to 2025-12-31 with 365 distinct days. S-NPP 2025 was not checked this way.
+- **Item 5:** the attribute page gives the satellite code `N21` for NOAA-21. The archive file naming is still open.
+- **Additional fact, VIIRS confidence:** the attribute page says low-confidence night pixels occur only in the South Atlantic Magnetic Anomaly area (11°E to 110°W, 7°N to 55°S) and "have been removed from the NRT data distributed by FIRMS". The SP files viirs-snpp_2013_Brazil.csv and viirs-jpss1_2025_Brazil.csv have 0 such rows.
+
 ## 14. Decisions this reference does not make (record them in method/DECISIONS.md)
 
 - Demo area.
