@@ -35,8 +35,12 @@
     saveText("lunax_cells_monthly.csv", lines.join("\n") + "\n");
   }
 
+  function hotspotsFile(meta, header, lines, label, fromYm, toYm) {
+    saveText("lunax_hotspots.csv", LunaxCalc.hotspotsCsv(meta, header, lines, label, fromYm, toYm));
+  }
+
   function png(el, name) {
     return Plotly.downloadImage(el, { format: "png", filename: name, width: 1200, height: 800 });
   }
-  window.LunaxExport = { seriesFile: seriesFile, cellsFile: cellsFile, png: png };
+  window.LunaxExport = { seriesFile: seriesFile, cellsFile: cellsFile, hotspotsFile: hotspotsFile, png: png };
 })();

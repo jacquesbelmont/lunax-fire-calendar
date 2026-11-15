@@ -133,7 +133,37 @@
     return head.concat(body).join("\n") + "\n";
   }
 
-  return { parseCellsCsv: parseCellsCsv, selectCells: selectCells, areaSeries: areaSeries,
+  /**
+   * Add to `out.lines` the rows of one decompressed hotspot file whose cell is in `cellSet` and whose month is in
+   * [fromYm, toYm]. Comment lines (#) are skipped; the first other line is the column header (kept in out.header).
+   * Returns the number of rows added. Columns: cell_id, latitude, longitude, acq_date, ... (DE-17).
+   */
+  function filterHotspots(text, cellSet, fromYm, toYm, out) {
+    var pos = 0, added = 0, n = text.length;
+    while (pos < n) {
+      var end = text.indexOf("\n", pos);
+      if (end < 0) end = n;
+      var line = text.slice(pos, end);
+      pos = end + 1;
+      if (!line || line.charAt(0) === "#") continue;
+      if (!out.header) { out.header = line; continue; }
+      var f = line.split(",", 4), ym = f[3].slice(0, 7);
+      if (cellSet.has(f[0]) && ym >= fromYm && ym <= toYm) { out.lines.push(line); added++; }
+    }
+    return added;
+  }
+
+  /** CSV text of the selected hotspots with the attribution header (R9). */
+  function hotspotsCsv(meta, header, lines, label, fromYm, toYm) {
+    var head = ["# " + meta.title + " - hotspots", "# Area: " + label, "# Period: " + fromYm + " to " + toYm,
+                "# Data cut-off date: " + meta.data_cutoff_date + " (" + meta.archived + ")", "# " + meta.attribution,
+                "# Disclaimer: " + meta.disclaimer_url,
+                "# FIRMS standard-processing detections inside the study area, type 0 (presumed vegetation fire), no confidence filter. "
+                + "MODIS (1 km) and VIIRS (375 m) detections are never to be added together.", header];
+    return head.concat(lines).join("\n") + "\n";
+  }
+
+  return { parseCellsCsv: parseCellsCsv, filterHotspots: filterHotspots, hotspotsCsv: hotspotsCsv, selectCells: selectCells, areaSeries: areaSeries,
            estimatedMonths: estimatedMonths, medianAnomaly: medianAnomaly, halfWidth90: halfWidth90,
            seriesCsv: seriesCsv, fmt: fmt, SENSOR_COLUMNS: SENSOR_COLUMNS };
 });

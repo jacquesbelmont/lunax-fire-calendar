@@ -65,7 +65,11 @@
         <button type="button" id="csv-series">Monthly series of the area (CSV)</button>
         <button type="button" id="csv-cells">Monthly values per grid cell (CSV)</button>
       </p>
-      <p class="hint">These files hold monthly counts, not individual hotspots. A list of individual hotspots is not available in this version.</p>
+      <p>
+        <button type="button" id="hotspots-count">Count the hotspots of this selection</button>
+        <button type="button" id="hotspots-download" disabled>Download hotspots (CSV)</button>
+      </p>
+      <p id="hotspots-status" role="status" class="hint">The hotspot list holds the individual FIRMS detections in the selected cells and period. Count them first to see how many rows the file will have.</p>
     </section>
 
     <section id="how-section" aria-label="How it works and limitations">
@@ -91,6 +95,7 @@
   <script src="js/map.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/compare.js"></script>
+  <script src="js/hotspots.js"></script>
   <script src="js/export.js"></script>
   <script src="js/main.js"></script>
 </body>

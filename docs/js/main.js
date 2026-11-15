@@ -42,7 +42,33 @@
     return state.meta.area.name + "; rectangle west " + b[0] + ", south " + b[1] + ", east " + b[2] + ", north " + b[3];
   }
 
+  function resetHotspots() {
+    state.hotspots = null;
+    $("hotspots-download").disabled = true;
+    $("hotspots-status").textContent = "The hotspot list holds the individual FIRMS detections in the selected cells and period. Count them first to see how many rows the file will have.";
+  }
+
+  async function countHotspots() {
+    const status = $("hotspots-status"), btn = $("hotspots-count");
+    const from = state.data.months[Number($("range-from").value)], to = state.data.months[Number($("range-to").value)];
+    btn.disabled = true; $("hotspots-download").disabled = true;
+    try {
+      state.hotspotIndex = state.hotspotIndex || await LunaxHotspots.loadIndex();
+      const res = await LunaxHotspots.load(state.hotspotIndex, state.sel.map((i) => state.data.cells[i].id), from, to,
+        (d, t) => { status.textContent = "Reading files " + d + " of " + t + "..."; });
+      state.hotspots = { res: res, from: from, to: to };
+      status.textContent = res.lines.length.toLocaleString("en-US") + " hotspots in the selected cells, " + from + " to " + to +
+        " (" + res.files + " yearly files, " + (res.bytes / 1e6).toFixed(1) + " MB read). Press Download to save them.";
+      $("hotspots-download").disabled = res.lines.length === 0;
+    } catch (err) {
+      status.textContent = String(err.message || err);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
   function update() {
+    resetHotspots();
     state.sel = LunaxCalc.selectCells(state.data, state.bbox);
     const cells = state.sel.map((i) => state.data.cells[i]);
     state.map.showSelection(state.bbox, cells);
@@ -110,6 +136,11 @@
       }));
       $("png-calendar").addEventListener("click", () => LunaxExport.png($("calendar"), "lunax_calendar"));
       $("png-compare").addEventListener("click", () => LunaxExport.png($("compare"), "lunax_month_vs_median"));
+      $("hotspots-count").addEventListener("click", () => state.sel && state.sel.length && countHotspots());
+      $("hotspots-download").addEventListener("click", function () {
+        const h = state.hotspots;
+        if (h) LunaxExport.hotspotsFile(meta, h.res.header, h.res.lines, areaLabel(), h.from, h.to);
+      });
       $("csv-series").addEventListener("click", () => state.rows && LunaxExport.seriesFile(meta, state.rows, areaLabel()));
       $("csv-cells").addEventListener("click", () => state.rows && LunaxExport.cellsFile(meta, data, state.sel,
         Number($("range-from").value), Number($("range-to").value), areaLabel()));
