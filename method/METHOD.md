@@ -68,7 +68,7 @@ Summary of `method/VALIDATION.md`; all numbers from `method/results/validation_m
 
 - **Backcast** (fit on 2015-2025, predict 2012-2014 from MODIS, compare with real VIIRS): bias of the total +0.6 %; median absolute error of monthly totals 13.3 %; r = 0.998.
 - **Leave-one-year-out 2012-2025:** yearly bias from -9.7 % to +7.9 % (`method/results/loyo.csv`).
-- **Without harmonization** the series would jump by a factor of 3.82 when VIIRS enters (2012-2014 raw VIIRS/MODIS).
+- **Without harmonization** the series would jump by a factor of 3.81 when VIIRS enters (2012-2014 raw VIIRS/MODIS).
 - **VIIRS continuity:** NOAA-20/S-NPP = 0.992 over 83 months; NOAA-21/NOAA-20 = 0.956 over 21 months (2024-04 to 2025-12).
 - **Method choice:** the negative binomial regression first proposed in DE-6 failed this pre-registered test (bias +143 %), so the ratio method was selected by the DE-15 rule.
 

@@ -33,7 +33,7 @@ Figure: `method/figures/backcast.png`.
 
 ## Before/after harmonization (jump when VIIRS enters)
 
-- **Without correction**, the series would jump when VIIRS enters. In 2012-2014 the raw reference VIIRS total is 3.82 times the raw MODIS (Terra + Aqua) total.
+- **Without correction**, the series would jump when VIIRS enters. In 2012-2014 the raw reference VIIRS total is 3.81 times the raw MODIS (Terra + Aqua) total.
 - **After harmonization** the jump is gone. In the backcast years the converted MODIS total is within +0.6 % of the observed VIIRS total.
 - Figure: `method/figures/before_after.png` (area totals per month, baseline vs harmonized). Months with missing data are gaps, not zeros.
 

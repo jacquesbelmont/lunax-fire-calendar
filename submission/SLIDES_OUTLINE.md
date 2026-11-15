@@ -12,7 +12,7 @@ Screenshots must be taken by a person from the published app (https://jacquesbel
 - **Image:** method/figures/before_after.png (series without correction vs harmonized).
 
 ## Slide 3 — Our solution
-- **Text:** One consistent monthly series on the VIIRS scale, 2000-11 to 2025-12, for Rondônia, Brazil. From 2012: observed VIIRS (Suomi NPP, then NOAA-20). Before 2012: MODIS counts times a ratio per month of the year, learned where both sensors overlap (2015-2025). Both sensors are needed.
+- **Text:** One consistent monthly series on the VIIRS scale, 2000-11 to 2026-10, for Rondônia, Brazil. From 2012: observed VIIRS (Suomi NPP, then NOAA-20; NOAA-21 as a check). Before 2012: MODIS counts times a ratio per month of the year, learned where both sensors overlap (2015-2025). Both sensors are needed.
 - **Image:** method/figures/backcast.png (converted MODIS vs observed VIIRS in the test years).
 
 ## Slide 4 — The user experience
@@ -24,8 +24,8 @@ Screenshots must be taken by a person from the published app (https://jacquesbel
 - **Image:** method/figures/continuity.png.
 
 ## Slide 6 — How NASA data makes it possible, and the limits
-- **Text:** NASA FIRMS is the only data used: MODIS (Terra, Aqua) and VIIRS (Suomi NPP, NOAA-20) active-fire detections, standard processing, 2000-11-01 to 2025-12-31, Brazil and Bolivia files clipped to the IBGE boundary of Rondônia. Limits: 2000-11 to 2012-01 are estimates; Terra-only months are less accurate; data end on 2025-12-31 (2026 and NOAA-21 need the FIRMS API); hotspots are not fires.
-- **Image:** screenshot of the footer with the FIRMS acknowledgment and the "archived data through 2025-12-31" label.
+- **Text:** NASA FIRMS is the only data used: MODIS (Terra, Aqua) and VIIRS (Suomi NPP, NOAA-20, NOAA-21) active-fire detections: Brazil and Bolivia country files (standard processing, 2000-11-01 to 2025-12-31) and the FIRMS area API for NOAA-21 and 2026 (to 2026-10-31), clipped to the IBGE boundary of Rondônia. Limits: 2000-11 to 2012-01 are estimates; Terra-only months are less accurate; data end on 2026-10-31 and the last months (near real-time) are provisional; hotspots are not fires.
+- **Image:** screenshot of the footer with the FIRMS acknowledgment and the "Archived data through 2026-10-31" label.
 
 ## Slide 7 — AI use, credits, references
 - **Text:** AI use (from AI_USE.md): Claude and Claude Code for code, option analysis and documentation, logged step by step; decisions made by the team and recorded in method/DECISIONS.md; no AI-generated images, video or audio. Credits: FIRMS acknowledgment text (exact, from docs/data/metadata.json); IBGE; CAMS; Schroeder et al. 2014; Leaflet, Leaflet.draw, Plotly.js, OpenStreetMap, Python libraries (licenses in SOURCES.md). Links: app, repository.

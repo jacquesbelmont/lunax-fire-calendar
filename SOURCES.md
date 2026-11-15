@@ -20,7 +20,7 @@
 - LANCE disclaimer: https://www.earthdata.nasa.gov/data/projects/lance#ed-lance-disclaimer
 - FIRMS country files index: https://firms.modaps.eosdis.nasa.gov/data/country/yearly_summary_files.txt
 - FIRMS missing data (used for the month flags, DE-14): https://firms.modaps.eosdis.nasa.gov/api/missing_data/?action=fetch_data
-- FIRMS area API (NOAA-21, `VIIRS_NOAA21_SP`, 2024-01-17 to 2025-12-31; needs a free MAP_KEY): https://firms.modaps.eosdis.nasa.gov/api/area/ ; date ranges: https://firms.modaps.eosdis.nasa.gov/api/data_availability/
+- FIRMS area API (needs a free MAP_KEY; data/PROVENANCE.md): NOAA-21 `VIIRS_NOAA21_SP` 2024-01-17 to 2025-12-31, and 2026-01-01 to 2026-10-31 for all four satellites (standard processing, then NRT): https://firms.modaps.eosdis.nasa.gov/api/area/ ; date ranges: https://firms.modaps.eosdis.nasa.gov/api/data_availability/
 
 ## Other sources used in the method (method/DECISIONS.md, method/METHOD.md)
 - IBGE state boundary of Rondônia (demo area, DE-1; copy in config/area_boundary.geojson): https://servicodados.ibge.gov.br/api/v3/malhas/estados/11?formato=application/vnd.geo+json&qualidade=maxima

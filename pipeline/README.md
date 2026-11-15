@@ -12,7 +12,7 @@ The exact versions used in the setup are in `requirements.lock.txt`. Put `FIRMS_
 |---|------|-------|--------|-------------|
 | 1 | `config.py` (imported by the others) | `.env`, `config/area.json` | settings | JA-2 |
 | 2 | `check_availability.py` | FIRMS `data_availability` | SP/NRT date ranges per sensor (record in DATA_CONTRACT.md) | JA-2 |
-| 3 | `download.py` | FIRMS country yearly CSVs (no key) and the `missing_data` table; FIRMS area API with `--api-source` (MAP_KEY; NOAA-21) | `data/raw/country/<source>/<year>/*.csv`, `data/raw/api/viirs-jpss2/<year>/*.csv`, `data/raw/missing_days.csv` (git-ignored) | JA-2, JA-4; API route RA-3 |
+| 3 | `download.py` | FIRMS country yearly CSVs (no key) and the `missing_data` table; FIRMS area API with `--api-source` (MAP_KEY; NOAA-21 and 2026) | `data/raw/country/<source>/<year>/*.csv`, `data/raw/api/<source>/<year>/*.csv`, `data/raw/missing_days.csv` (git-ignored) | JA-2, JA-4; API route RA-3 |
 | 4 | `clean.py` | `data/raw/<route>/<source>/<year>/*.csv` (`--route country` or `api`) | `data/interim/clean/<source>_<year>.csv.gz` (git-ignored); `method/results/cleaning_log.csv` | RA-1 |
 | 5 | `aggregate.py` | `data/interim/clean/*.csv.gz`; `data/raw/missing_days.csv` (from `download.py`); `DATA_END` = last downloaded day (move it with each new download) | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv` (git-ignored) | RA-2 |
 | 6 | `harmonize.py` | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv` | `data/interim/harmonized.csv.gz` (git-ignored); `method/results/harmonize_model.json` | RA-2, DE-2 |
