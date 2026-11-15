@@ -10,3 +10,6 @@ The slide 4 chart, `porto_velho_september_2025.png`, was captured from the publi
 
 PR RA-7 (DE-22 to DE-25), local build of the branch `RA-7-field-use`, headless Chrome, 2026-11-15, 1280 px, light:
 `app_map_usual_2026-10.png` (map view "Compared with the usual" for the whole area, 2026-10, provisional, with its legend), `app_fire_season.png` (section 3 for the whole area: 23 years computed, typical season August to October with the peak in September) and `app_municipality_porto_velho.png` (Porto Velho, IBGE code 1100205, selected as the area: outline, cells around it for context, its detections of 2026-10).
+
+PR JA-11 (DE-27), local build of the branch `JA-11-gibs-imagery`, headless Chrome, 2026-11-15, 1068 x 720 px (the map only), light:
+`app_map_gibs_false_color_2026-10-04.png` (whole area, map month 2026-10, provisional; base layer "Satellite image of a day: false color" with the cells layer hidden; NASA GIBS NOAA-20 VIIRS bands M11-I2-I1 of 2026-10-04, the day of October 2026 with the most detections in the selection; points of that month on top).
