@@ -63,6 +63,8 @@
             <p class="panel-group">Next season (experimental)</p>
             <label class="view"><input type="radio" name="map-mode" value="outlook001"><span class="sw sw-outlook001" aria-hidden="true"></span><span><strong>Where to expect fire, about 1 km</strong><small>Chance per cell from a tested model</small></span></label>
             <label class="view"><input type="radio" name="map-mode" value="outlook005"><span class="sw sw-outlook005" aria-hidden="true"></span><span><strong>Where to expect fire, about 5 km</strong><small>Last year's fire, the best guide at this scale</small></span></label>
+            <p class="panel-group" id="brazil-group" hidden>Brazil pilot, 2000-2025 (local only)</p>
+            <label class="view" id="brazil-view" hidden><input type="radio" name="map-mode" value="brazil"><span class="sw sw-hotspots" aria-hidden="true"></span><span><strong>States and cells of Brazil</strong><small>VIIRS from 2012, raw MODIS before; click a state</small></span></label>
           </fieldset>
           <a id="firms-link" class="panel-link" href="https://firms.modaps.eosdis.nasa.gov/map/" target="_blank" rel="noopener">Today's fires here: NASA FIRMS Fire Map (near real-time, new tab)</a>
         </details>
@@ -152,6 +154,7 @@
   <script src="js/compare.js"></script>
   <script src="js/season.js"></script>
   <script src="js/outlook.js"></script>
+  <script src="js/brazil.js"></script>
   <script src="js/hotspots.js"></script>
   <script src="js/export.js"></script>
   <script src="js/main.js"></script>

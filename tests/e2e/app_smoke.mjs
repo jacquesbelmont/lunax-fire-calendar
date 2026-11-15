@@ -232,6 +232,7 @@ try {
     ${JSON.stringify(exportIds)}.every(id => !document.getElementById(id).disabled) &&
     document.getElementById('hotspots-download').disabled && document.getElementById('hotspots-kml').disabled
   )`));
+  check("the Brazil pilot view stays hidden without local pilot data (published app unchanged)", await evaluate(`document.querySelector('#brazil-view').hidden && document.querySelector('#brazil-group').hidden`));
   check("no JavaScript errors", errors.length === 0, errors.join(" | ").slice(0, 200));
 } catch (e) {
   check("run", false, String(e.message || e));

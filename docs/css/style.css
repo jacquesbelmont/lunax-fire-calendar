@@ -57,6 +57,8 @@ footer { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 12px;
 .sw-outlook001 { background: linear-gradient(to right, #d7b5d8, #df65b0, #dd1c77, #980043); }
 .sw-outlook005 { background: linear-gradient(to right, #d7b5d8 50%, #980043 50%); }
 .map-panel .panel-link { display: block; padding: 8px 10px; border-top: 1px solid var(--line); }
+.map-panel [hidden] { display: none !important; }
+.leaflet-brazil-pane path:focus:not(:focus-visible) { outline: none; } /* RA-11: no focus box around a state clicked with the mouse */ /* RA-11: the Brazil pilot entries appear only with local pilot data */
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (max-width: 600px) { .map-panel { width: 220px; } }
 /* DE-30: summary cards, two columns, segmented switch */

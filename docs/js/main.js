@@ -82,6 +82,16 @@
 
   function paintCells() {
     const mode = mapMode(), layer = LAYER_VIEWS.includes(mode);
+    if (mode === "brazil") { // RA-11 pilot (local): Brazil's states and cells on the same map, for the focus month
+      state.map.showSelection(null, [], null); state.map.clearOverlay();
+      $("recurrence-note").textContent = "Loading the Brazil pilot...";
+      const m = mapMonthIndex();
+      LunaxBrazil.show(state.map.leaflet, m >= 0 ? state.data.months[m] : null, $("recurrence-note"), state.map.setLegend)
+        .catch((e) => { $("recurrence-note").textContent = String(e.message || e); });
+      state.brazilShown = true;
+      return;
+    }
+    if (state.brazilShown) { LunaxBrazil.hide(state.map.leaflet); state.map.fitHome(); state.brazilShown = false; }
     state.map.showSelection(state.muni ? null : state.bbox, layer ? [] : state.sel.map((i) => state.data.cells[i]),
       layer ? { colors: [], tips: [], legend: layerSpec(mode).legend } : mapPaint(mapMonthIndex()));
     $("recurrence-note").textContent = "";
@@ -169,7 +179,7 @@
     const m = mapMonthIndex();
     paintCells();
     renderRanking(m);
-    showMonthPoints(m >= 0 ? state.data.months[m] : null);
+    showMonthPoints(m >= 0 && mapMode() !== "brazil" ? state.data.months[m] : null); // the Brazil view draws its own points
   }
 
   /** DE-24: municipalities of month index m, most hotspots first, with their usual value and DE-22 class. */
@@ -421,10 +431,11 @@
       $("compare-month").value = String(Number(data.months[data.months.length - 1].slice(5, 7)));
       state.map = LunaxMap.create("map", boundary, muniGeo, meta.grid.cell_size_deg, setBbox);
       state.map.addPanel($("map-panel"));
+      LunaxBrazil.available().then((ok) => { $("brazil-group").hidden = $("brazil-view").hidden = !ok; }); // RA-11: local pilot only
       if (window.innerWidth < 600) $("map-panel-details").open = false; // phones: the panel starts closed
       $("map-mode").addEventListener("change", function (e) { // DE-22, DE-26, DE-29: same month, other view
         $("map-view-name").textContent = e.target.closest("label").querySelector("strong").textContent;
-        if (state.rows) paintCells();
+        if (state.rows) refreshMap(); // the month points depend on the view (RA-11)
       });
       $("cal-mode").addEventListener("change", renderAnalysis); // DE-30: calendar colors
       $("cal-season").addEventListener("change", renderAnalysis);

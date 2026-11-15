@@ -71,7 +71,8 @@ async function timed(label, url, fn, gz) {
   return out;
 }
 
-const series = (data, i, col) => data.months.map((m, k) => data.columns[col][i * data.nMonths + k]);
+// the pilot now holds 2000-2025; this standalone viewer shows 2024 (the main app's Brazil view shows every month)
+const series = (data, i, col) => data.months.map((m, k) => [m, data.columns[col][i * data.nMonths + k]]).filter((x) => x[0].startsWith("2024")).map((x) => x[1]);
 
 async function init() {
   const geo = await timed("states.geojson", DATA + "states.geojson", JSON.parse);
