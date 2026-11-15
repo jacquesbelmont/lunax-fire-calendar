@@ -42,8 +42,8 @@
 | leaflet-draw | 1.0.4 | MIT (package.json; TODO(verify): license text) | docs/lib/leaflet-draw/ |
 | plotly.js-dist-min | 4.3.0 | MIT | docs/lib/plotly/ |
 | IBGE malhas (Rondônia boundary) | API v3, retrieved 2026-11-14 | TODO(verify): IBGE data license - https://www.ibge.gov.br | config/area_boundary.geojson, docs/data/area.geojson |
-| Python: pandas, numpy, scipy, statsmodels, matplotlib | pipeline/requirements.lock.txt | BSD-3-Clause (pandas, numpy, scipy, statsmodels); matplotlib license (PSF-based) - TODO(verify): exact license texts | pipeline/ |
-| NASA FIRMS (data) | TODO(verify): product versions - data/PROVENANCE.md | TODO(verify): data license/citation - https://www.earthdata.nasa.gov/data/tools/firms | pipeline/, docs/data/ |
+| Python: pandas 2.3.3, numpy 2.0.2, scipy 1.13.1, statsmodels 0.14.6, matplotlib 3.9.4, requests 2.32.5, python-dotenv 1.2.1 | pipeline/requirements.lock.txt (versions read from the installed packages, 2026-11-15) | BSD (pandas, numpy, scipy, statsmodels); Python Software Foundation License (matplotlib); Apache-2.0 (requests); BSD-3-Clause (python-dotenv) - license classifiers in each package's metadata | pipeline/ (offline, not shipped in the app) |
+| NASA FIRMS (data) | MODIS versions `6.03`, `6.2`, `61.03`; VIIRS `2` (seen in the files, data/PROVENANCE.md) | NASA open data: NASA promotes full and open sharing of its data; users who pass FIRMS data on follow the FIRMS citation guidelines and replicate or link the disclaimer (data/reference/FIRMS_archive_README_2026-11.rtf). Acknowledgment text: docs/data/metadata.json | pipeline/, docs/data/ |
 
 ## Map tiles (web app)
 - OpenStreetMap tiles, loaded by the browser from https://tile.openstreetmap.org (ODbL data, attribution shown in the app): https://www.openstreetmap.org/copyright
