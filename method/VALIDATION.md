@@ -47,7 +47,7 @@ Figure: `method/figures/backcast.png`.
 - **S-NPP vs NOAA-20:** monthly area totals over the 83 months where both are valid (`method/results/continuity.csv`).
   - Ratio NOAA-20/S-NPP of the totals: 0.992. Monthly median 1.001, interquartile range 0.95 to 1.05.
   - The two satellites are on the same scale, so no correction factor is applied (DE-11). Figure: `method/figures/continuity.png`.
-- **NOAA-21:** not in the FIRMS country CSVs; needs API data from 2024-01 (DE-8). TODO(RA-3): add when the API route exists.
+- **NOAA-21:** not in the FIRMS country CSVs; needs API data from 2024-01 (DE-8). Not checked in this version; declared as a limitation (method/METHOD.md).
 
 ## Uncertainty
 

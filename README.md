@@ -5,18 +5,19 @@ A web app showing a monthly burning-activity calendar built on a harmonized NASA
 
 Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logos are used; no endorsement implied.
 
-## Status (2026-11-14)
-- **Decisions:** [method/DECISIONS.md](method/DECISIONS.md), PR #27.
+## Status (2026-11-15)
+- **App online:** https://jacquesbelmont.github.io/lunax-fire-calendar/
+- **Decisions:** [method/DECISIONS.md](method/DECISIONS.md); all DECIDED except DE-1b (Bolivia, OPEN) and DE-7 (app libraries, PROPOSED).
   - Demo area: **Rondônia, Brazil** (IBGE boundary).
   - Target scale: **VIIRS 375 m equivalent**, built from both sensors.
   - Monthly calendar.
   - Data from the FIRMS country CSVs (2000-2025); the FIRMS API only for 2026 and NOAA-21.
-- **Pipeline:** implemented and run on real FIRMS data, 2000-11 to 2025-12. Under review in PRs #28-#34, to merge in order.
+- **Pipeline:** implemented and run on real FIRMS data, 2000-11 to 2025-12 (PRs #28-#34, merged).
   - MODIS-only months (2000-11 to 2012-01) are converted to the VIIRS scale with a ratio per month of year, learned where both sensors overlap. It was selected by a pre-registered backcast: bias of the total +0.6 % on 2012-2014; see [method/VALIDATION.md](method/VALIDATION.md).
   - Method and limitations: [method/METHOD.md](method/METHOD.md).
-- **App data:** `docs/data/` (format in [DATA_CONTRACT.md](DATA_CONTRACT.md)), written by `pipeline/export.py` (PR #31).
-- **App:** the page in `docs/` is still a skeleton (JA-5 to JA-7).
-- **Not yet:** 2026 and NOAA-21 (need the FIRMS API), the hotspot CSV download (R9).
+- **App data:** `docs/data/` (format in [DATA_CONTRACT.md](DATA_CONTRACT.md)), written by `pipeline/export.py` and `pipeline/export_hotspots.py` (hotspot CSV download, R9, DE-17).
+- **App:** map with area selection, monthly calendar, comparison with the historical median, per-sensor view and downloads (JA-5 to JA-8, PR #37).
+- **Not included:** 2026 and NOAA-21 (need the FIRMS API); declared as limitations in [method/METHOD.md](method/METHOD.md).
 
 ## Structure
 - `pipeline/` — Python pipeline (runs offline, writes to `docs/data/`). See [pipeline/README.md](pipeline/README.md).

@@ -2,7 +2,7 @@
 
 Owner issue: RA-5 (Rafael). Input for Tiara (TI-5, TI-6).
 Only decided method steps (see DECISIONS.md) go here; every number has a source file path.
-Status: DE-1, DE-2, DE-3 and DE-8 are DECIDED. DE-1b (Bolivia) is OPEN. The other decisions cited here are PROPOSED in PR #27 and become DECIDED when the team approves it.
+Status: every decision cited here is DECIDED in method/DECISIONS.md, except DE-1b (Bolivia), which is OPEN.
 
 ## Method
 
