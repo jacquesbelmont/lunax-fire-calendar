@@ -52,3 +52,4 @@
 
 ## Map tiles (web app)
 - OpenStreetMap tiles, loaded by the browser from https://tile.openstreetmap.org (ODbL data, attribution shown in the app): https://www.openstreetmap.org/copyright
+- NASA GIBS satellite images (Blue Marble; daily corrected reflectance of Terra MODIS, Suomi NPP and NOAA-20 VIIRS, true and false color; DE-27), loaded by the browser from https://gibs.earthdata.nasa.gov (WMTS, no key). Open use; acknowledgment requested by GIBS ("Data Use Guidance and Acknowledgements", https://nasa-gibs.github.io/gibs-api-docs/) shown in the app footer. Layer availability: https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml (read 2026-11-15). Burn-scar description of the false-color layers: NASA Worldview layer metadata, https://github.com/nasa-gibs/worldview

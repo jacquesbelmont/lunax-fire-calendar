@@ -13,3 +13,6 @@ PR RA-7 (DE-22 to DE-25), local build of the branch `RA-7-field-use`, headless C
 
 Deck slide 4 "What a fire manager sees" (PR JA-12), published app at main 8492f81 (after PRs #55 and #61), headless Chrome, 2026-11-15, light, map or section only:
 `app_porto_velho_map_2026-10.png` (1068 x 720; Porto Velho, IBGE code 1100205, selected as the area; map month 2026-10, provisional; cells and points), `app_porto_velho_fire_season.png` (fire season section for Porto Velho: typical season August to October, peak in August, median of 23 years) and `app_map_recurrence_2012-2025.png` (whole area, map view "Places that burn year after year", points layer hidden, with the "not a forecast" note and the test result). The older `app_municipality_porto_velho.png` and `app_fire_season.png` were taken from a local build of PR #55.
+
+PR JA-11 (DE-27), local build of the branch `JA-11-gibs-imagery`, headless Chrome, 2026-11-15, 1068 x 720 px (the map only), light:
+`app_map_gibs_false_color_2026-10-04.png` (whole area, map month 2026-10, provisional; base layer "Satellite image of a day: false color" with the cells layer hidden; NASA GIBS NOAA-20 VIIRS bands M11-I2-I1 of 2026-10-04, the day of October 2026 with the most detections in the selection; points of that month on top).

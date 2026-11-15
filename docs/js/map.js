@@ -5,6 +5,7 @@
  *          Hover a cell for its value; click a detection for its date, time, satellite, confidence and FRP.
  *          DE-22: cells can instead be colored by "Compared with the usual" classes (colors and texts come from main.js);
  *          fullscreen button; the mouse wheel zooms only after a click on the map.
+ *          DE-27: base layers from NASA GIBS (Blue Marble, and the true or false color image of one day, docs/js/imagery.js).
  * SCOPE: R4, R5, O1, O2
  * Owner issue: JA-5
  * AI-assisted code (Claude Code); logged in AI_USE.md.
@@ -76,6 +77,26 @@
     return ctl;
   }
 
+  /** DE-27: line naming the day and satellite of the GIBS image, with a day picker limited to the map month. textContent only. */
+  function imageryControl(onDay) {
+    const ctl = L.control({ position: "bottomleft" });
+    ctl.onAdd = function () {
+      const div = L.DomUtil.create("div", "map-legend map-imagery");
+      div.id = "map-imagery";
+      div.hidden = true;
+      L.DomEvent.disableClickPropagation(div);
+      const text = document.createElement("div"), label = document.createElement("label"), input = document.createElement("input");
+      text.className = "map-imagery-text";
+      input.type = "date";
+      input.id = "imagery-day";
+      label.append(document.createTextNode("Day of the image "), input);
+      input.addEventListener("change", () => { if (input.value) onDay(input.value); });
+      div.append(text, label);
+      return div;
+    };
+    return ctl;
+  }
+
   const MUNI_STYLE = { color: "#555", weight: 0.7, opacity: 0.8, fill: false, interactive: false };
 
   function create(elId, boundary, muniGeo, cellSize, onRectangle) {
@@ -84,9 +105,13 @@
     map.on("click focus", () => map.scrollWheelZoom.enable());
     map.on("mouseout", () => { if (!document.fullscreenElement) map.scrollWheelZoom.disable(); });
     if (document.fullscreenEnabled) fullscreenControl(map).addTo(map);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    const osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 18, attribution: "&copy; OpenStreetMap contributors",
     }).addTo(map);
+    // DE-27: GIBS tiles stop at zoom 9 (Blue Marble 8); closer, Leaflet enlarges the last level.
+    const gibsOpts = { maxZoom: 18, maxNativeZoom: LunaxImagery.MAX_NATIVE_ZOOM, attribution: LunaxImagery.ATTRIBUTION };
+    const blueMarble = L.tileLayer(LunaxImagery.BLUE_MARBLE_URL, Object.assign({}, gibsOpts, { maxNativeZoom: LunaxImagery.BLUE_MARBLE_MAX_NATIVE_ZOOM }));
+    const dayLayers = { trueColor: L.tileLayer("", gibsOpts), falseColor: L.tileLayer("", gibsOpts) }; // URL set with the day
     const muniLayer = L.geoJSON(muniGeo, { style: MUNI_STYLE }).addTo(map); // DE-24: municipal borders
     const boundaryLayer = L.geoJSON(boundary, { style: { color: "#c0392b", weight: 2, fill: false } }).addTo(map);
     map.fitBounds(boundaryLayer.getBounds()); // DE-22: the state, not the processing box
@@ -108,7 +133,9 @@
         } });
     });
     const pointsLayer = L.layerGroup([groups.MODIS, groups.VIIRS]).addTo(map);
-    L.control.layers(null, { "Cells: hotspots per cell": cellsLayer, "Points: detections": pointsLayer, "Municipal borders": muniLayer },
+    L.control.layers({ "Street map (OpenStreetMap)": osm, "NASA Blue Marble (no date)": blueMarble,
+      "Satellite image of a day: true color": dayLayers.trueColor, "Satellite image of a day: false color (burn scars)": dayLayers.falseColor },
+    { "Cells: hotspots per cell": cellsLayer, "Points: detections": pointsLayer, "Municipal borders": muniLayer },
       { position: "topright" }).addTo(map);
     map.addControl(new L.Control.Draw({
       draw: { polyline: false, polygon: false, circle: false, marker: false, circlemarker: false, rectangle: { shapeOptions: { color: "#0b5cad" } } },
@@ -138,8 +165,38 @@
       tip.setLatLng(e.latlng).setContent(p.tips[j]);
       map.openTooltip(tip);
     });
+    // DE-27: day of the image. It follows the map month (busiest day) until the user picks a day or clicks a detection.
+    const imagery = { ym: null, day: null, picked: false, kind: null, failed: false };
+    const imageryCtl = imageryControl(function (day) { imagery.picked = true; setImageryDay(day); }).addTo(map);
+    function renderImagery() {
+      const div = imageryCtl.getContainer();
+      div.hidden = !imagery.kind || !imagery.day;
+      if (div.hidden) return;
+      const info = LunaxImagery.imageryLayer(imagery.day, imagery.kind), input = div.querySelector("input");
+      [input.min, input.max] = imagery.ym ? LunaxImagery.monthDays(imagery.ym) : ["", ""];
+      input.value = imagery.day;
+      div.querySelector(".map-imagery-text").textContent = "Satellite image of " + imagery.day + " (one day, UTC): " + info.satellite +
+        ", " + info.bands + "." + (imagery.failed ? " GIBS has no image from this satellite for this day in part of the view." : "") +
+        (map.getZoom() > LunaxImagery.MAX_NATIVE_ZOOM ? " Closer than zoom level 9 the image is only enlarged (about 300 m per pixel)." : "");
+    }
+    function setImageryDay(day) {
+      Object.assign(imagery, { day: day, failed: false });
+      Object.keys(dayLayers).forEach((k) => dayLayers[k].setUrl(LunaxImagery.imageryLayer(day, k).url, !map.hasLayer(dayLayers[k])));
+      renderImagery();
+    }
+    Object.keys(dayLayers).forEach((k) => dayLayers[k].on("tileerror", function () {
+      if (!imagery.failed) { imagery.failed = true; renderImagery(); }
+    }));
+    map.on("baselayerchange", function (e) {
+      Object.assign(imagery, { kind: Object.keys(dayLayers).find((k) => dayLayers[k] === e.layer) || null, failed: false });
+      renderImagery();
+    });
+    map.on("zoomend", renderImagery);
+
     Object.keys(groups).forEach(function (s) {
       groups[s].on("click", function (e) {
+        imagery.picked = true;
+        setImageryDay(e.layer.options.hotspot.date); // DE-27: the image of the detection's day
         const box = document.createElement("div");
         box.textContent = LunaxCalc.hotspotPointText(e.layer.options.hotspot);
         L.popup().setLatLng(e.layer.getLatLng()).setContent(box).openOn(map);
@@ -187,6 +244,13 @@
       },
       /** DE-25: re-fit the map to its container (the printed page is narrower than the screen). */
       invalidate: function () { map.invalidateSize({ animate: false }); },
+      /** DE-27: map month ym (or null) and its points: the image day is their busiest day unless a day of ym was picked. */
+      setImageryMonth: function (ym, points) {
+        if (ym !== imagery.ym) imagery.picked = false;
+        imagery.ym = ym;
+        if (ym && !imagery.picked) setImageryDay(LunaxImagery.defaultDay(ym, points));
+        else renderImagery();
+      },
       /** points: [{lat, lon, sensor}] of the map month. */
       showPoints: function (points) {
         Object.keys(groups).forEach(function (s) {
