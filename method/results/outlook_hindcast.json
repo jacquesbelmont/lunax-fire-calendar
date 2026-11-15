@@ -1,5 +1,5 @@
 {
-  "decision": "method/DECISIONS.md DE-27 (PROPOSED)",
+  "decision": "method/DECISIONS.md DE-28 (PROPOSED)",
   "areas": "52 municipalities, docs/data/municipalities.csv viirs_eq",
   "target": "August-October total",
   "test_years": [

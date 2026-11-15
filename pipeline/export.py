@@ -14,7 +14,7 @@ method/results/harmonize_model.json. Writes:
 - docs/data/months.csv: coverage and flags per satellite and month (DE-14).
 - docs/data/metadata.json: area, source, versions, period, coverage, method, data cut-off date, grid, attribution.
 - docs/data/municipalities.csv and municipalities.geojson: the same series per IBGE municipality (DE-24).
-- docs/data/cell_outlook_001.csv and cell_outlook_005.csv: where to expect fire next season (DE-28); needs
+- docs/data/cell_outlook_001.csv and cell_outlook_005.csv: where to expect fire next season (DE-29); needs
   `python pipeline/cell_outlook.py` (method/results/cell_outlook_hindcast.json and data/interim/cell_outlook_2027_*.csv).
 - docs/data/recurrence.csv: 0.01° cells with the number of years with a reference VIIRS detection (DE-26); needs
   method/results/recurrence_hindcast.json from `python pipeline/validate.py --recurrence`.
@@ -40,8 +40,8 @@ AREA = ROOT / "config" / "area.json"
 BOUNDARY = ROOT / "config" / "area_boundary.geojson"  # IBGE boundary of Rondonia (DE-1)
 MUNICIPALITIES = ROOT / "config" / "municipalities.geojson"  # IBGE municipal boundaries (DE-24)
 HINDCAST = ROOT / "method" / "results" / "recurrence_hindcast.json"  # DE-26, written by validate.py --recurrence
-OUTLOOK = ROOT / "method" / "results" / "outlook_hindcast.json"  # DE-27, written by node method/outlook_hindcast.js
-CELL_OUTLOOK = ROOT / "method" / "results" / "cell_outlook_hindcast.json"  # DE-28, written by pipeline/cell_outlook.py
+OUTLOOK = ROOT / "method" / "results" / "outlook_hindcast.json"  # DE-28, written by node method/outlook_hindcast.js
+CELL_OUTLOOK = ROOT / "method" / "results" / "cell_outlook_hindcast.json"  # DE-29, written by pipeline/cell_outlook.py
 INTERIM = ROOT / "data" / "interim"
 RECURRENCE_GRID = 0.01  # DE-26: larger than every VIIRS pixel (max 0.80 km)
 RECURRENCE_YEARS = [y for y in range(2012, 2026) if y != 2023]  # DE-26: 2023 misses reference days in July and September
@@ -73,9 +73,9 @@ def hindcast_summary():
 
 
 def outlook_summary():
-    """DE-27 test result for the app: chosen method per moment and the pooled errors (node method/outlook_hindcast.js)."""
+    """DE-28 test result for the app: chosen method per moment and the pooled errors (node method/outlook_hindcast.js)."""
     if not OUTLOOK.exists():
-        raise FileNotFoundError(f"{OUTLOOK.relative_to(ROOT)} missing: run node method/outlook_hindcast.js first (DE-27)")
+        raise FileNotFoundError(f"{OUTLOOK.relative_to(ROOT)} missing: run node method/outlook_hindcast.js first (DE-28)")
     h = json.loads(OUTLOOK.read_text())
     return {k: h[k] for k in ("decision", "test_years", "fresh_year", "pre_season", "early_season")}
 
@@ -177,7 +177,7 @@ def export_recurrence():
 
 
 def export_cell_outlook():
-    """(h) DE-28: cell_outlook_<scale>.csv from pipeline/cell_outlook.py: `cell_id,p` (chance, 3 decimals, p >= 0.01) when
+    """(h) DE-29: cell_outlook_<scale>.csv from pipeline/cell_outlook.py: `cell_id,p` (chance, 3 decimals, p >= 0.01) when
     a model passed the test, or `cell_id,last,top` (detections in the last year; top = 1 for the 10 % of cells ranked first as in the test) when
     persistence is shown."""
     paths = []
@@ -191,9 +191,9 @@ def export_cell_outlook():
 
 
 def cell_outlook_summary():
-    """DE-28 test result for the app: per scale, what is shown and the test numbers."""
+    """DE-29 test result for the app: per scale, what is shown and the test numbers."""
     if not CELL_OUTLOOK.exists():
-        raise FileNotFoundError(f"{CELL_OUTLOOK.relative_to(ROOT)} missing: run python pipeline/cell_outlook.py first (DE-28)")
+        raise FileNotFoundError(f"{CELL_OUTLOOK.relative_to(ROOT)} missing: run python pipeline/cell_outlook.py first (DE-29)")
     h = json.loads(CELL_OUTLOOK.read_text())
     return {"decision": h["decision"], "window": h["window"], "next_year": 2027, "feature_year": 2026,
             "scales": {k: {x: s[x] for x in ("grid_deg", "cells", "test_years", "fresh_year", "pooled", "fresh", "best_model", "shown")}
@@ -282,8 +282,8 @@ def export_metadata(harmonized):
             "detections": "reference VIIRS satellite of DE-11: S-NPP 2012-02 to 2018-03, NOAA-20 from 2018-04",
             "hindcast": hindcast_summary(),
         },
-        "outlook": outlook_summary(),  # DE-27 (PROPOSED)
-        "cell_outlook": cell_outlook_summary(),  # DE-28 (PROPOSED)
+        "outlook": outlook_summary(),  # DE-28 (PROPOSED)
+        "cell_outlook": cell_outlook_summary(),  # DE-29 (PROPOSED)
         "attribution": ATTRIBUTION,
         "disclaimer_url": DISCLAIMER_URL,
         "ai_use": AI_USE,

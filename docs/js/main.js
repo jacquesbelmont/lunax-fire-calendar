@@ -1,7 +1,7 @@
 /*
  * Purpose: entry point; wires controls, map, calendar, comparison and downloads together.
  * SCOPE: R1, R3, R4, R5, R6, R7, R8, R9, R10, O1, O2, O3, O4
- * Owner issue: JA-5, JA-6, JA-7, RA-7 (DE-22 map view, DE-23 fire season, DE-25 print, KML and FIRMS link), RA-8 (DE-26), RA-9 (DE-27 outlook)
+ * Owner issue: JA-5, JA-6, JA-7, RA-7 (DE-22 map view, DE-23 fire season, DE-25 print, KML and FIRMS link), RA-8 (DE-26), RA-9 (DE-28 outlook)
  * AI-assisted code (Claude Code and Codex); logged in AI_USE.md.
  */
 (function () {
@@ -47,6 +47,9 @@
     return state.mapMonth !== null ? state.mapMonth : LunaxCalc.comparedMonthIndex(state.rows, Number($("compare-month").value));
   }
 
+  /** The view chosen in the map panel. */
+  const mapMode = () => document.querySelector('input[name="map-mode"]:checked').value;
+
   /**
    * Map colors and hover texts per selected cell for month index m (same column and per-cell numbers as the calendar):
    * DE-21 hotspots view, or DE-22 "Compared with the usual" classes.
@@ -58,7 +61,7 @@
     const status = row.estimated ? "Estimated from MODIS" : row.provisional ? "Provisional (near real-time data)" :
       column === "viirs_eq" ? "Observed (VIIRS)" : "Raw counts of one sensor";
     const noData = row.ym + ": no data (not zero)";
-    if ($("map-mode").value === "usual") {
+    if (mapMode() === "usual") {
       const classes = new Map(LunaxCalc.USUAL_CLASSES.map((c) => [c[0], c]));
       const usual = state.sel.map((i) => LunaxCalc.cellUsual(state.data, i, column, m));
       const keys = values.map((v, j) => LunaxCalc.usualClass(v, usual[j]));
@@ -74,11 +77,11 @@
       legend: { title: "Hotspots per cell, " + row.ym, status: status, cap: cap, unit: "hotspots" } };
   }
 
-  // DE-26 and DE-28: statewide cell layers drawn as one image; the other views color the selected cells.
+  // DE-26 and DE-29: statewide cell layers drawn as one image; the other views color the selected cells.
   const LAYER_VIEWS = ["recurrence", "outlook001", "outlook005"];
 
   function paintCells() {
-    const mode = $("map-mode").value, layer = LAYER_VIEWS.includes(mode);
+    const mode = mapMode(), layer = LAYER_VIEWS.includes(mode);
     state.map.showSelection(state.muni ? null : state.bbox, layer ? [] : state.sel.map((i) => state.data.cells[i]),
       layer ? { colors: [], tips: [], legend: layerSpec(mode).legend } : mapPaint(mapMonthIndex()));
     $("recurrence-note").textContent = "";
@@ -103,7 +106,7 @@
           ": for the next season, the previous year's fires were the better guide (see the views \"Where to expect fire\")." };
     }
     const co = state.meta.cell_outlook, key = mode.slice(-3), s = co.scales[key], km = key === "001" ? "about 1 km" : "about 5 km";
-    const test = "In a test fixed in advance (method/DECISIONS.md DE-28; each of " + s.test_years.join(", ") + " forecast from earlier years only), ";
+    const test = "In a test fixed in advance (method/DECISIONS.md DE-29; each of " + s.test_years.join(", ") + " forecast from earlier years only), ";
     if (s.shown === "P") {
       return { file: "cell_outlook_" + key + ".csv", grid: s.grid_deg,
         color: (f) => (f[2] === "1" ? "#980043" : "#d7b5d8"),
@@ -149,7 +152,7 @@
         });
         state.layers[mode] = { url: canvas.toDataURL(), byId: new Map(rows.map((f) => [f[0], f])) };
       }
-      if ($("map-mode").value !== mode) return; // the view changed while loading
+      if (mapMode() !== mode) return; // the view changed while loading
       const L_ = state.layers[mode], g = spec.grid;
       state.map.showOverlay(L_.url, [[box[1], box[0]], [box[3], box[2]]], function (ll) {
         const f = L_.byId.get(Math.floor((ll.lat + 90) / g) + "_" + Math.floor((ll.lng + 180) / g));
@@ -325,7 +328,7 @@
       if (m >= 0 && state.rows[m].inRange) { state.mapMonth = m; refreshMap(); } // months outside the period are ignored
     });
     LunaxSeason.render($("season"), $("season-text"), state.rows);
-    // DE-27: the outlook uses the harmonized series of the area whatever series is displayed
+    // DE-28: the outlook uses the harmonized series of the area whatever series is displayed
     if ($("series-select").value === "viirs_eq") LunaxOutlook.render($("outlook"), $("outlook-text"), state.rows, state.meta.outlook);
     else { Plotly.purge($("outlook")); $("outlook-text").textContent = "The outlook uses the harmonized series: choose it in section 1."; }
     LunaxCompare.render($("compare"), $("compare-text"), state.rows, Number($("compare-month").value), unit);
@@ -373,7 +376,12 @@
       addOptions($("compare-month"), ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((n, i) => [String(i + 1), n]));
       $("compare-month").value = String(Number(data.months[data.months.length - 1].slice(5, 7)));
       state.map = LunaxMap.create("map", boundary, muniGeo, meta.grid.cell_size_deg, setBbox);
-      $("map-mode").addEventListener("change", () => state.rows && paintCells()); // DE-22: same month, other colors
+      state.map.addPanel($("map-panel"));
+      if (window.innerWidth < 600) $("map-panel-details").open = false; // phones: the panel starts closed
+      $("map-mode").addEventListener("change", function (e) { // DE-22, DE-26, DE-29: same month, other view
+        $("map-view-name").textContent = e.target.closest("label").querySelector("strong").textContent;
+        if (state.rows) paintCells();
+      });
       // DE-25: the map is resized to the page width first, so its tiles and cells are drawn before the browser prints.
       $("print-briefing").addEventListener("click", function () {
         document.body.classList.add("printing");

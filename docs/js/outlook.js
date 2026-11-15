@@ -1,5 +1,5 @@
 /*
- * Purpose: outlook for the next fire season of the selected area (DE-27, PROPOSED): the August-October hotspots
+ * Purpose: outlook for the next fire season of the selected area (DE-28, PROPOSED): the August-October hotspots
  *          forecast with the method chosen by the pre-registered test (metadata.json "outlook"), an empirical 80 %
  *          range from the area's own past errors, and a chart of past forecasts against what happened.
  * SCOPE: proposed O5 (experimental outlook), pending team approval

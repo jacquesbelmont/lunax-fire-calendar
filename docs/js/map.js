@@ -16,7 +16,7 @@
   const SENSOR_COLORS = { MODIS: "#0072B2", VIIRS: "#D55E00" };
 
   function legendControl() {
-    const ctl = L.control({ position: "bottomright" });
+    const ctl = L.control({ position: "bottomleft" }); // the map view panel uses the right side
     ctl.onAdd = function () {
       const div = L.DomUtil.create("div", "map-legend");
       div.id = "map-legend";
@@ -165,6 +165,12 @@
         if (box) L.rectangle([[box[1], box[0]], [box[3], box[2]]], { color: "#0b5cad", weight: 2, fill: false }).addTo(rectLayer);
         if (selectedMuni) selectedMuni.bringToFront();
         renderLegend(legend.getContainer(), paint ? paint.legend : null);
+      },
+      /** The map view panel (an element of the page) as a control in the top-right corner, under the layers button. */
+      addPanel: function (el) {
+        const ctl = L.control({ position: "topright" });
+        ctl.onAdd = function () { L.DomEvent.disableClickPropagation(el); L.DomEvent.disableScrollPropagation(el); return el; };
+        ctl.addTo(map);
       },
       /** DE-24: outline municipality k (index in municipalities.geojson) and zoom to it; null clears the outline. */
       highlightMunicipality: function (k) {

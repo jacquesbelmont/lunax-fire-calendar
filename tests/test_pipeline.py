@@ -210,7 +210,7 @@ class RecurrenceTest(unittest.TestCase):
 
 
 class CellOutlookTest(unittest.TestCase):
-    """DE-28: features come from earlier years only; the shown method follows the pre-registered rule."""
+    """DE-29: features come from earlier years only; the shown method follows the pre-registered rule."""
 
     def test_features_and_rule(self):
         import numpy as np  # noqa: E402

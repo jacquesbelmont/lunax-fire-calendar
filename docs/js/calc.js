@@ -4,7 +4,7 @@
  * SCOPE: R3, R5, R6, R7, R8, R9, O3
  * Owner issue: JA-5, JA-6, JA-8
  * Rules: DE-13 (median/anomaly), DE-16 (uncertainty), DE-21 (map layers), DE-22 (usual), DE-23 (fire season),
- *        DE-24 (municipalities), DE-25 (KML), DE-26 (places that burn year after year), DE-27 (outlook), DE-28 (cell outlook), DATA_CONTRACT.md (a), (e), (f). An empty value is NO DATA, never zero.
+ *        DE-24 (municipalities), DE-25 (KML), DE-26 (places that burn year after year), DE-28 (outlook), DE-29 (cell outlook), DATA_CONTRACT.md (a), (e), (f). An empty value is NO DATA, never zero.
  * AI-assisted code (Claude Code); logged in AI_USE.md.
  */
 (function (root, factory) {
@@ -486,7 +486,7 @@
   function mercatorY(lat) { return Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)); }
 
   /**
-   * DE-26, DE-28: [x, y, w, h] of grid cell "row_col" of `size` degrees on a canvas of W x H pixels covering bbox [west, south, east, north],
+   * DE-26, DE-29: [x, y, w, h] of grid cell "row_col" of `size` degrees on a canvas of W x H pixels covering bbox [west, south, east, north],
    * with rows in Web Mercator (the map's projection), so each cell lands where it belongs on the map.
    */
   function gridCellRect(id, size, bbox, W, H) {
@@ -496,7 +496,7 @@
     return [(lon0 - bbox[0]) * dx, y0, size * dx, y1 - y0];
   }
 
-  /** DE-28 classes of the chance of fire next season: [min chance, color, label], ColorBrewer PuRd; under 10 % not drawn
+  /** DE-29 classes of the chance of fire next season: [min chance, color, label], ColorBrewer PuRd; under 10 % not drawn
    * (it covered most of the state and hid the places that matter; the hover text still gives the chance). */
   var OUTLOOK_CLASSES = [[0.75, "#980043", "75% or more"], [0.5, "#dd1c77", "50-75%"], [0.25, "#df65b0", "25-50%"],
     [0.1, "#d7b5d8", "10-25%"]];
@@ -511,7 +511,7 @@
   }
 
   /**
-   * DE-27: per year of rows [{ym, value}], T = August-October total and J = January-July total; NaN when a month has
+   * DE-28: per year of rows [{ym, value}], T = August-October total and J = January-July total; NaN when a month has
    * no data or is not in the data (missing data is never zero fire). Keys are years (numbers as object keys).
    */
   function seasonTotals(rows) {
@@ -527,7 +527,7 @@
     return out;
   }
 
-  /** DE-27: forecast of T(Y) by candidate "C", "P", "P3" or "R", from earlier years only (and J(Y) for R); NaN if undefined. */
+  /** DE-28: forecast of T(Y) by candidate "C", "P", "P3" or "R", from earlier years only (and J(Y) for R); NaN if undefined. */
   function outlookForecast(totals, Y, method) {
     var earlier = Object.keys(totals).map(Number).filter(function (y) { return y < Y; });
     var withT = earlier.filter(function (y) { return !Number.isNaN(totals[y].T); }).map(function (y) { return totals[y].T; });
@@ -548,7 +548,7 @@
   }
 
   /**
-   * DE-27: for target years from..to with an observed T and a forecast by every method: signed errors
+   * DE-28: for target years from..to with an observed T and a forecast by every method: signed errors
    * ln((observed + 1) / (forecast + 1)). Returns [{year, observed, forecasts, errors}].
    */
   function outlookErrors(totals, methods, from, to) {

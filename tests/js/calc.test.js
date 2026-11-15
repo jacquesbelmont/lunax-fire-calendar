@@ -210,8 +210,8 @@ test("DE-26 recurrence classes and Web Mercator cell placement", () => {
   assert.ok(Math.abs(y - (m(box[3]) - m(-10.99)) / (m(box[3]) - m(box[1])) * H) < 1e-6);
 });
 
-// DE-27: the outlook functions on real data; the whole-state values recomputed by hand from the CSV sums.
-test("DE-27 season totals, forecasts and errors on the whole state", () => {
+// DE-28: the outlook functions on real data; the whole-state values recomputed by hand from the CSV sums.
+test("DE-28 season totals, forecasts and errors on the whole state", () => {
   const all = calc.selectCells(data, meta.area.bbox_west_south_east_north);
   const v = calc.areaSeries(data, all, "viirs_eq");
   const rows = data.months.map((ym, i) => ({ ym: ym, value: v[i] }));
@@ -230,7 +230,7 @@ test("DE-27 season totals, forecasts and errors on the whole state", () => {
   e.forEach((x) => same(x.errors[1], Math.log((x.observed + 1) / (x.forecasts[1] + 1)), "signed error " + x.year));
 });
 
-test("DE-27 test result in metadata.json: P chosen pre-season, January-July update not adopted", () => {
+test("DE-28 test result in metadata.json: P chosen pre-season, January-July update not adopted", () => {
   const o = meta.outlook;
   assert.strictEqual(o.pre_season.chosen, "P");
   assert.ok(o.pre_season.test.male.P <= 0.9 * o.pre_season.test.male.C && o.pre_season.fresh.male.P < o.pre_season.fresh.male.C);
@@ -238,7 +238,7 @@ test("DE-27 test result in metadata.json: P chosen pre-season, January-July upda
   assert.ok(o.early_season.test.male.R > 0.9 * o.early_season.test.male.C);
 });
 
-test("DE-28 chance classes: under 10% not drawn; edges at 10, 25, 50 and 75%", () => {
+test("DE-29 chance classes: under 10% not drawn; edges at 10, 25, 50 and 75%", () => {
   const cls = (p) => (calc.outlookClass(p) || [null])[0];
   assert.deepStrictEqual([0.01, 0.099, 0.1, 0.25, 0.5, 0.749, 0.75, 1].map(cls), [null, null, 0.1, 0.25, 0.5, 0.5, 0.75, 0.75]);
   const a = calc.gridCellRect("1530_2368", 0.05, meta.area.bbox_west_south_east_north, 1450, 1200), b = calc.gridCellRect("7650_11840", 0.01, meta.area.bbox_west_south_east_north, 1450, 1200);

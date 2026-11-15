@@ -181,7 +181,7 @@
     }
   },
   "outlook": {
-    "decision": "method/DECISIONS.md DE-27 (PROPOSED)",
+    "decision": "method/DECISIONS.md DE-28 (PROPOSED)",
     "test_years": [
       2013,
       2025
@@ -229,7 +229,7 @@
     }
   },
   "cell_outlook": {
-    "decision": "method/DECISIONS.md DE-28 (PROPOSED)",
+    "decision": "method/DECISIONS.md DE-29 (PROPOSED)",
     "window": "January-October",
     "next_year": 2027,
     "feature_year": 2026,

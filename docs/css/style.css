@@ -37,6 +37,25 @@ footer { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 12px;
 .cluster { display: flex; align-items: center; justify-content: center; box-sizing: border-box; border: 2px solid #fff; border-radius: 10px; color: #fff; font: 600 11px/1 system-ui, sans-serif; box-shadow: 0 0 2px rgba(0,0,0,.5); }
 @media (max-width: 600px) { .map-legend { max-width: 160px; font-size: .7rem; } }
 .recurrence-overlay { image-rendering: pixelated; } /* DE-26: keep 1 km cells sharp when zoomed in */
+/* Map view panel inside the map (DE-22, DE-26, DE-29) */
+.map-panel { background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,.35); width: 280px; max-height: 70vh; overflow: auto; font-size: .82rem; }
+.map-panel summary { cursor: pointer; font-weight: 600; padding: 8px 10px; }
+.map-panel fieldset { border: 0; margin: 0; padding: 0 4px 4px; }
+.map-panel .panel-group { margin: 8px 6px 2px; font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.map-panel label.view { flex-direction: row; align-items: center; gap: 8px; padding: 6px; border-radius: 6px; cursor: pointer; color: var(--fg); font-size: .82rem; line-height: 1.25; }
+.map-panel label.view:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.map-panel label.view:has(input:checked) { background: color-mix(in srgb, var(--accent) 16%, transparent); box-shadow: inset 0 0 0 1px var(--accent); }
+.map-panel label.view input { margin: 0; flex: none; }
+.map-panel small { display: block; color: var(--muted); font-size: .72rem; }
+.map-panel .sw { flex: none; width: 34px; height: 14px; border-radius: 3px; border: 1px solid #888; }
+.sw-hotspots { background: linear-gradient(to right, #fde725, #5ec962, #21918c, #3b528b, #440154); }
+.sw-usual { background: linear-gradient(to right, #5e3c99, #b2abd2, #f7f7f7, #fdb863, #e66101); }
+.sw-recurrence { background: linear-gradient(to right, #ffffb2, #fecc5c, #fd8d3c, #f03b20, #bd0026); }
+.sw-outlook001 { background: linear-gradient(to right, #d7b5d8, #df65b0, #dd1c77, #980043); }
+.sw-outlook005 { background: linear-gradient(to right, #d7b5d8 50%, #980043 50%); }
+.map-panel .panel-link { display: block; padding: 8px 10px; border-top: 1px solid var(--line); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 600px) { .map-panel { width: 220px; } }
 /* DE-24: municipal ranking */
 h3 { margin: 20px 0 4px; font-size: 1rem; }
 .table-wrap { max-height: 340px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }

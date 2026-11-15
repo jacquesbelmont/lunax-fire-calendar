@@ -44,16 +44,23 @@
 
     <section id="map-section" aria-label="Map">
       <h2>Map</h2>
-      <p class="hint">The map shows one month: the month of section 5, or the month you click in the calendar. Each grid cell is about 27 x 27 km (0.25°). <strong>Hotspots in the month</strong> colors the cells by their value (same values and colors as the calendar; the scale tops out at the 95th percentile of the cells). <strong>Compared with the usual</strong> colors each cell against the median of the same month in its earlier years, so it shows where the month was unusual. <strong>Places that burn year after year</strong> shows, in cells of about 1 km, in how many years since 2012 VIIRS detected fire there. <strong>Where to expect fire next season</strong> shows the chance of fire in each cell next year, with the method that won a test fixed in advance. Grey cells have no data, which is not zero fire. <span class="dot modis" aria-hidden="true"></span> MODIS and <span class="dot viirs" aria-hidden="true"></span> VIIRS detections are points at their real position; a number is a group of nearby detections of one sensor, so zoom in to separate them. Click the map before zooming with the mouse wheel. The layers button (top right) hides cells or points.</p>
-      <div class="row no-print">
-        <label>Map view <select autocomplete="off" id="map-mode">
-          <option value="hotspots">Hotspots in the month</option>
-          <option value="usual">Compared with the usual for that month</option>
-          <option value="recurrence">Places that burn year after year (VIIRS, about 1 km, 2012-2025)</option>
-          <option value="outlook001">Where to expect fire next season (experimental, about 1 km)</option>
-          <option value="outlook005">Where to expect fire next season (experimental, about 5 km)</option>
-        </select></label>
-        <a id="firms-link" href="https://firms.modaps.eosdis.nasa.gov/map/" target="_blank" rel="noopener">Today's fires in this area on the NASA FIRMS Fire Map (near real-time, opens a new tab)</a>
+      <p class="hint">Choose what the map shows in the panel on the map (top right). The month views show the month of section 5, or the month you click in the calendar; their grid cells are about 27 x 27 km (0.25°), and grey cells have no data, which is not zero fire. <span class="dot modis" aria-hidden="true"></span> MODIS and <span class="dot viirs" aria-hidden="true"></span> VIIRS detections of the month are points at their real position; a number is a group of nearby detections of one sensor, so zoom in to separate them. Click the map before zooming with the mouse wheel. The layers button hides cells, points or municipal borders.</p>
+      <div id="map-panel" class="map-panel no-print">
+        <details id="map-panel-details" open>
+          <summary>Map view: <span id="map-view-name">Hotspots in the month</span></summary>
+          <fieldset id="map-mode">
+            <legend class="sr-only">Map view</legend>
+            <p class="panel-group">This month</p>
+            <label class="view"><input type="radio" name="map-mode" value="hotspots" checked><span class="sw sw-hotspots" aria-hidden="true"></span><span><strong>Hotspots in the month</strong><small>Cells colored by the month's hotspots</small></span></label>
+            <label class="view"><input type="radio" name="map-mode" value="usual"><span class="sw sw-usual" aria-hidden="true"></span><span><strong>Compared with the usual</strong><small>Above or below the median of the same month in earlier years</small></span></label>
+            <p class="panel-group">History, 2012-2025</p>
+            <label class="view"><input type="radio" name="map-mode" value="recurrence"><span class="sw sw-recurrence" aria-hidden="true"></span><span><strong>Places that burn year after year</strong><small>VIIRS, cells of about 1 km</small></span></label>
+            <p class="panel-group">Next season (experimental)</p>
+            <label class="view"><input type="radio" name="map-mode" value="outlook001"><span class="sw sw-outlook001" aria-hidden="true"></span><span><strong>Where to expect fire, about 1 km</strong><small>Chance per cell from a tested model</small></span></label>
+            <label class="view"><input type="radio" name="map-mode" value="outlook005"><span class="sw sw-outlook005" aria-hidden="true"></span><span><strong>Where to expect fire, about 5 km</strong><small>Last year's fire, the best guide at this scale</small></span></label>
+          </fieldset>
+          <a id="firms-link" class="panel-link" href="https://firms.modaps.eosdis.nasa.gov/map/" target="_blank" rel="noopener">Today's fires here: NASA FIRMS Fire Map (near real-time, new tab)</a>
+        </details>
       </div>
       <div id="map" role="application" aria-label="Map for choosing the area, with the hotspots of one month"></div>
       <p class="hint" id="recurrence-note" role="status"></p>

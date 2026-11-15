@@ -1,4 +1,4 @@
-"""DE-28 (PROPOSED): where to expect fire next season, as a probability per cell, at 0.01° and 0.05°.
+"""DE-29 (PROPOSED): where to expect fire next season, as a probability per cell, at 0.01° and 0.05°.
 
 Owner issue: RA-9 (#59). SCOPE: proposed O5 (pending team approval).
 AI-assisted code (Claude Code); logged in AI_USE.md.
@@ -6,7 +6,7 @@ AI-assisted code (Claude Code); logged in AI_USE.md.
 Builds, for each valid pair of years (F, Y = F + 1), six features of every cell inside the IBGE boundary from year F and
 earlier, and the target "at least one reference VIIRS detection in January-October of Y". Runs the pre-registered
 rolling-origin test (logistic regression L, gradient boosting G, persistence P, constant rate B0; method/DECISIONS.md
-DE-28), writes method/results/cell_outlook_hindcast.json, then refits the model chosen by the rule on every pair up to
+DE-29), writes method/results/cell_outlook_hindcast.json, then refits the model chosen by the rule on every pair up to
 2026 and writes the probabilities for 2027 to data/interim/cell_outlook_2027_<scale>.csv (export.py copies them).
 
 Usage:
@@ -32,7 +32,7 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "method" / "results" / "cell_outlook_hindcast.json"
 INTERIM = ROOT / "data" / "interim"
 W, S, E, N = json.loads((ROOT / "config" / "area.json").read_text())["bbox_west_south_east_north"]
-VALID = [y for y in range(2012, 2027) if y != 2023]  # DE-28: as DE-26, 2023 misses reference days in July and September
+VALID = [y for y in range(2012, 2027) if y != 2023]  # DE-29: as DE-26, 2023 misses reference days in July and September
 TESTS, FRESH, NEXT = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2025], 2026, 2027
 SCALES = {"001": 0.01, "005": 0.05}
 FEATURES = ["last", "nb", "dist", "rec", "since", "parent"]
@@ -86,7 +86,7 @@ def parent_means(G):
 
 
 def features(counts, parent, f, G):
-    """DE-28 features of every inside cell from year f and earlier (DataFrame in the order of the inside cells)."""
+    """DE-29 features of every inside cell from year f and earlier (DataFrame in the order of the inside cells)."""
     a = counts[f]
     km_y, km_x = G["g"] * 111.32, G["g"] * 111.32 * np.cos(np.radians((S + N) / 2))
     nb = ndimage.convolve(a, np.array([[1, 1, 1], [1, 0, 1], [1, 1, 1]]), mode="constant")
@@ -133,7 +133,7 @@ def run_scale(G, counts, parent):
 
 
 def summarize(res):
-    """Pooled test numbers, 2026, calibration and the DE-28 rule."""
+    """Pooled test numbers, 2026, calibration and the DE-29 rule."""
     t = [res["years"][y] for y in TESTS]
     pooled = {"capture": {k: round(sum(r["capture"][k] * r["detections"] for r in t) / sum(r["detections"] for r in t), 6)
                           for k in ("P", "L", "G")},
@@ -163,7 +163,7 @@ def calibration(res, pairs, name, m_inside):
 
 def main():
     pts = export.reference_viirs()
-    out = {"decision": "method/DECISIONS.md DE-28 (PROPOSED)", "window": "January-October", "valid_years": VALID,
+    out = {"decision": "method/DECISIONS.md DE-29 (PROPOSED)", "window": "January-October", "valid_years": VALID,
            "target": "at least one reference VIIRS detection in the window", "features": FEATURES, "scales": {}}
     for key, g in SCALES.items():
         G = grid(g)
