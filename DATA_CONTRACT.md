@@ -44,12 +44,25 @@ A satellite-month absent from this file has no data.
 Path: `docs/data/area.geojson`. This is the IBGE boundary of Rondônia (DE-1), a GeoJSON FeatureCollection with one Polygon. The source URL and retrieval date are in the feature `properties`. The app draws it and marks everything outside it as "outside the area".
 
 ### (b) Hotspot list per year (CSV export)
-Path: TODO(verify): file naming - decide in JA-3
-Content: hotspots per year, used for the CSV download (R9).
+Paths: `docs/data/hotspots/<instrument>_<year>.csv.gz` and `docs/data/hotspots/index.json`. Written by `pipeline/export_hotspots.py` (DE-17, R9). `<instrument>` is the FIRMS country-file instrument: `modis`, `viirs-snpp`, `viirs-jpss1` (NOAA-20). 48 files, 2,043,625 rows (`index.json`).
+Content: the detections kept by `clean.py` (standard data, `type` 0, inside the area boundary, no confidence filter). Each file is gzip text. It starts with `#` comment lines (FIRMS acknowledgment, disclaimer link, data cut-off date), then the column header, then one row per hotspot, sorted by date and time.
+`index.json`: `columns` and `files` (`source`, `year`, `file`, `rows`, `bytes`); the app reads it to choose the files of a period and to show the size.
 
 | Column | Type | Unit | Description |
 |--------|------|------|-------------|
-| TODO(verify) | | | Fill from real FIRMS headers (JA-2) |
+| `cell_id` | text | - | Same grid cell as in (a), so a selection of cells picks the same rows |
+| `latitude`, `longitude` | float | degrees | Pixel centre (WGS84), as in the FIRMS file |
+| `acq_date` | text | YYYY-MM-DD | UTC acquisition date |
+| `acq_time` | text | HHMM | UTC acquisition time, leading zeros kept |
+| `sat` | text | - | `Terra`, `Aqua`, `SNPP` or `NOAA20` |
+| `sensor` | text | - | `MODIS` or `VIIRS` |
+| `confidence` | text | - | MODIS 0-100; VIIRS `l`, `n` or `h` (both seen in the real files). Not filtered |
+| `daynight` | text | - | `D` or `N` |
+| `frp` | float | MW | Fire radiative power (FIRMS attribute page) |
+| `type` | int | - | 0 = presumed vegetation fire (only value kept) |
+| `version` | text | - | FIRMS product version as in the file |
+
+The numbers of rows per instrument and year equal `rows_kept` of `method/results/cleaning_log.csv`, and the counts per cell, month and satellite equal the raw columns of (a) (`tests/js/hotspots.test.js`).
 
 ### (c) metadata.json
 Path: `docs/data/metadata.json`
@@ -90,7 +103,7 @@ TODO(verify): fill from `data_availability` output in JA-2.
 DRAFT from real Brazil country files (method/FIRMS_REFERENCE.md section 4); to be reviewed by Jacques and Rafael (JA-3).
 - MODIS: `latitude,longitude,brightness,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_t31,frp,daynight,type`
 - VIIRS (S-NPP, NOAA-20): `latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_ti5,frp,daynight,type`
-- `acq_time` is HHMM in UTC with leading zeros: read as text. `confidence`: MODIS 0-100, VIIRS `l`/`n`/`h`: TODO(verify).
+- `acq_time` is HHMM in UTC with leading zeros: read as text. `confidence`: MODIS 0-100, VIIRS `l`/`n`/`h` (values seen in the real files, 2026-11-15).
 - Units and `type` codes for VIIRS: TODO(verify) (FIRMS_REFERENCE.md section 13).
 
 ## Country yearly summary files (no MAP_KEY)
