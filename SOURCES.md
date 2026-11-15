@@ -24,7 +24,9 @@
 ## Other sources used in the method (method/DECISIONS.md, method/METHOD.md)
 - IBGE state boundary of Rondônia (demo area, DE-1; copy in config/area_boundary.geojson): https://servicodados.ibge.gov.br/api/v3/malhas/estados/11?formato=application/vnd.geo+json&qualidade=maxima
 - CAMS, "Drifting away from MODIS in the CAMS Global Fire Assimilation System", 2026-02-25 (MODIS end-of-mission dates, DE-2): https://atmosphere.copernicus.eu/drifting-away-modis-cams-global-fire-assimilation-system
-- Schroeder, Oliva, Giglio, Csiszar (2014), The New VIIRS 375 m active fire detection data product, Remote Sensing of Environment 143:85-96, doi:10.1016/j.rse.2013.12.008 (DE-2; TODO(verify): read the full paper before quoting details): https://directreadout.sci.gsfc.nasa.gov/publications_documents/Schroeder_et_al_2014b_RSE.pdf
+- Schroeder, Oliva, Giglio, Csiszar (2014), The New VIIRS 375 m active fire detection data product, Remote Sensing of Environment 143:85-96, doi:10.1016/j.rse.2013.12.008 (DE-2; full paper read 2026-11-15): https://directreadout.sci.gsfc.nasa.gov/publications_documents/Schroeder_et_al_2014b_RSE.pdf
+- MODIS Collection 6 and 6.1 Active Fire Product User's Guide, version 1.0, May 2021 (confidence classes, MCD14ML version naming, `type` codes; linked from the FIRMS FAQ): https://www.earthdata.nasa.gov/s3fs-public/2023-09/MODIS_C6_C6.1_Fire_User_Guide_1.0.pdf
+- VIIRS Collection 2 375 m Active Fire User Guide, version 1.2, June 2025 (VIIRS `type` codes; linked from the FIRMS FAQ): https://www.earthdata.nasa.gov/s3fs-public/2025-06/VIIRS_C2_AF-375m_User_Guide_1.2.pdf
 
 ## Space Apps Connect discussions
 - Challenge author (official): https://github.com/nasa/spaceapps/discussions/1879
@@ -43,7 +45,7 @@
 | plotly.js-dist-min | 4.3.0 | MIT | docs/lib/plotly/ |
 | IBGE malhas (Rondônia boundary) | API v3, retrieved 2026-11-14 | TODO(verify): IBGE data license - https://www.ibge.gov.br | config/area_boundary.geojson, docs/data/area.geojson |
 | Python: pandas, numpy, scipy, statsmodels, matplotlib | pipeline/requirements.lock.txt | BSD-3-Clause (pandas, numpy, scipy, statsmodels); matplotlib license (PSF-based) - TODO(verify): exact license texts | pipeline/ |
-| NASA FIRMS (data) | TODO(verify): product versions - data/PROVENANCE.md | TODO(verify): data license/citation - https://www.earthdata.nasa.gov/data/tools/firms | pipeline/, docs/data/ |
+| NASA FIRMS (data) | MODIS Collection 6/6.1 (`6.2`, `6.03`, `61.03`), VIIRS Collection 2 (`2`), standard processing (`docs/data/metadata.json`; method/METHOD.md) | Open: "NASA promotes full and open sharing of data" (FIRMS FAQ, "Are there any restrictions on using data or imagery from FIRMS?", https://www.earthdata.nasa.gov/data/tools/firms/faq); acknowledgment text in `docs/data/metadata.json` (`attribution`) | pipeline/, docs/data/ |
 
 ## Map tiles (web app)
 - OpenStreetMap tiles, loaded by the browser from https://tile.openstreetmap.org (ODbL data, attribution shown in the app): https://www.openstreetmap.org/copyright

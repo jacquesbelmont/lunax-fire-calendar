@@ -79,7 +79,9 @@ PROPOSED rows become DECIDED when the team approves them in PR review. Options, 
 
 **Supporting external sources:**
 - NASA plans to end Terra MODIS data collection in January 2027 and Aqua MODIS around September 2027; both are "running low on fuel and experiencing orbital drift" (CAMS, 2026-02-25, https://atmosphere.copernicus.eu/drifting-away-modis-cams-global-fire-assimilation-system).
-- VIIRS 375 m detects smaller fires than MODIS 1 km (Schroeder, Oliva, Giglio, Csiszar 2014, Remote Sensing of Environment 143:85-96, doi:10.1016/j.rse.2013.12.008). TODO(verify): read the full paper before quoting details - https://directreadout.sci.gsfc.nasa.gov/publications_documents/Schroeder_et_al_2014b_RSE.pdf
+- VIIRS 375 m detects smaller fires than MODIS 1 km. Schroeder, Oliva, Giglio, Csiszar 2014, Remote Sensing of Environment 143:85-96, doi:10.1016/j.rse.2013.12.008 (full paper read 2026-11-15, https://directreadout.sci.gsfc.nasa.gov/publications_documents/Schroeder_et_al_2014b_RSE.pdf):
+  - introduction: "Improved spatial resolution enables detection of smaller fires of the same temperature, as well as refined mapping of larger fires";
+  - abstract: "VIIRS 375 m fire data showed significantly superior mapping capabilities compared to current MODIS fire detection data".
 
 **Costs we accept, and mitigations:**
 - 2000-11 to 2012-01 are estimates extrapolated backwards in time and cannot be checked against VIIRS directly. Mitigation: backcast test inside the overlap (DE-15); these months are flagged `estimated` and shown with uncertainty.
@@ -105,11 +107,11 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
    - `satellite` → Terra, Aqua, SNPP, NOAA20, NOAA21.
      - Observed in the country CSVs downloaded 2026-11-14: `Terra` and `Aqua` (modis_2013_Brazil.csv, modis_2025_Brazil.csv), `N` (viirs-snpp_2013_Brazil.csv), `N20` (viirs-jpss1_2025_Brazil.csv).
      - The FIRMS attribute page uses `T`/`A` for MODIS and `N`/`N20`/`N21` for VIIRS (https://www.earthdata.nasa.gov/data/tools/firms/active-fire-data-attributes-modis-viirs). Both forms are accepted.
-     - TODO(verify): API and NRT values.
+     - FIRMS public NRT files (2026-11-15): `T`/`A` for MODIS, `N20`/`N21` for VIIRS (FIRMS_REFERENCE section 13, item 3). The API output was not checked (MAP_KEY; not used in v1).
    - `acq_time` read as text HHMM.
    - `processing` (SP/NRT) from the `version` suffix. Standard processing carries the collection only; NRT, RT and URT add a suffix (FIRMS attribute page).
-     - Observed SP values: MODIS `6.2` (2013) and `61.03` (2025); VIIRS `2`.
-     - TODO(verify): meaning of `6.2` and `61.03` - FIRMS.
+     - Observed SP values: MODIS `6.2` (2000-2017), `6.03` (2018-2022) and `61.03` (2023-2025) in the Brazil and Bolivia files; VIIRS `2`.
+     - Meaning, by the MCD14ML naming (collection, then product version, MODIS user guide section 5.5.1): `6.03` = Collection 6 version 03, `61.03` = Collection 6.1 version 03, `6.2` most likely Collection 6 version 2. This is our reading; FIRMS does not document the field this way (FIRMS_REFERENCE section 13, item 1).
    - `route` (country CSV or API).
 2. Clip to the processing box with half-open intervals (west ≤ lon < east, south ≤ lat < north), so no detection is counted twice at an edge. Then keep only detections inside the IBGE boundary of Rondônia (point in polygon, DE-1).
 3. Keep dates from 2000-11-01 to the data cut-off date.
@@ -185,7 +187,8 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
 - **Considered on review** (Jacques): keep all types in the data and make type 0 the default app view, since "burning activity" is not limited to vegetation fire.
   - Not chosen: every number would then need a second harmonized series (one k per type), and a second set of export columns, for a difference under 0.5 %.
   - The impact of dropping `type` ≠ 0 is stated here and in method/METHOD.md.
-- TODO(verify): meaning of the `type` codes for VIIRS in the documentation - FIRMS_REFERENCE section 13, item 2.
+- VIIRS uses the MODIS `type` codes: "0 = presumed vegetation fire, 1 = active volcano, 2 = other static land source, 3 = offshore detection (includes all detections over water)" (VIIRS C2 375 m User Guide 1.2, section 3.2.2; FIRMS_REFERENCE section 13, item 2).
+- MODIS `type` before 2018 may come from an older product version with less refined typing (FIRMS_REFERENCE section 13, item 1). `type` ≠ 0 is at most 1.36 % of the MODIS detections inside the area in any year (`method/results/cleaning_log.csv`).
 
 ### DE-10 Confidence and day/night
 
@@ -193,7 +196,7 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
   - Keep the original value and a normalized class; sensitivity test with and without the low class in RA-3 (DE-15).
   - Why: MODIS (0-100) and VIIRS (l/n/h) confidence are not comparable, so any filter would differ by sensor. The FAQ says the meaning may vary by region and thresholds must be chosen empirically (FIRMS_REFERENCE section 5).
   - Cost: more false alarms are kept.
-  - TODO(verify): MODIS class cut-offs - the FIRMS attribute page lists the three classes but not their limits; check the MODIS C6.1 user guide.
+  - MODIS class cut-offs: low 0 % ≤ C < 30 %, nominal 30 % ≤ C < 80 %, high 80 % ≤ C ≤ 100 % (MODIS C6/C6.1 Active Fire Product User's Guide 1.0, Table 11). Not used in v1 (no filter).
   - **Low-confidence night pixels (VIIRS):** the FIRMS attribute page says they "occur only over the geographic area extending from 11deg E to 110 deg W and 7 deg N to 55 deg S" (South Atlantic Magnetic Anomaly), may be false alarms, and "have been removed from the NRT data distributed by FIRMS". Brazil is inside that area.
     - Measured: 0 such rows in the SP files viirs-snpp_2013_Brazil.csv and viirs-jpss1_2025_Brazil.csv.
     - So SP and NRT are consistent and no extra rule is needed.
@@ -221,7 +224,7 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
   - One model per configuration: chosen. Uses all MODIS data and creates no step at 2002-07, at the cost of two models.
   - Terra only: constant, but its morning overpass differs from VIIRS and it ends in January 2027.
 - A Space Apps navigator (not official) wrote in discussions/1879: "Different platforms have different overpass times, and ignoring that could create artificial trends."
-- TODO(verify): Aqua `satellite` value and NOAA-21 naming - FIRMS_REFERENCE section 13, items 3 and 5.
+- `satellite` values: `Terra`/`Aqua` in the country files, `T`/`A` in the NRT files; NOAA-21 is `N21` (FIRMS_REFERENCE section 13, items 3 and 5).
 
 ### DE-12 Grid
 
@@ -258,7 +261,7 @@ With Jacques; used by JA-6 and JA-8.
   - Flags are per satellite and month for the whole area, because FIRMS lists gaps per satellite.
   - Relevant satellites: in native VIIRS months, the reference VIIRS satellite; in converted months, Terra and Aqua.
   - Flagged months are never shown as zero and are excluded from the median (DE-13). A missing cell row in an unflagged month means zero detections.
-- **Sources of missing days:** FIRMS `missing_data` (FIRMS_REFERENCE section 7). The MODIS gaps from the archive README (2007, 2009) are TODO(verify) with daily counts - FIRMS_REFERENCE section 13, item 8.
+- **Sources of missing days:** FIRMS `missing_data` (FIRMS_REFERENCE section 7). The MODIS gaps from the archive README (2007, 2009) do not show as whole missing days in the daily counts of the Brazil files, so no month is flagged for them (FIRMS_REFERENCE section 13, item 8).
 - **Options:**
   - ≥ 1 missing day: simple and follows AGENTS.md rule 6, but a 1-day gap flags a whole month. Chosen.
   - Threshold on the share of missing days: fewer flags, one more parameter.

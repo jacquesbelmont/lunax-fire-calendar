@@ -15,7 +15,7 @@ Status: every decision cited here is DECIDED in method/DECISIONS.md, except DE-1
   - MODIS 1 km on Terra (from 2000-11) and Aqua (from 2002-07);
   - VIIRS 375 m on S-NPP (from 2012-01-20) and NOAA-20 (from 2018-04-01).
   - Source: method/FIRMS_REFERENCE.md section 2.
-- **Versions seen** in the files (`docs/data/metadata.json`): MODIS `6.03`, `6.2` and `61.03`; VIIRS `2`. The meaning of the MODIS version strings is TODO(verify) - FIRMS.
+- **Versions seen** in the files (`docs/data/metadata.json`): MODIS `6.2` (2000-2017), `6.03` (2018-2022) and `61.03` (2023-2025); VIIRS `2` (Collection 2). By the MCD14ML naming (collection, then product version; MODIS user guide section 5.5.1), they read as Collection 6 version 2 (most likely), Collection 6 version 03 and Collection 6.1 version 03. All are standard processing. Details: method/FIRMS_REFERENCE.md section 13, item 1.
 - **Period:** 2000-11 to 2025-12. Data cut-off 2025-12-31; archived data, not live (`docs/data/metadata.json`).
 - **Area (DE-1):** Rondônia, Brazil, as given by the IBGE state boundary (`config/area_boundary.geojson`; source URL in its properties).
   - The processing box (`config/area.json`) is the boundary's bbox aligned outwards to 0.25° cells: west -67, south -13.75, east -59.75, north -7.75.

@@ -83,7 +83,7 @@ Source: https://firms.modaps.eosdis.nasa.gov/api/ (API version 4.2.8). Official 
 - Limit: 5000 transactions per 10-minute interval; larger requests may count as multiple transactions.
 
 ### data_availability
-`/api/data_availability/csv/[MAP_KEY]/[SENSOR]` (SENSOR = `ALL` or a source above; the official notebook uses lowercase `all`: TODO(verify): case - FIRMS academy notebook): date ranges of SP and NRT data per sensor.
+`/api/data_availability/csv/[MAP_KEY]/[SENSOR]` (SENSOR = `ALL` or a source above, as listed on https://firms.modaps.eosdis.nasa.gov/api/data_availability/; the official notebook uses lowercase `all`): date ranges of SP and NRT data per sensor.
 
 ### missing_data
 Days with missing data per satellite and data type (NRT shown only after the last SP date). The page loads its table from `https://firms.modaps.eosdis.nasa.gov/api/missing_data/?action=fetch_data` (JSON with HTML table rows, no MAP_KEY; see method/FIRMS_REFERENCE.md section 7).
@@ -104,7 +104,7 @@ DRAFT from real Brazil country files (method/FIRMS_REFERENCE.md section 4); to b
 - MODIS: `latitude,longitude,brightness,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_t31,frp,daynight,type`
 - VIIRS (S-NPP, NOAA-20): `latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_ti5,frp,daynight,type`
 - `acq_time` is HHMM in UTC with leading zeros: read as text. `confidence`: MODIS 0-100, VIIRS `l`/`n`/`h` (values seen in the real files, 2026-11-15).
-- Units and `type` codes for VIIRS: TODO(verify) (FIRMS_REFERENCE.md section 13).
+- VIIRS units: brightness temperatures in Kelvin, `frp` in MW (FIRMS attribute page). VIIRS `type` codes are the MODIS ones: 0 presumed vegetation fire, 1 active volcano, 2 other static land source, 3 offshore (VIIRS C2 375 m User Guide 1.2, section 3.2.2; FIRMS_REFERENCE.md section 13).
 
 ## Country yearly summary files (no MAP_KEY)
 `https://firms.modaps.eosdis.nasa.gov/data/country/<instrument>/<YYYY>/<instrument>_<YYYY>_<Country>.csv`, `<instrument>` = `modis`, `viirs-snpp`, `viirs-jpss1` (NOAA-20). Standard processing, 2000-2025; no NOAA-21, no 2026. Index: https://firms.modaps.eosdis.nasa.gov/data/country/yearly_summary_files.txt

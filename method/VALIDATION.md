@@ -71,7 +71,7 @@ Figure: `method/figures/backcast.png`.
 **Low-confidence VIIRS detections** (DE-10):
 - They are 6.2 % (S-NPP) and 6.6 % (NOAA-20) of the VIIRS detections in the area.
 - Removing them from the reference changes the backcast bias from +0.6 % to +1.2 % and the MdAPE from 13.3 % to 12.9 % (area level). The no-filter choice does not change the conversion materially.
-- MODIS is not filtered, because its class cut-offs are not verified.
+- MODIS is not filtered in this test. Its class cut-offs were verified only after the test (low: C < 30 %, MODIS user guide Table 11; method/FIRMS_REFERENCE.md section 13).
 
 **Grid size** (DE-12): not run. The ratio per month of year is fitted on area sums, so k and every area total are the same for any cell size; only the split of a total between cells changes.
 
