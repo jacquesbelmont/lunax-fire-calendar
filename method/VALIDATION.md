@@ -99,6 +99,20 @@ Gradient boosting with Poisson loss (`pipeline/ml.py`, scikit-learn 1.9.1) on MO
 - **Leave-one-year-out 2012-2025** (Terra + Aqua): median MdAPE 13.5 % (ML) vs 11.7 % (ratio); ML yearly bias from -9.7 % to +15.2 %, ratio from -9.7 % to +7.9 %.
 - With far more parameters, the ML model gains nothing on monthly area totals. The simplest method stays the best, as the DE-15 selection rule prefers.
 
+**Exploratory hybrid (DE-19, registered after the DE-18 result).** The ratio method stays the base and gradient boosting learns only a multiplicative correction (Poisson model with the ratio as offset; `python pipeline/ml.py --hybrid`). Results: `method/results/ml_hybrid_metrics.json`, `method/results/ml_hybrid_loyo.csv`.
+
+| Test | Hybrid: bias / MdAPE | Ratio: bias / MdAPE |
+|---|---|---|
+| Leave-one-year-out 2015-2025, used to choose the candidate (median MdAPE, pooled bias) | -3.1 % / 24.8 % | 0.0 % / 11.8 % |
+| Backcast 2012-2014 (POST-HOC: these years were seen in DE-18) | -2.9 % / 12.8 % | +0.6 % / 13.3 % |
+| Fresh test 2026-02 to 2026-10, 9 months (never used by any method; 2026-01 has Terra flagged) | -5.3 % / 38.0 % | -8.4 % / 20.1 % |
+| 2026-02 to 2026-07 (low fire, 806 reference NOAA-20 hotspots) | -23.4 % / 64.6 % | -15.9 % / 38.2 % |
+| 2026-08 to 2026-10 (fire season, 8,254 reference NOAA-20 hotspots, NRT) | -3.6 % / 6.5 % | -7.7 % / 7.6 % |
+
+- **Verdict (DE-19 rule):** not promising. Production is unchanged.
+- **Seen only after the results:** the hybrid does better in the high-fire months and worse in the low-fire months, which weigh as much in the MdAPE. This is not tested and is not a basis for any choice.
+- **Ratio method forward in time:** fitted on 2015-2025, the ratio under-predicts the NOAA-20 total of 2026-02 to 2026-10 by 8.4 %. It is applied only backwards (2000-2012), so this does not change the product, but it is consistent with the possible MODIS drift noted under Sensitivity.
+
 ## Not done yet
 
 - **Calibrated intervals:** still slightly below 90 % in the backcast (see Uncertainty).

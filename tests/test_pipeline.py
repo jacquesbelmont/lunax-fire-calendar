@@ -146,3 +146,17 @@ class MLChallengerTests(unittest.TestCase):
         self.assertEqual(r["verdict"]["ml_beats_ratio"], wins)
         self.assertEqual(margin, {"mdape_monthly_area_max": 0.113, "abs_relative_bias_total_max": 0.02})
         self.assertEqual(r["backcast"]["TA"]["ml"]["n_cell_months"], r["backcast"]["TA"]["ratio"]["n_cell_months"])
+
+    def test_hybrid_verdict_follows_the_pre_registered_rule(self):
+        """DE-19: the stored exploratory verdict must follow from the stored numbers."""
+        path = ROOT / "method" / "results" / "ml_hybrid_metrics.json"
+        if not path.exists():
+            self.skipTest("pipeline/ml.py --hybrid has not been run")
+        r = json.loads(path.read_text())
+        sel, c, a = r["selection_loyo_2015_2025"], r["chosen"], r["fresh_test_2026"]["2026_all"]
+        self.assertEqual(c, min(("A", "B", "C"), key=lambda k: sel[k]["median_mdape_monthly_area"]))
+        promising = (sel[c]["median_mdape_monthly_area"] < sel["ratio"]["median_mdape_monthly_area"]
+                     and a["hybrid"]["mdape_monthly_area"] < a["ratio"]["mdape_monthly_area"]
+                     and abs(sel[c]["pooled_relative_bias_total"]) <= 0.02
+                     and abs(a["hybrid"]["relative_bias_total"]) <= 0.02)
+        self.assertEqual(r["exploratory_verdict"]["promising"], promising)

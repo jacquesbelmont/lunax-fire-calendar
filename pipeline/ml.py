@@ -7,15 +7,20 @@ Gradient boosting with Poisson loss (DE-6 option 4) predicts the reference VIIRS
 MODIS detections of that cell-month. It is evaluated with the DE-15 protocol against the production ratio method,
 on the same cell-months. Challenger only: nothing here changes docs/data/.
 
+--hybrid runs the exploratory hybrid of DE-19 (registered after the DE-18 result): the ratio method stays the base
+and the ML model learns only a multiplicative correction (Poisson model with the ratio as offset).
+
 Usage:
-    python pipeline/ml.py
+    python pipeline/ml.py            # DE-18 challenger
+    python pipeline/ml.py --hybrid   # DE-19 exploratory hybrid
 Reads data/interim/monthly_counts.csv.gz, data/interim/month_flags.csv and data/interim/clean/modis_*.csv.gz.
-Writes method/results/ml_metrics.json and method/results/ml_loyo.csv.
+Writes method/results/ml_metrics.json, ml_loyo.csv (DE-18) or ml_hybrid_metrics.json, ml_hybrid_loyo.csv (DE-19).
 """
 import json
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import sklearn
 from sklearn.ensemble import HistGradientBoostingRegressor
@@ -33,14 +38,19 @@ FEATURES = {"TA": ["month_no", "Terra", "Aqua", "frp_Terra", "frp_Aqua", "night_
             "T": ["month_no", "Terra", "frp_Terra", "night_share_T", "low_share_T"]}
 MARGIN = {"mdape_monthly_area_max": 0.113, "abs_relative_bias_total_max": 0.02}  # DE-18, Terra + Aqua model
 LOW_CONFIDENCE = 30  # MODIS C < 30 % = low class (MODIS C6/C6.1 user guide, Table 11)
+# DE-19 candidates, fixed before any hybrid result; the correction f uses intensive features of the MODIS detections.
+HYBRID = {"A": dict(max_leaf_nodes=7, min_samples_leaf=200, learning_rate=0.05, max_iter=100, l2_regularization=1.0),
+          "B": dict(max_leaf_nodes=7, min_samples_leaf=200, learning_rate=0.05, max_iter=300, l2_regularization=1.0),
+          "C": dict(max_leaf_nodes=15, min_samples_leaf=50, learning_rate=0.05, max_iter=300, l2_regularization=1.0)}
+HYBRID_FEATURES = ["month_no", "log_modis", "frp_mean", "night_share", "low_share"]
 
 
-def modis_features():
+def modis_features(end=va.VALIDATION_END):
     """FRP sum, night and low-confidence counts of the MODIS detections per cell-month and satellite."""
     d = pd.concat([pd.read_csv(f, usecols=["latitude", "longitude", "acq_date", "sat", "frp", "daynight", "confidence"],
                                dtype={"acq_date": str, "sat": str, "daynight": str, "confidence": str})
                    for f in sorted(va.CLEAN_DIR.glob("modis_*.csv.gz"))], ignore_index=True)
-    d = d[d["acq_date"].str[:7] <= va.VALIDATION_END]
+    d = d[d["acq_date"].str[:7] <= end]
     d = aggregate.assign_grid_cell(d).assign(year_month=d["acq_date"].str[:7], night=d["daynight"].eq("N"),
                                              low=pd.to_numeric(d["confidence"]) < LOW_CONFIDENCE)
     g = d.groupby(["cell_id", "year_month", "sat"]).agg(n=("frp", "size"), frp=("frp", "sum"),
@@ -49,11 +59,11 @@ def modis_features():
     return g.reset_index()
 
 
-def build_rows():
-    """Panel of validation years (harmonize.py) with the reference VIIRS count and the MODIS features."""
+def build_rows(end=va.VALIDATION_END):
+    """Panel up to `end` (harmonize.py) with the reference VIIRS count and the MODIS features."""
     panel = hz.add_reference(hz.build_panel(pd.read_csv(hz.COUNTS), pd.read_csv(hz.FLAGS)))
-    panel = panel[panel["year_month"] <= va.VALIDATION_END]
-    p = panel.merge(modis_features(), on=["cell_id", "year_month"], how="left")
+    panel = panel[panel["year_month"] <= end]
+    p = panel.merge(modis_features(end), on=["cell_id", "year_month"], how="left")
     for s in ("Terra", "Aqua"):
         for v in ("n", "frp", "night", "low"):
             p[f"{v}_{s}"] = p[f"{v}_{s}"].fillna(0)
@@ -65,6 +75,8 @@ def build_rows():
     p["low_share"] = (p["low_Terra"] + p["low_Aqua"]) / n_both
     p["night_share_T"] = p["night_Terra"] / p["n_Terra"]
     p["low_share_T"] = p["low_Terra"] / p["n_Terra"]
+    p["frp_mean"] = (p["frp_Terra"] + p["frp_Aqua"]) / n_both
+    p["log_modis"] = np.log1p(p["Terra"] + p["Aqua"])
     p["month_no"] = p["month"].astype(int)
     return p.set_index(panel.index)
 
@@ -79,6 +91,74 @@ def fit_predict(rows, train_years, test_years, name):
     ratio, _, _ = va.predict_ratio(hz.fit(rows, train_years), test, only="T" if name == "T" else None)
     same = ml.notna() & ratio.notna()
     return test[same], ml[same], ratio[same]
+
+
+def hybrid_predict(rows, train_years, test_years, cand):
+    """Ratio and hybrid (ratio x ML correction) on the same Terra + Aqua test cell-months (DE-19)."""
+    params = hz.fit(rows, train_years)
+    train = va._split(rows, train_years).dropna(subset=hz.NEEDS["TA"])
+    test = va._split(rows, test_years).dropna(subset=hz.NEEDS["TA"])
+    mu_tr, mu_te = va.predict_ratio(params, train)[0], va.predict_ratio(params, test)[0]
+    fit = mu_tr > 0  # a cell-month with mu = 0 carries no information on a multiplicative correction
+    model = HistGradientBoostingRegressor(loss="poisson", random_state=0, early_stopping=False,
+                                          categorical_features=[0], **HYBRID[cand])
+    # Poisson with offset log(mu): fit y / mu with weight mu; the prediction is mu x f(x).
+    model.fit(train.loc[fit, HYBRID_FEATURES], train.loc[fit, "ref"] / mu_tr[fit], sample_weight=mu_tr[fit])
+    hybrid = mu_te * pd.Series(model.predict(test[HYBRID_FEATURES]), index=test.index)
+    hybrid = hybrid.where(mu_te != 0, mu_te)  # mu = 0 stays 0, as in the ratio method
+    same = hybrid.notna() & mu_te.notna()
+    return test[same], hybrid[same], mu_te[same]
+
+
+def _summary(test, pred):
+    m = va.metrics(test, pred)
+    return {**m, "obs_total": float(test["ref"].sum()), "pred_total": float(pred.sum())}
+
+
+def hybrid_main():
+    rows = build_rows(aggregate.DATA_END[:7])
+    train_years = list(va.BACKCAST_TRAIN)
+    loyo = []
+    for y in train_years:
+        others = [z for z in train_years if z != y]
+        for cand in HYBRID:
+            test, hyb, ratio = hybrid_predict(rows, others, [y], cand)
+            loyo.append({"year": y, "model": cand, **_summary(test, hyb)})
+        loyo.append({"year": y, "model": "ratio", **_summary(test, ratio)})
+    loyo = pd.DataFrame(loyo)
+    loyo.to_csv(va.RESULTS / "ml_hybrid_loyo.csv", index=False)
+    g = loyo.groupby("model")
+    sel = {m: {"median_mdape_monthly_area": float(d["mdape_monthly_area"].median()),
+               "pooled_relative_bias_total": float(d["pred_total"].sum() / d["obs_total"].sum() - 1)} for m, d in g}
+    chosen = min(HYBRID, key=lambda c: sel[c]["median_mdape_monthly_area"])
+    print("LOYO 2015-2025:", sel, "-> chosen", chosen)
+    test, hyb, ratio = hybrid_predict(rows, train_years, list(va.BACKCAST_TEST), chosen)
+    posthoc = {"hybrid": _summary(test, hyb), "ratio": _summary(test, ratio)}
+    test, hyb, ratio = hybrid_predict(rows, train_years, [2026], chosen)
+    fresh = {}
+    for label, mask in (("2026_all", test["year_month"].notna()), ("2026_01_07_standard", test["year_month"] <= "2026-07"),
+                        ("2026_08_10_nrt", test["year_month"] >= "2026-08")):
+        fresh[label] = {"hybrid": _summary(test[mask], hyb[mask]), "ratio": _summary(test[mask], ratio[mask])}
+    print("2026:", {k: (round(v["hybrid"]["mdape_monthly_area"], 3), round(v["ratio"]["mdape_monthly_area"], 3)) for k, v in fresh.items()})
+    a, f = fresh["2026_all"], sel
+    promising = (f[chosen]["median_mdape_monthly_area"] < f["ratio"]["median_mdape_monthly_area"]
+                 and a["hybrid"]["mdape_monthly_area"] < a["ratio"]["mdape_monthly_area"]
+                 and abs(f[chosen]["pooled_relative_bias_total"]) <= 0.02
+                 and abs(a["hybrid"]["relative_bias_total"]) <= 0.02)
+    result = {
+        "decision": "method/DECISIONS.md DE-19 (registered 2026-11-15 09:48 UTC-4, before any hybrid result); exploratory",
+        "scikit_learn_version": sklearn.__version__, "candidates": HYBRID, "features": HYBRID_FEATURES,
+        "train_years": [train_years[0], train_years[-1]],
+        "selection_loyo_2015_2025": sel, "chosen": chosen, "loyo_file": "method/results/ml_hybrid_loyo.csv",
+        "backcast_2012_2014_POSTHOC": posthoc, "fresh_test_2026": fresh,
+        "exploratory_verdict": {"promising": bool(promising),
+                                "rule": "chosen candidate: lower median MdAPE than the ratio in LOYO 2015-2025 and lower "
+                                        "MdAPE on all 2026 months, with |bias| <= 0.02 in both (DE-19)",
+                                "use": "exploratory only; cannot change production or the DE-18 verdict"},
+    }
+    (va.RESULTS / "ml_hybrid_metrics.json").write_text(json.dumps(result, indent=2) + "\n")
+    print("exploratory verdict:", result["exploratory_verdict"])
+    print("wrote method/results/ml_hybrid_metrics.json, ml_hybrid_loyo.csv")
 
 
 def main():
@@ -121,4 +201,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    hybrid_main() if "--hybrid" in sys.argv[1:] else main()
