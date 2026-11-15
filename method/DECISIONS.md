@@ -25,6 +25,7 @@ PROPOSED rows become DECIDED when the team approves them in PR review. Options, 
 | DE-16 | 2026-11-14 16:54 | Uncertainty calibration: one variance inflation factor lambda (= 11.5), fitted on leave-one-year-out area totals 2015-2025, tested on 2012-2014 | Model variance only; one factor lambda; correlated error term; no intervals | Rafael | Model variance covered only 41 % of area totals; with lambda, 85 % (area) and 85 % (cell) in the backcast; the app keeps summing variances | method/results/uncertainty_calibration.json (PR #32) ; [details](#de-16-uncertainty-calibration) | PROPOSED |
 
 ---
+| DE-17 | 2026-11-15 00:59 | Hotspot list for the CSV download (R9): one gzip file per FIRMS instrument and year in `docs/data/hotspots/<instrument>_<year>.csv.gz` (+ `index.json`), only the rows kept by the cleaning rules (SP, `type` 0, inside the Rondônia boundary), no confidence filter, with an attribution and cut-off header; the app reads only the years of the chosen period, keeps the selected cells, and shows the row count before the download | Monthly counts only (declare the limitation); per-year gzip files filtered in the browser; server-side filtering (not possible on GitHub Pages) | Jacques (proposed); Rafael to approve | R9 asks for a CSV of the hotspots found in the search; the files reuse the rows and `cell_id` of the pipeline, so they agree with `monthly_cells.csv` by construction and by test | estimated size about 25 MB (measured bytes per row x `rows_kept` of `method/results/cleaning_log.csv`; to be replaced by the real total); [details](#de-17-hotspot-list-for-the-csv-download) | PROPOSED |
 
 ## Decision details
 
@@ -303,3 +304,23 @@ Fixed before any test result is seen.
   - A separate correlated error term per month: closer to how errors behave, but the app would need a different formula (DATA_CONTRACT change).
   - Do not show intervals at all.
 - **Implementation:** `pipeline/export.py` writes `viirs_eq_var` = model variance × lambda. For an area, the app uses sum ± 1.645·sqrt(summed variance) (DATA_CONTRACT.md).
+
+### DE-17 Hotspot list for the CSV download
+- **Problem:** the challenge asks for a downloadable CSV of the hotspots detected in a search (R9). The app has only monthly counts per cell.
+- **Proposal:**
+  - `pipeline/export_hotspots.py` writes `docs/data/hotspots/<instrument>_<year>.csv.gz` from `data/interim/clean/`, plus `index.json` (source, year, rows, bytes). Instruments are the FIRMS country-file names: `modis`, `viirs-snpp`, `viirs-jpss1`.
+  - Rows: `cell_id, latitude, longitude, acq_date, acq_time, sat, sensor, confidence, daynight, frp, type, version`. They are the rows kept by `clean.py` (DE-4, DE-5, DE-9, DE-10): standard data, `type` 0, inside the boundary, no confidence filter. The `cell_id` is the one of `aggregate.py`.
+  - Each file starts with comment lines: FIRMS acknowledgment, disclaimer link and data cut-off date.
+  - In the app, a button counts the rows of the selected cells and period (it reads only the yearly files of the period), shows the number, and then enables the download. The downloaded CSV carries the same header plus the area and period. Above 1,000,000 matching rows the app asks for a smaller area or period, to protect browser memory.
+- **Options considered:**
+  - Monthly counts only, and say so in the app and the slides: no extra files, but R9 stays unmet.
+  - Per-year gzip files filtered in the browser (proposed): works on GitHub Pages without a server; size is the cost.
+  - Filter on a server: not available with GitHub Pages and a server would need maintenance.
+- **Size:** measured on real files: 11.8 bytes per row (NOAA-20 2025, 13,176 rows) and 13.4 bytes per row (MODIS 2013, 7,015 rows). With the `rows_kept` of `cleaning_log.csv` (MODIS 616,190; S-NPP 895,976; NOAA-20 531,459; total 2,043,625) the estimate is about 25 MB for the 48 files. The real total replaces this estimate after the full run. TODO(verify): GitHub Pages and repository size limits - GitHub documentation.
+- **Checks (tests):** `tests/test_export_hotspots.py` and `tests/js/hotspots.test.js` verify that
+  - the count per cell, month and satellite equals the raw columns of `monthly_cells.csv` wherever that file has data;
+  - the rows per instrument and year equal `rows_kept` of `cleaning_log.csv`;
+  - every instrument-year of the log has a file (this test fails until the full set is generated);
+  - every file has the attribution header.
+  Months flagged as missing have hotspot rows but an empty raw column in `monthly_cells.csv`; they are not compared.
+- **Limits:** only the cleaned rows are exported, so the file is not the full FIRMS list (no `type` other than 0, nothing outside the boundary). The list is the same archived data as the rest of the app (cut-off 2025-12-31).
