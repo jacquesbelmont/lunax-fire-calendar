@@ -1,5 +1,5 @@
 // JA-8: the app's calculations must reproduce method/tests/expected.json (relative tolerance 1e-9).
-// Run: node --test tests/js
+// Run: node --test tests/js/calc.test.js
 const test = require("node:test");
 const assert = require("node:assert");
 const fs = require("node:fs");

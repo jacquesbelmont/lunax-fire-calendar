@@ -48,10 +48,14 @@
       margin: { l: 80, r: 10, t: 10, b: 40 }, shapes: shapes,
       xaxis: { side: "top", fixedrange: true },
       yaxis: { type: "category", autorange: "reversed", tickvals: years.map(String), ticktext: ticks, fixedrange: true },
-      paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
+      paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)", font: { color: LunaxTheme.text() },
       height: Math.max(360, years.length * 22 + 80),
     };
     return Plotly.react(el, traces, layout, { responsive: true, displaylogo: false, displayModeBar: false });
   }
+  window.LunaxTheme = {
+    text: function () { return getComputedStyle(document.body).color; },
+    grid: function () { return "rgba(128,128,128,0.35)"; },
+  };
   window.LunaxCalendar = { render: render };
 })();

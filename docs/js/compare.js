@@ -17,7 +17,8 @@
     if (!last) {
       textEl.textContent = "No data for " + MONTH_NAMES[monthNo - 1] + " in this area and period.";
     } else {
-      let s = MONTH_NAMES[monthNo - 1] + " " + last.ym.slice(0, 4) + ": " + f(last.value, 0) + " " + unit;
+      const noun = Math.round(last.value) === 1 ? unit.replace(/s$/, "") : unit;
+      let s = "Latest " + MONTH_NAMES[monthNo - 1] + " in the data (" + last.ym.slice(0, 4) + "): " + f(last.value, 0) + " " + noun;
       if (Number.isNaN(last.median)) s += ". No earlier year to compare with.";
       else {
         s += ", compared with a historical median of " + f(last.median, 0) + " (" + last.nYears + " earlier years)";
@@ -41,7 +42,9 @@
     }
     const layout = { margin: { l: 60, r: 10, t: 10, b: 40 }, shapes: shapes, showlegend: false,
       xaxis: { type: "category", title: { text: "Year (light bars: estimated from MODIS; dashed line: median of earlier years)" } },
-      yaxis: { title: { text: unit } }, paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)", height: 320 };
+      yaxis: { title: { text: unit } }, paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)", height: 320,
+      font: { color: LunaxTheme.text() } };
+    layout.xaxis.gridcolor = layout.yaxis.gridcolor = LunaxTheme.grid();
     return Plotly.react(el, traces, layout, { responsive: true, displaylogo: false, displayModeBar: false });
   }
   window.LunaxCompare = { render: render };

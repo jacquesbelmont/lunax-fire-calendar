@@ -29,9 +29,9 @@
         <button type="button" id="bbox-reset">Whole study area</button>
       </form>
       <div class="row">
-        <label>From <select id="range-from"></select></label>
-        <label>To <select id="range-to"></select></label>
-        <label>Series <select id="series-select"></select></label>
+        <label>From <select autocomplete="off" id="range-from"></select></label>
+        <label>To <select autocomplete="off" id="range-to"></select></label>
+        <label>Series <select autocomplete="off" id="series-select"></select></label>
       </div>
       <p class="hint" id="series-note"></p>
       <p id="selection-info" role="status"></p>
@@ -50,8 +50,9 @@
     </section>
 
     <section id="compare-section" aria-label="Month versus historical median">
-      <h2>3. A month compared with its historical median</h2>
-      <div class="row"><label>Month <select id="compare-month"></select></label></div>
+      <h2>3. The latest month compared with its historical median</h2>
+      <p class="hint">The data ends at its cut-off date, so the latest month shown here is not the current calendar month.</p>
+      <div class="row"><label>Month <select autocomplete="off" id="compare-month"></select></label></div>
       <p id="compare-text" role="status"></p>
       <div id="compare" class="chart" role="img" aria-label="Same calendar month across years with the historical median"></div>
       <p><button type="button" id="png-compare">Download chart (PNG)</button></p>
@@ -79,6 +80,7 @@
     <p><a id="disclaimer-link" href="#">LANCE disclaimer</a>. This tool is not an official NASA product and does not imply NASA endorsement. Do not use it for the preservation of life or property.</p>
     <p>Map tiles &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Libraries: Leaflet, Leaflet.draw, Plotly.js (see <a href="https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/docs/lib/README.md">docs/lib/README.md</a>).</p>
     <p id="archive-footer"></p>
+    <p>AI use: this project, including code, text and the comparison of options for method decisions, was prepared with AI assistants (Claude and Claude Code). The team reviewed the results and chose the methods. Details: <a href="https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/AI_USE.md">AI_USE.md</a>.</p>
   </footer>
 
   <script src="lib/leaflet/leaflet.js"></script>
