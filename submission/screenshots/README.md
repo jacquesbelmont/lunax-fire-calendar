@@ -5,3 +5,5 @@ Real screenshots of the app (published version plus the fixes of PR "JA-6 provis
 They can be uploaded to the Space Apps project page (JPG, PNG or GIF up to 10 MB).
 
 The slide 4 chart, `porto_velho_september_2025.png`, was captured from the published app with the harmonized series selected. The rectangle uses west -64.50, south -9.75, east -63.00 and north -8.25. Set the end date to 2025-09 and the comparison month to September. The app selects 33 cells and compares 309 hotspots with a median of 5,545 across 23 earlier Septembers.
+
+`app_map_2026-10.png` (1280 px, light) shows the map of the published app after PR #52 (main at e399d26). It was taken with headless Chrome on 2026-11-15 and shows the whole study area (376 cells) and the comparison month 2026-10, which is provisional. The cells are colored by that month. The points are that month's detections, grouped per sensor. The note under the map gives the counts per satellite: Terra 209, Aqua 315, Suomi NPP 2,589, NOAA-20 2,734 and NOAA-21 2,348. The calendar value counts NOAA-20 only. The older crop `app_map_controls.png` (map before PR #51) stays because the deck PDF uses it.
