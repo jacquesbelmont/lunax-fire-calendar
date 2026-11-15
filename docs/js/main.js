@@ -314,8 +314,9 @@
     const info = $("selection-info");
     if (!hasCells) {
       info.textContent = "No grid cell centres inside this rectangle. Adjust the rectangle to select cells.";
-      Plotly.purge($("calendar")); Plotly.purge($("compare")); Plotly.purge($("season")); Plotly.purge($("outlook"));
-      $("compare-text").textContent = ""; $("season-text").textContent = ""; $("outlook-text").textContent = "";
+      Plotly.purge($("calendar")); Plotly.purge($("compare")); Plotly.purge($("outlook"));
+      ["compare-text", "season-text", "outlook-text", "card-month-big", "card-month-sub", "card-season-big", "card-season-sub",
+       "card-outlook-big", "card-outlook-sub"].forEach((id) => { $(id).textContent = ""; });
       return;
     }
     $("print-header").textContent = "Fire briefing. Area: " + areaLabel() + ". Period: " + state.data.months[Number($("range-from").value)] +
@@ -324,16 +325,57 @@
       "season, comparison, map points and hotspot downloads use the detections inside its IBGE boundary. The map cells around it " +
       "are 0.25° grid cells, shown for context." : cells.length + (cells.length === 1 ? " grid cell" : " grid cells") +
       " selected. The rectangle selects whole " + state.meta.grid.cell_size_deg + "° cells by their centres.";
-    const unit = "hotspots";
-    LunaxCalendar.render($("calendar"), state.rows, unit, function (ym) {
-      const m = state.data.months.indexOf(ym);
-      if (m >= 0 && state.rows[m].inRange) { state.mapMonth = m; refreshMap(); } // months outside the period are ignored
-    });
-    LunaxSeason.render($("season"), $("season-text"), state.rows);
+    renderAnalysis();
+  }
+
+  const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const SHORT = MONTH_NAMES.map((n) => n.slice(0, 3));
+  const big = (x) => Math.round(x).toLocaleString("en-US");
+
+  /** DE-30: make month index m the focus of the page (map, comparison, calendar outline, outlook, cards). */
+  function setFocus(m) {
+    if (m < 0 || !state.rows[m].inRange) return; // months outside the period are ignored
+    state.mapMonth = m;
+    $("compare-month").value = String(Number(state.rows[m].ym.slice(5, 7))); // the box shows the focus month; no change event
+    renderAnalysis();
+    refreshMap();
+  }
+
+  /** DE-30: calendar, comparison, outlook and summary cards for the current rows and focus month. */
+  function renderAnalysis() {
+    const rows = state.rows, unit = "hotspots", focus = mapMonthIndex();
+    if (!rows || focus < 0) return;
+    LunaxCalendar.render($("calendar"), rows, { unit: unit, focusIndex: focus, showSeason: $("cal-season").checked,
+      mode: document.querySelector('input[name="cal-mode"]:checked').value,
+      onMonthClick: (ym) => setFocus(state.data.months.indexOf(ym)) });
+    LunaxCompare.render($("compare"), $("compare-text"), rows, focus, unit, (ym) => setFocus(state.data.months.indexOf(ym)));
+    const season = LunaxSeason.summary(rows);
+    $("season-text").textContent = season.text;
+    // Card: focus month
+    const r = rows[focus], cls = LunaxCalc.USUAL_CLASSES.find((c) => c[0] === LunaxCalc.usualClass(r.value, r.median));
+    $("card-month-big").textContent = Number.isNaN(r.value) ? "no data" : big(r.value) + " " + unit;
+    const sub = $("card-month-sub"), badge = document.createElement("span");
+    badge.className = "badge"; badge.style.background = cls[1]; badge.textContent = cls[2];
+    if (["much_above", "much_below", "none"].includes(cls[0])) badge.style.color = "#fff"; // readable on the dark classes
+    sub.replaceChildren(badge, document.createTextNode(MONTH_NAMES[Number(r.ym.slice(5, 7)) - 1] + " " + r.ym.slice(0, 4) +
+      (Number.isNaN(r.median) ? "" : "; usual " + big(r.median) + (Number.isNaN(r.ratio) ? "" : " (x" + r.ratio.toFixed(2) + ")")) +
+      (r.provisional ? "; provisional" : "") + (r.estimated ? "; estimated from MODIS" : "")));
+    // Card: fire season
+    const t = season.typical;
+    $("card-season-big").textContent = t ? SHORT[t.start - 1] + " → " + SHORT[t.end - 1] : "not enough data";
+    $("card-season-sub").textContent = t ? "peak " + SHORT[t.peak - 1] + "; median of " + t.n + " years; earliest start " + SHORT[t.earliestStart - 1] : "";
     // DE-28: the outlook uses the harmonized series of the area whatever series is displayed
-    if ($("series-select").value === "viirs_eq") LunaxOutlook.render($("outlook"), $("outlook-text"), state.rows, state.meta.outlook);
-    else { Plotly.purge($("outlook")); $("outlook-text").textContent = "The outlook uses the harmonized series: choose it in section 1."; }
-    LunaxCompare.render($("compare"), $("compare-text"), state.rows, Number($("compare-month").value), unit);
+    if ($("series-select").value === "viirs_eq") {
+      const o = LunaxOutlook.compute(rows, state.meta.outlook);
+      LunaxOutlook.render($("outlook"), $("outlook-text"), o, state.meta.outlook, Number(r.ym.slice(0, 4)));
+      $("card-outlook-big").textContent = Number.isNaN(o.forecast) ? "not enough data" : "about " + big(o.forecast);
+      $("card-outlook-sub").textContent = Number.isNaN(o.forecast) ? "" : "hotspots in Aug-Oct " + o.next +
+        (o.range ? "; 80% range " + big(o.range[0]) + " to " + big(o.range[1]) : "") + (o.prov ? "; from provisional " + (o.next - 1) : "");
+    } else {
+      Plotly.purge($("outlook"));
+      $("outlook-text").textContent = "The outlook uses the harmonized series: choose it in section 1.";
+      $("card-outlook-big").textContent = "harmonized series only"; $("card-outlook-sub").textContent = "";
+    }
   }
 
   function setBbox(box) {
@@ -384,6 +426,8 @@
         $("map-view-name").textContent = e.target.closest("label").querySelector("strong").textContent;
         if (state.rows) paintCells();
       });
+      $("cal-mode").addEventListener("change", renderAnalysis); // DE-30: calendar colors
+      $("cal-season").addEventListener("change", renderAnalysis);
       // DE-25: the map is resized to the page width first, so its tiles and cells are drawn before the browser prints.
       $("print-briefing").addEventListener("click", function () {
         document.body.classList.add("printing");

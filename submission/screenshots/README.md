@@ -16,3 +16,6 @@ Deck slide 4 "What a fire manager sees" (PR JA-12), published app at main 8492f8
 
 PR JA-11 (DE-27), local build of the branch `JA-11-gibs-imagery`, headless Chrome, 2026-11-15, 1068 x 720 px (the map only), light:
 `app_map_gibs_false_color_2026-10-04.png` (whole area, map month 2026-10, provisional; base layer "Satellite image of a day: false color" with the cells layer hidden; NASA GIBS NOAA-20 VIIRS bands M11-I2-I1 of 2026-10-04, the day of October 2026 with the most detections in the selection; points of that month on top).
+
+PR RA-10 (DE-30), local build of the branch `RA-10-analysis-view`, headless Chrome, 2026-11-15, 1280 px, light, whole study area:
+`app_summary_cards.png` (focus month October 2026, fire season, next season outlook) and `app_calendar_season_margins.png` (calendar with the month medians on top, the totals of complete years on the right, the fire season of each year outlined and the focus month 2026-10 outlined).

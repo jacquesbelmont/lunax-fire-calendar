@@ -135,8 +135,20 @@ try {
   check("back to the hotspots view removes the 1 km layer", await evaluate(`!document.querySelector('#map img.recurrence-overlay') && document.querySelectorAll('#map path.map-cell').length === 376`));
   // DE-23 fire season of the whole area (values in tests/js/calc.test.js).
   const seasonText = await evaluate(`document.querySelector('#season-text').textContent`);
-  check("fire season sentence and chart for the whole area", /median of 23 years\): starts in August, peaks in September and ends in October/.test(seasonText) &&
-    await evaluate(`!!document.querySelector('#season .main-svg')`), seasonText.slice(0, 120));
+  check("fire season sentence, 23 season outlines on the calendar and the season card", /median of 23 years\): starts in August, peaks in September and ends in October/.test(seasonText) &&
+    await evaluate(`document.querySelector('#calendar').layout.shapes.filter((s) => s.type === 'rect' && s.line.color === '#d62728').length`) === 23 &&
+    /Aug → Oct/.test(await evaluate(`document.querySelector('#card-season-big').textContent`)), seasonText.slice(0, 120));
+  check("the three summary cards are filled", await evaluate(`['card-month-big', 'card-season-big', 'card-outlook-big'].every((id) => document.getElementById(id).textContent.trim().length > 0)`));
+  // DE-30: a calendar click focuses the page on that month.
+  await evaluate(`document.querySelector('#calendar').emit('plotly_click', { points: [{ x: 'Sep', y: '2015', data: { type: 'heatmap' } }] }), true`);
+  await waitFor(`/Hotspots per cell, 2015-09/.test(document.querySelector('#map-legend').textContent)`);
+  check("a calendar click focuses map, comparison and card on 2015-09", /^September 2015:/.test(await evaluate(`document.querySelector('#compare-text').textContent`)) &&
+    /September 2015/.test(await evaluate(`document.querySelector('#card-month-sub').textContent`)) &&
+    await evaluate(`document.querySelector('#compare-month').value`) === "9");
+  await evaluate(`document.querySelector('input[name="cal-mode"][value="usual"]').click(), true`);
+  check("calendar 'Compared with the usual' colors with the DE-22 classes", await evaluate(`document.querySelector('#calendar').data[1].colorbar.ticktext.includes('Near usual')`));
+  await evaluate(`document.querySelector('input[name="cal-mode"][value="hotspots"]').click(), true`);
+  await evaluate(`(() => { const s = document.querySelector('#compare-month'); s.value = '10'; s.dispatchEvent(new Event('change')); return true; })()`);
   // DE-28: outlook for the next season, whole state.
   const outlookText = await evaluate(`document.querySelector('#outlook-text').textContent`);
   check("outlook for August-October 2027 with its method, range and test result", /^Outlook for August-October 2027 \(experimental\): about [\d,.]+ hotspots \(80% of past seasons/.test(outlookText) &&
@@ -205,7 +217,7 @@ try {
   const exportIds = ["png-calendar", "png-compare", "csv-series", "csv-cells", "hotspots-count"];
   const allExportsDisabled = `${JSON.stringify([...exportIds, "hotspots-download", "hotspots-kml"])}.every(id => document.getElementById(id).disabled)`;
   check("empty selection disables every export and clears the charts", await evaluate(`(
-    ${allExportsDisabled} && !document.querySelector('#calendar .main-svg, #compare .main-svg, #season .main-svg') &&
+    ${allExportsDisabled} && !document.querySelector('#calendar .main-svg, #compare .main-svg, #outlook .main-svg') &&
     /No grid cell/.test(document.querySelector('#selection-info').textContent) &&
     document.querySelectorAll('#map path.map-cell').length === 0 && document.querySelector('#map-legend').hidden
   )`));

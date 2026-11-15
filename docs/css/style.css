@@ -59,6 +59,24 @@ footer { border-top: 1px solid var(--line); margin-top: 32px; padding-top: 12px;
 .map-panel .panel-link { display: block; padding: 8px 10px; border-top: 1px solid var(--line); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (max-width: 600px) { .map-panel { width: 220px; } }
+/* DE-30: summary cards, two columns, segmented switch */
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0 4px; }
+.card { display: block; text-decoration: none; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.card:hover { border-color: var(--accent); }
+.card-title { display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.card-big { display: block; font-size: 1.55rem; font-weight: 700; line-height: 1.25; margin: 2px 0; }
+.card-sub { display: block; font-size: .84rem; color: var(--muted); }
+.badge { display: inline-block; padding: 0 7px; border-radius: 10px; font-size: .78rem; color: #1b1f23; border: 1px solid #888; margin-right: 4px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.two-col > section { min-width: 0; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg label { flex-direction: row; align-items: center; padding: 5px 12px; cursor: pointer; color: var(--fg); font-size: .85rem; }
+.seg label + label { border-left: 1px solid var(--line); }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label:has(input:checked) { background: var(--accent); color: #fff; }
+.seg label:has(input:focus-visible) { outline: 3px solid #f5a623; outline-offset: -3px; }
+label.check { flex-direction: row; align-items: center; gap: 6px; color: var(--fg); }
+@media (max-width: 760px) { .cards, .two-col { grid-template-columns: 1fr; } }
 /* DE-24: municipal ranking */
 h3 { margin: 20px 0 4px; font-size: 1rem; }
 .table-wrap { max-height: 340px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
