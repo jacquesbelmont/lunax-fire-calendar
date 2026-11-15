@@ -95,6 +95,8 @@
     const cellsLayer = L.layerGroup().addTo(map);
     const legend = legendControl().addTo(map);
     map.createPane("points").style.zIndex = 450; // above the cells (overlay pane, 400), below markers and popups
+    map.createPane("recurrence").style.zIndex = 420; // DE-26 image, between the cells and the points
+    let overlay = null, overlayTip = null;
     const canvas = L.canvas({ padding: 0.5, pane: "points" }); // up to ~120,000 points in one month: canvas, not SVG
     // DE-21 grouping: one group per sensor, so a number is never MODIS plus VIIRS; groups split when zooming in.
     const groups = {};
@@ -125,6 +127,11 @@
     map.on(L.Draw.Event.DRAWSTOP, () => { drawing = false; });
     map.on("mouseout", () => map.closeTooltip(tip));
     map.on("mousemove", function (e) {
+      if (overlayTip) { // DE-26 view: text from the overlay's lookup
+        const s = drawing ? null : overlayTip(e.latlng);
+        if (s) { tip.setLatLng(e.latlng).setContent(s); map.openTooltip(tip); } else map.closeTooltip(tip);
+        return;
+      }
       const id = Math.floor((e.latlng.lat + 90) / cellSize) + "_" + Math.floor((e.latlng.lng + 180) / cellSize);
       const j = shown.byId.get(id), p = shown.paint;
       if (drawing || j === undefined || !p || !map.hasLayer(cellsLayer)) { map.closeTooltip(tip); return; }
@@ -167,6 +174,16 @@
         selectedMuni.setStyle({ color: "#0b5cad", weight: 3, opacity: 1 });
         selectedMuni.bringToFront();
         map.fitBounds(selectedMuni.getBounds());
+      },
+      /** DE-26: image over bounds [[south, west], [north, east]] with hover text tipFn(latlng) (null = no text). */
+      showOverlay: function (url, bounds, tipFn) {
+        if (overlay) overlay.remove();
+        overlay = L.imageOverlay(url, bounds, { pane: "recurrence", className: "recurrence-overlay", opacity: 0.9 }).addTo(map);
+        overlayTip = tipFn;
+      },
+      clearOverlay: function () {
+        if (overlay) overlay.remove();
+        overlay = null; overlayTip = null;
       },
       /** DE-25: re-fit the map to its container (the printed page is narrower than the screen). */
       invalidate: function () { map.invalidateSize({ animate: false }); },

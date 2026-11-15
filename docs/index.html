@@ -44,15 +44,17 @@
 
     <section id="map-section" aria-label="Map">
       <h2>Map</h2>
-      <p class="hint">The map shows one month: the month of section 4, or the month you click in the calendar. Each grid cell is about 27 x 27 km (0.25°). <strong>Hotspots in the month</strong> colors the cells by their value (same values and colors as the calendar; the scale tops out at the 95th percentile of the cells). <strong>Compared with the usual</strong> colors each cell against the median of the same month in its earlier years, so it shows where the month was unusual. Grey cells have no data, which is not zero fire. <span class="dot modis" aria-hidden="true"></span> MODIS and <span class="dot viirs" aria-hidden="true"></span> VIIRS detections are points at their real position; a number is a group of nearby detections of one sensor, so zoom in to separate them. Click the map before zooming with the mouse wheel. The layers button (top right) hides cells or points.</p>
+      <p class="hint">The map shows one month: the month of section 4, or the month you click in the calendar. Each grid cell is about 27 x 27 km (0.25°). <strong>Hotspots in the month</strong> colors the cells by their value (same values and colors as the calendar; the scale tops out at the 95th percentile of the cells). <strong>Compared with the usual</strong> colors each cell against the median of the same month in its earlier years, so it shows where the month was unusual. <strong>Places that burn year after year</strong> shows, in cells of about 1 km, in how many years since 2012 VIIRS detected fire there. Grey cells have no data, which is not zero fire. <span class="dot modis" aria-hidden="true"></span> MODIS and <span class="dot viirs" aria-hidden="true"></span> VIIRS detections are points at their real position; a number is a group of nearby detections of one sensor, so zoom in to separate them. Click the map before zooming with the mouse wheel. The layers button (top right) hides cells or points.</p>
       <div class="row no-print">
         <label>Map view <select autocomplete="off" id="map-mode">
           <option value="hotspots">Hotspots in the month</option>
           <option value="usual">Compared with the usual for that month</option>
+          <option value="recurrence">Places that burn year after year (VIIRS, about 1 km, 2012-2025)</option>
         </select></label>
         <a id="firms-link" href="https://firms.modaps.eosdis.nasa.gov/map/" target="_blank" rel="noopener">Today's fires in this area on the NASA FIRMS Fire Map (near real-time, opens a new tab)</a>
       </div>
       <div id="map" role="application" aria-label="Map for choosing the area, with the hotspots of one month"></div>
+      <p class="hint" id="recurrence-note" role="status"></p>
       <p class="hint" id="map-note" role="status"></p>
       <h3>Municipalities in the map month</h3>
       <p class="hint" id="ranking-caption"></p>
