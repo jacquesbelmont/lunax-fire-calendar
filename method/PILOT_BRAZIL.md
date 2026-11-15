@@ -23,9 +23,10 @@ python pipeline/download.py --api-source VIIRS_NOAA20_SP --dates 2026-01-01 2026
 python pipeline/download.py --api-source VIIRS_NOAA20_NRT --dates 2026-08-01 2026-10-31 $B
 python pipeline/pilot_brazil.py --check       # about 15 min; FIRMS country files 2000-2025 in data/raw/country/, 2026 from the API
 python pipeline/pilot_packs.py --check        # DE-31 ratios, DE-32 layers, DE-28 per state (DE-33), one pack per state, national pack
-# DE-29 per state (DE-33): independent packs, so several processes at once, largest first (memory is the limit)
-printf "%s\n" AM PA MT MG BA MS GO MA RS TO PI SP RR PR AC CE AP PE SC PB RN ES RJ AL SE DF |
-  OMP_NUM_THREADS=5 xargs -P 4 -I{} python pipeline/pilot_packs.py --cell-outlook {}
+# DE-29 per state (DE-33): independent packs, so several processes at once. Memory is the limit: Amazonas and Para
+# need 5-5.5 GB each, the 14 smallest states at most 1.1 GB (measured on 15 GB of RAM: 2 at a time for the large ones)
+printf "%s\n" AM PA MT MG BA MS GO MA RS TO PI SP | OMP_NUM_THREADS=6 xargs -P 2 -I{} python pipeline/pilot_packs.py --cell-outlook {}
+printf "%s\n" RR PR AC CE AP PE SC PB RN ES RJ AL SE DF | OMP_NUM_THREADS=5 xargs -P 4 -I{} python pipeline/pilot_packs.py --cell-outlook {}
 python pipeline/pilot_packs.py --check        # again, to collect the DE-29 results in method/results/state_outlook.json
 # never run --check while --cell-outlook runs: both write the same metadata.json files
 python3 -m http.server 8766                   # from the repository root
