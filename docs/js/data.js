@@ -14,11 +14,14 @@
 
   async function loadAll() {
     const meta = await fetchOk("data/metadata.json", "json");
-    const [boundary, csv] = await Promise.all([
+    const [boundary, csv, monthsCsv] = await Promise.all([
       fetchOk("data/" + (meta.area.boundary_file || "area.geojson"), "json"),
       fetchOk("data/monthly_cells.csv", "text"),
+      fetchOk("data/months.csv", "text"),
     ]);
-    return { meta: meta, boundary: boundary, data: LunaxCalc.parseCellsCsv(csv, meta.grid.cell_size_deg) };
+    const data = LunaxCalc.parseCellsCsv(csv, meta.grid.cell_size_deg);
+    data.provisional = LunaxCalc.provisionalMonths(monthsCsv);
+    return { meta: meta, boundary: boundary, data: data };
   }
   window.LunaxData = { loadAll: loadAll };
 })();

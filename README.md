@@ -11,14 +11,14 @@ Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logo
   - Demo area: **Rondônia, Brazil** (IBGE boundary).
   - Target scale: **VIIRS 375 m equivalent**, built from both sensors.
   - Monthly calendar.
-  - Data from the FIRMS country CSVs (2000-2025); NOAA-21 (2024-2025) from the FIRMS area API, as a check of NOAA-20.
-- **Pipeline:** implemented and run on real FIRMS data, 2000-11 to 2025-12 (PRs #28-#34, merged).
+  - Data from the FIRMS country CSVs (2000-2025) and the FIRMS area API (NOAA-21 from 2024; all satellites for 2026).
+- **Pipeline:** implemented and run on real FIRMS data, 2000-11 to 2026-10 (PRs #28-#34 merged; NOAA-21 and 2026 in PR #41). August to October 2026 are provisional near real-time data.
   - MODIS-only months (2000-11 to 2012-01) are converted to the VIIRS scale with a ratio per month of year, learned where both sensors overlap. It was selected by a pre-registered backcast: bias of the total +0.6 % on 2012-2014; see [method/VALIDATION.md](method/VALIDATION.md).
   - VIIRS continuity: NOAA-20/S-NPP 0.992 (83 months), NOAA-21/NOAA-20 0.956 (21 months).
   - Method and limitations: [method/METHOD.md](method/METHOD.md).
 - **App data:** `docs/data/` (format in [DATA_CONTRACT.md](DATA_CONTRACT.md)), written by `pipeline/export.py` and `pipeline/export_hotspots.py` (hotspot CSV download, R9, DE-17).
 - **App:** map with area selection, monthly calendar, comparison with the historical median, per-sensor view and downloads (JA-5 to JA-8, PR #37).
-- **Not included yet:** 2026 (FIRMS area API; the download route exists, the run is planned). See [method/METHOD.md](method/METHOD.md).
+- **Updating:** data stop on 2026-10-31. A new month needs `pipeline/download.py --api-source` for the new dates, a new `DATA_END` in `pipeline/aggregate.py` and a pipeline rerun (see [pipeline/README.md](pipeline/README.md)).
 
 ## Structure
 - `pipeline/` — Python pipeline (runs offline, writes to `docs/data/`). See [pipeline/README.md](pipeline/README.md).

@@ -24,12 +24,14 @@
       } else {
         z[y][m] = r.value;
         const ci = Number.isNaN(r.lo) ? "" : " (90% interval " + LunaxCalc.fmt(r.lo, 0) + " to " + LunaxCalc.fmt(r.hi, 0) + ")";
-        text[y][m] = r.ym + ": " + LunaxCalc.fmt(r.value, 0) + " " + unit + ci + (r.estimated ? ", estimated from MODIS" : "");
+        text[y][m] = r.ym + ": " + LunaxCalc.fmt(r.value, 0) + " " + unit + ci + (r.estimated ? ", estimated from MODIS" : "") +
+          (r.provisional ? ", provisional (near real-time data)" : "");
       }
     });
     const ticks = years.map(function (y) {
       const est = rows.some((r) => r.estimated && Number(r.ym.slice(0, 4)) === y);
-      return String(y) + (est ? " est." : "");
+      const prov = rows.some((r) => r.provisional && Number(r.ym.slice(0, 4)) === y);
+      return String(y) + (est ? " est." : "") + (prov ? " prov." : "");
     });
     const firstNative = rows.find((r) => !r.estimated);
     const shapes = [];

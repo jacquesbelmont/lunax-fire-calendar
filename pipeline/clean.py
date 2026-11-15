@@ -117,7 +117,9 @@ def normalize(df, route):
     df["acq_time"] = df["acq_time"].str.zfill(4)
     df["sat"] = df["satellite"].map({k: v[0] for k, v in SATELLITES.items()})
     df["sensor"] = df["satellite"].map({k: v[1] for k, v in SATELLITES.items()})
-    if "instrument" in df and not (df["instrument"] == df["sensor"]).all():
+    # NRT answers have no `instrument` column, so it is empty in their rows when SP and NRT files are read together.
+    has = df["instrument"].notna() if "instrument" in df else pd.Series(False, index=df.index)
+    if not (df.loc[has, "instrument"] == df.loc[has, "sensor"]).all():
         raise ValueError("`instrument` does not match the sensor implied by `satellite`")
     # Standard processing = collection only ("6.1"); NRT/RT/URT = collection + suffix ("6.1NRT"),
     # per the FIRMS attribute page. RT and URT are grouped with NRT (all non-standard).

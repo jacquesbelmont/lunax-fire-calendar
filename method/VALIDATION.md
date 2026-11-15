@@ -2,7 +2,7 @@
 
 Owner issue: RA-3 (Rafael). Figures in method/figures/, results in method/results/.
 Protocol: method/DECISIONS.md DE-15, fixed before the results were seen. Code: `pipeline/validate.py`.
-Data: FIRMS country CSVs (standard processing), only detections inside the IBGE boundary of Rondônia (DE-1), 2000-11 to 2025-12; NOAA-21 from the FIRMS area API (standard processing), 2024-01-17 to 2025-12-31.
+Data: FIRMS country CSVs (standard processing), only detections inside the IBGE boundary of Rondônia (DE-1), 2000-11 to 2025-12; NOAA-21 from the FIRMS area API (standard processing), 2024-01-17 to 2025-12-31. This is the DE-15 period: the 2026 months in the app (partly provisional near real-time data) are left out of the validation (`VALIDATION_END` in `pipeline/validate.py`).
 Every number below comes from `method/results/validation_metrics.json` unless another file is named.
 
 ## Held-out years

@@ -4,7 +4,7 @@
   "docs/data/monthly_cells.csv",
   "docs/data/metadata.json"
  ],
- "data_cutoff_date": "2025-12-31",
+ "data_cutoff_date": "2026-10-31",
  "rules": {
   "area_value": "sum of viirs_eq over the cells whose centre is inside the rectangle (DE-13); null if the month has no data (empty viirs_eq), never 0",
   "area_variance": "sum of viirs_eq_var over the same cells; 90 % interval = value +/- 1.645*sqrt(var) (DE-16)",
@@ -26,7 +26,7 @@
    ],
    "selection": "the whole demo area (metadata.json)",
    "n_cells": 376,
-   "n_months": 302,
+   "n_months": 312,
    "n_months_without_data": 10,
    "months": [
     {
@@ -2746,6 +2746,96 @@
      "anomaly_diff": -320.0,
      "anomaly_ratio": 0.15567282321899736,
      "n_years": 23
+    },
+    {
+     "year_month": "2026-01",
+     "value": 30.0,
+     "var": 0.0,
+     "median": 199.02120000000002,
+     "anomaly_diff": -169.02120000000002,
+     "anomaly_ratio": 0.15073771035447478,
+     "n_years": 25
+    },
+    {
+     "year_month": "2026-02",
+     "value": 29.0,
+     "var": 0.0,
+     "median": 38.0,
+     "anomaly_diff": -9.0,
+     "anomaly_ratio": 0.7631578947368421,
+     "n_years": 24
+    },
+    {
+     "year_month": "2026-03",
+     "value": 22.0,
+     "var": 0.0,
+     "median": 40.0,
+     "anomaly_diff": -18.0,
+     "anomaly_ratio": 0.55,
+     "n_years": 23
+    },
+    {
+     "year_month": "2026-04",
+     "value": 18.0,
+     "var": 0.0,
+     "median": 81.5,
+     "anomaly_diff": -63.5,
+     "anomaly_ratio": 0.22085889570552147,
+     "n_years": 24
+    },
+    {
+     "year_month": "2026-05",
+     "value": 109.0,
+     "var": 0.0,
+     "median": 345.0,
+     "anomaly_diff": -236.0,
+     "anomaly_ratio": 0.3159420289855073,
+     "n_years": 25
+    },
+    {
+     "year_month": "2026-06",
+     "value": 223.0,
+     "var": 0.0,
+     "median": 1096.0,
+     "anomaly_diff": -873.0,
+     "anomaly_ratio": 0.20346715328467152,
+     "n_years": 24
+    },
+    {
+     "year_month": "2026-07",
+     "value": 405.0,
+     "var": 0.0,
+     "median": 3834.0,
+     "anomaly_diff": -3429.0,
+     "anomaly_ratio": 0.1056338028169014,
+     "n_years": 23
+    },
+    {
+     "year_month": "2026-08",
+     "value": 2173.0,
+     "var": 0.0,
+     "median": 22320.0,
+     "anomaly_diff": -20147.0,
+     "anomaly_ratio": 0.09735663082437276,
+     "n_years": 25
+    },
+    {
+     "year_month": "2026-09",
+     "value": 3347.0,
+     "var": 0.0,
+     "median": 27341.5,
+     "anomaly_diff": -23994.5,
+     "anomaly_ratio": 0.12241464440502532,
+     "n_years": 24
+    },
+    {
+     "year_month": "2026-10",
+     "value": 2734.0,
+     "var": 0.0,
+     "median": 12804.86564,
+     "anomaly_diff": -10070.86564,
+     "anomaly_ratio": 0.21351258786031277,
+     "n_years": 25
     }
    ]
   },
@@ -2759,7 +2849,7 @@
    ],
    "selection": "2x2 degree square (at least half of its cells active) with the highest total of observed months",
    "n_cells": 46,
-   "n_months": 302,
+   "n_months": 312,
    "n_months_without_data": 10,
    "months": [
     {
@@ -5479,6 +5569,96 @@
      "anomaly_diff": -49.0,
      "anomaly_ratio": 0.07547169811320754,
      "n_years": 23
+    },
+    {
+     "year_month": "2026-01",
+     "value": 1.0,
+     "var": 0.0,
+     "median": 21.0,
+     "anomaly_diff": -20.0,
+     "anomaly_ratio": 0.047619047619047616,
+     "n_years": 25
+    },
+    {
+     "year_month": "2026-02",
+     "value": 5.0,
+     "var": 0.0,
+     "median": 6.457834999999999,
+     "anomaly_diff": -1.4578349999999993,
+     "anomaly_ratio": 0.7742532907700492,
+     "n_years": 24
+    },
+    {
+     "year_month": "2026-03",
+     "value": 11.0,
+     "var": 0.0,
+     "median": 5.0,
+     "anomaly_diff": 6.0,
+     "anomaly_ratio": 2.2,
+     "n_years": 23
+    },
+    {
+     "year_month": "2026-04",
+     "value": 3.0,
+     "var": 0.0,
+     "median": 10.30742,
+     "anomaly_diff": -7.3074200000000005,
+     "anomaly_ratio": 0.29105246511736205,
+     "n_years": 24
+    },
+    {
+     "year_month": "2026-05",
+     "value": 19.0,
+     "var": 0.0,
+     "median": 40.0,
+     "anomaly_diff": -21.0,
+     "anomaly_ratio": 0.475,
+     "n_years": 25
+    },
+    {
+     "year_month": "2026-06",
+     "value": 68.0,
+     "var": 0.0,
+     "median": 256.5,
+     "anomaly_diff": -188.5,
+     "anomaly_ratio": 0.2651072124756335,
+     "n_years": 24
+    },
+    {
+     "year_month": "2026-07",
+     "value": 126.0,
+     "var": 0.0,
+     "median": 1144.1296800000002,
+     "anomaly_diff": -1018.1296800000002,
+     "anomaly_ratio": 0.11012737647012179,
+     "n_years": 23
+    },
+    {
+     "year_month": "2026-08",
+     "value": 282.0,
+     "var": 0.0,
+     "median": 6415.0,
+     "anomaly_diff": -6133.0,
+     "anomaly_ratio": 0.04395946999220577,
+     "n_years": 25
+    },
+    {
+     "year_month": "2026-09",
+     "value": 390.0,
+     "var": 0.0,
+     "median": 6579.44777,
+     "anomaly_diff": -6189.44777,
+     "anomaly_ratio": 0.05927549144447422,
+     "n_years": 24
+    },
+    {
+     "year_month": "2026-10",
+     "value": 564.0,
+     "var": 0.0,
+     "median": 2003.0,
+     "anomaly_diff": -1439.0,
+     "anomaly_ratio": 0.28157763354967547,
+     "n_years": 25
     }
    ]
   },
@@ -5492,7 +5672,7 @@
    ],
    "selection": "2x2 degree square (at least half of its cells active) with the lowest non-zero total of observed months",
    "n_cells": 58,
-   "n_months": 302,
+   "n_months": 312,
    "n_months_without_data": 10,
    "months": [
     {
@@ -8212,6 +8392,96 @@
      "anomaly_diff": -37.0,
      "anomaly_ratio": 0.1590909090909091,
      "n_years": 23
+    },
+    {
+     "year_month": "2026-01",
+     "value": 3.0,
+     "var": 0.0,
+     "median": 9.2568,
+     "anomaly_diff": -6.2568,
+     "anomaly_ratio": 0.3240860772621208,
+     "n_years": 25
+    },
+    {
+     "year_month": "2026-02",
+     "value": 1.0,
+     "var": 0.0,
+     "median": 3.47189,
+     "anomaly_diff": -2.47189,
+     "anomaly_ratio": 0.28802755847679506,
+     "n_years": 24
+    },
+    {
+     "year_month": "2026-03",
+     "value": 4.0,
+     "var": 0.0,
+     "median": 2.90951,
+     "anomaly_diff": 1.09049,
+     "anomaly_ratio": 1.3748019425951448,
+     "n_years": 23
+    },
+    {
+     "year_month": "2026-04",
+     "value": 6.0,
+     "var": 0.0,
+     "median": 7.211135,
+     "anomaly_diff": -1.2111349999999996,
+     "anomaly_ratio": 0.8320465502309969,
+     "n_years": 24
+    },
+    {
+     "year_month": "2026-05",
+     "value": 9.0,
+     "var": 0.0,
+     "median": 25.29186,
+     "anomaly_diff": -16.29186,
+     "anomaly_ratio": 0.35584571478728727,
+     "n_years": 25
+    },
+    {
+     "year_month": "2026-06",
+     "value": 15.0,
+     "var": 0.0,
+     "median": 95.27452,
+     "anomaly_diff": -80.27452,
+     "anomaly_ratio": 0.15743978557960722,
+     "n_years": 24
+    },
+    {
+     "year_month": "2026-07",
+     "value": 41.0,
+     "var": 0.0,
+     "median": 268.15565000000004,
+     "anomaly_diff": -227.15565000000004,
+     "anomaly_ratio": 0.15289627498059427,
+     "n_years": 23
+    },
+    {
+     "year_month": "2026-08",
+     "value": 136.0,
+     "var": 0.0,
+     "median": 1406.0,
+     "anomaly_diff": -1270.0,
+     "anomaly_ratio": 0.09672830725462304,
+     "n_years": 25
+    },
+    {
+     "year_month": "2026-09",
+     "value": 154.0,
+     "var": 0.0,
+     "median": 1889.5,
+     "anomaly_diff": -1735.5,
+     "anomaly_ratio": 0.081503043133104,
+     "n_years": 24
+    },
+    {
+     "year_month": "2026-10",
+     "value": 132.0,
+     "var": 0.0,
+     "median": 1113.65218,
+     "anomaly_diff": -981.65218,
+     "anomaly_ratio": 0.11852892884383344,
+     "n_years": 25
     }
    ]
   }

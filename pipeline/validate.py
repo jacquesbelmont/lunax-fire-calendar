@@ -49,6 +49,8 @@ BACKCAST_TRAIN = range(2015, 2026)  # DE-15
 BACKCAST_TEST = range(2012, 2015)  # DE-15
 LOYO_YEARS = range(2012, 2026)  # DE-15
 CALIB_YEARS = range(2015, 2026)  # DE-16: lambda fitted on these LOYO years, tested on the backcast years
+# DE-15 period: the protocol was fixed on 2000-11..2025-12; later (2026, partly provisional NRT) data are not used here.
+VALIDATION_END = "2025-12"
 CLEAN_DIR = ROOT / "data" / "interim" / "clean"
 Z90 = stats.norm.ppf(0.95)
 SOURCE_NOTE = ("Data: NASA FIRMS country CSVs (standard processing), Brazil + Bolivia; NOAA-21: FIRMS area API (SP). "
@@ -213,6 +215,7 @@ def _low_confidence(pattern, is_low):
     d = pd.concat([pd.read_csv(f, usecols=["acq_date", "sat", "confidence"], dtype=str)
                    for f in sorted(CLEAN_DIR.glob(pattern))], ignore_index=True)
     d["year_month"] = d["acq_date"].str[:7]
+    d = d[d["year_month"] <= VALIDATION_END].copy()
     d["low"] = is_low(d["confidence"])
     return d.groupby("sat")["low"].mean().astype(float).to_dict(), d[d["low"]].groupby(["year_month", "sat"]).size()
 
@@ -354,7 +357,9 @@ def main():
     RESULTS.mkdir(parents=True, exist_ok=True)
     FIGURES.mkdir(parents=True, exist_ok=True)
     panel = hz.add_reference(hz.build_panel(pd.read_csv(hz.COUNTS), pd.read_csv(hz.FLAGS)))
+    panel = panel[panel["year_month"] <= VALIDATION_END].copy()
     harmonized = pd.read_csv(hz.OUT, dtype={"year_month": str})
+    harmonized = harmonized[harmonized["year_month"] <= VALIDATION_END].copy()
 
     backcast, test = validate_on_held_out_years(panel)
     print("backcast:", json.dumps(backcast, indent=1))

@@ -40,6 +40,10 @@ SAT_START = {"Terra": "2000-11-01", "Aqua": "2002-07-04", "SNPP": "2012-01-20",
              "NOAA20": "2018-04-01", "NOAA21": "2024-01-17"}
 # New S-NPP data ended 2026-11-02 13:00 UTC (FIRMS blog); that partial day counts as missing.
 SAT_END = {"SNPP": "2026-11-01"}
+# Last day of the downloaded data: 2026 comes from the area API up to the last complete month
+# (download.py --dates 2026-01-01 2026-10-31). Later days are not covered: their months get no row (no data),
+# never zero fire (AGENTS.md rule 6). Move it together with the next download.
+DATA_END = "2026-10-31"
 
 
 def assign_grid_cell(hotspots, size=CELL_SIZE):
@@ -69,7 +73,7 @@ def flag_missing_months(coverage, missing_days):
     rows = []
     for sat, year in sorted(set(coverage)):
         days = pd.date_range(f"{year}-01-01", f"{year}-12-31", freq="D")
-        end = pd.Timestamp(SAT_END[sat]) if sat in SAT_END else days[-1]
+        end = min(pd.Timestamp(SAT_END.get(sat, DATA_END)), pd.Timestamp(DATA_END))
         operating = (days >= pd.Timestamp(SAT_START[sat])) & (days <= end)
         if not operating.any():
             continue  # satellite not flying that year

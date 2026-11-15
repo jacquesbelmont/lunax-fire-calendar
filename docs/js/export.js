@@ -23,8 +23,10 @@
     const c = data.columns, nM = data.nMonths, f = LunaxCalc.fmt;
     const lines = ["# " + meta.title, "# Area: " + label, "# Data cut-off date: " + meta.data_cutoff_date + " (" + meta.archived + ")",
       "# " + meta.attribution, "# Disclaimer: " + meta.disclaimer_url,
-      "# Empty value = no data (never zero fire). estimated=1: converted from MODIS. Raw sensor columns are never to be summed across MODIS and VIIRS.",
-      "cell_id,cell_lat,cell_lon,year_month,viirs_eq,viirs_eq_var,estimated,terra,aqua,snpp,noaa20,noaa21"];
+      "# Empty value = no data (never zero fire). estimated=1: converted from MODIS. Raw sensor columns are never to be summed across MODIS and VIIRS."];
+    const prov = data.months.slice(fromIdx, toIdx + 1).filter((m) => data.provisional.has(m));
+    if (prov.length) lines.push("# Provisional months (FIRMS near real-time data, replaced later by standard data): " + prov.join(" "));
+    lines.push("cell_id,cell_lat,cell_lon,year_month,viirs_eq,viirs_eq_var,estimated,terra,aqua,snpp,noaa20,noaa21");
     sel.forEach(function (i) {
       for (let m = fromIdx; m <= toIdx; m++) {
         const k = i * nM + m, cell = data.cells[i];

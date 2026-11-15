@@ -19,7 +19,7 @@
   "source": {
     "name": "NASA FIRMS (Fire Information for Resource Management System)",
     "url": "https://www.earthdata.nasa.gov/data/tools/firms",
-    "product": "FIRMS country yearly summary CSVs, standard processing (SP); NOAA-21 from the FIRMS area API (no NOAA-21 country files)",
+    "product": "FIRMS country yearly summary CSVs, standard processing (SP); FIRMS area API for NOAA-21 (no NOAA-21 country files) and for 2026: standard processing where available, then near real-time (NRT), whose months are flagged provisional in months.csv (DE-4)",
     "files": "https://firms.modaps.eosdis.nasa.gov/data/country/ ; https://firms.modaps.eosdis.nasa.gov/api/area/",
     "satellites": {
       "MODIS 1 km": [
@@ -35,20 +35,25 @@
     "versions_by_satellite": {
       "Aqua": [
         "6.03",
+        "6.1NRT",
         "6.2",
         "61.03"
       ],
       "NOAA20": [
-        "2"
+        "2",
+        "2.0NRT"
       ],
       "NOAA21": [
-        "2"
+        "2",
+        "2.0NRT"
       ],
       "SNPP": [
-        "2"
+        "2",
+        "2.0NRT"
       ],
       "Terra": [
         "6.03",
+        "6.1NRT",
         "6.2",
         "61.03"
       ]
@@ -56,9 +61,9 @@
   },
   "period": {
     "first_month": "2000-11",
-    "last_month": "2025-12"
+    "last_month": "2026-10"
   },
-  "data_cutoff_date": "2025-12-31",
+  "data_cutoff_date": "2026-10-31",
   "archived": "Archived FIRMS data, not live; see data_cutoff_date.",
   "grid": {
     "cell_size_deg": 0.25,

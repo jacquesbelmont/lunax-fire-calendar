@@ -72,3 +72,10 @@ test("CSV export carries attribution, cut-off date and empty cells for no data",
   assert.ok(csv.includes(meta.data_cutoff_date));
   assert.ok(csv.trim().endsWith("2001-06,,,,1,,0,,"));
 });
+
+test("provisional months are the months.csv rows with provisional = 1 (DE-4)", () => {
+  const text = fs.readFileSync(path.join(root, "docs/data/months.csv"), "utf8");
+  const want = new Set(text.trim().split("\n").slice(1).map((l) => l.split(",")).filter((f) => f[4] === "1").map((f) => f[0]));
+  assert.strictEqual(text.split("\n")[0], "year_month,sat,missing_days,flagged,provisional");
+  assert.deepStrictEqual([...calc.provisionalMonths(text)].sort(), [...want].sort());
+});

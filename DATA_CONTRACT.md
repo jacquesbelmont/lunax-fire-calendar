@@ -36,15 +36,15 @@ Path: `docs/data/months.csv`.
 | `sat` | text | - | Terra, Aqua, SNPP, NOAA20 or NOAA21 |
 | `missing_days` | int | days | FIRMS missing days + days outside the satellite's operating window (DE-14) |
 | `flagged` | 0/1 | - | 1 = at least one missing day; the calendar marks the month, never as zero |
-| `provisional` | 0/1 | - | 1 = month contains NRT data (DE-4) |
+| `provisional` | 0/1 | - | 1 = month contains NRT data (DE-4). The app reads this file and marks a month provisional when any satellite has 1 (calendar hover, "prov." year label, comment line in the CSV downloads) |
 
-A satellite-month absent from this file has no data.
+A satellite-month absent from this file has no data. The data end on the last day downloaded (`DATA_END` in `pipeline/aggregate.py`, a month end); later months have no row.
 
 ### (d) Area boundary
 Path: `docs/data/area.geojson`. This is the IBGE boundary of Rondônia (DE-1), a GeoJSON FeatureCollection with one Polygon. The source URL and retrieval date are in the feature `properties`. The app draws it and marks everything outside it as "outside the area".
 
 ### (b) Hotspot list per year (CSV export)
-Paths: `docs/data/hotspots/<instrument>_<year>.csv.gz` and `docs/data/hotspots/index.json`. Written by `pipeline/export_hotspots.py` (DE-17, R9). `<instrument>` is the FIRMS country-file instrument: `modis`, `viirs-snpp`, `viirs-jpss1` (NOAA-20), plus `viirs-jpss2` (NOAA-21, from the area API, 2024-2025). 50 files, 2,139,752 rows (`index.json`).
+Paths: `docs/data/hotspots/<instrument>_<year>.csv.gz` and `docs/data/hotspots/index.json`. Written by `pipeline/export_hotspots.py` (DE-17, R9). `<instrument>` is the FIRMS country-file instrument: `modis`, `viirs-snpp`, `viirs-jpss1` (NOAA-20), plus `viirs-jpss2` (NOAA-21); the NOAA-21 files and all 2026 files come from the area API. 54 files, 2,168,855 rows (`index.json`).
 Content: the detections kept by `clean.py` (standard data, `type` 0, inside the area boundary, no confidence filter). Each file is gzip text. It starts with `#` comment lines (FIRMS acknowledgment, disclaimer link, data cut-off date), then the column header, then one row per hotspot, sorted by date and time.
 `index.json`: `columns` and `files` (`source`, `year`, `file`, `rows`, `bytes`); the app reads it to choose the files of a period and to show the size.
 
@@ -59,8 +59,8 @@ Content: the detections kept by `clean.py` (standard data, `type` 0, inside the 
 | `confidence` | text | - | MODIS 0-100; VIIRS `l`, `n` or `h` (both seen in the real files). Not filtered |
 | `daynight` | text | - | `D` or `N` |
 | `frp` | float | MW | Fire radiative power (FIRMS attribute page) |
-| `type` | int | - | 0 = presumed vegetation fire (only value kept) |
-| `version` | text | - | FIRMS product version as in the file |
+| `type` | int | - | 0 = presumed vegetation fire (only value kept); empty in NRT rows, which carry no type (DE-9) |
+| `version` | text | - | FIRMS product version as in the file; a version ending in `NRT` marks a near real-time (provisional) row, and the file header then says so |
 
 The numbers of rows per instrument and year equal `rows_kept` of `method/results/cleaning_log.csv`, and the counts per cell, month and satellite equal the raw columns of (a) (`tests/js/hotspots.test.js`).
 
@@ -110,7 +110,7 @@ Output of `pipeline/check_availability.py` (FIRMS `data_availability`, `ALL`), 2
 | VIIRS_SNPP_NRT | 2026-08-01 | 2026-11-02 |
 | VIIRS_SNPP_SP | 2012-01-20 | 2026-07-31 |
 
-The answer also lists LANDSAT_NRT, GOES_NRT, BA_MODIS and BA_VIIRS (out of scope). Area API answers have the country-file columns of VIIRS (below), but `acq_time` comes without leading zeros (e.g. `541`); `clean.py` pads it to HHMM.
+The answer also lists LANDSAT_NRT, GOES_NRT, BA_MODIS and BA_VIIRS (out of scope). Area API answers have the country-file columns (below), but `acq_time` comes without leading zeros (e.g. `541`); `clean.py` pads it to HHMM. NRT answers have no `instrument` and no `type` column (seen 2026-11-15).
 
 ## Real column headers per source
 DRAFT from real Brazil country files (method/FIRMS_REFERENCE.md section 4); to be reviewed by Jacques and Rafael (JA-3).

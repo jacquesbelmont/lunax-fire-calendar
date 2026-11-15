@@ -9,7 +9,7 @@ Evidence: link to a file, PR or screenshot.
 | ID | Requirement | Status | Evidence |
 |----|-------------|--------|----------|
 | R1 | Web application. | todo | |
-| R2 | Harmonize NASA FIRMS MODIS and VIIRS active-fire hotspots into one consistent time series, from the early 2000s to the present, so that the sensor of origin no longer matters. | in progress | Pipeline and validation merged (PRs #28-#34; method/METHOD.md, method/VALIDATION.md); 2000-11 to 2025-12, with NOAA-21 continuity checked via the FIRMS area API (PR #41); 2026 still to run through the API (DE-8) |
+| R2 | Harmonize NASA FIRMS MODIS and VIIRS active-fire hotspots into one consistent time series, from the early 2000s to the present, so that the sensor of origin no longer matters. | in progress | Pipeline and validation merged (PRs #28-#34; method/METHOD.md, method/VALIDATION.md); 2000-11 to 2026-10, with NOAA-21 continuity checked and 2026 added via the FIRMS area API (PR #41); August to October 2026 provisional (NRT) |
 | R3 | Burning activity calendar of hotspot counts built on the harmonized dataset. | in progress | Monthly data per cell in docs/data/monthly_cells.csv (PR #31); calendar view pending (JA-5) |
 | R4 | User selects an area of interest. | todo | |
 | R5 | Users can examine historical fire patterns, unusual conditions and critical periods. | in progress | Data and median/anomaly rules ready (DE-13, PR #33); app views pending (JA-5, JA-6) |
@@ -21,7 +21,7 @@ Evidence: link to a file, PR or screenshot.
 | R6 | Show which months of the year and which years have more burning activity. | todo | |
 | R7 | Compare the current month with the historical median for the selected area; show how current activity compares with previous periods. | in progress | Rules in DE-13; reference values in method/tests/expected.json (PR #33); app pending (JA-6, JA-8) |
 | R8 | Select a date range and download analytics and visualizations. | todo | |
-| R9 | Download a CSV of the hotspots found in the search. | done | DE-17; `docs/data/hotspots/` (50 files, `index.json`) and the "Download hotspots (CSV)" button (PR #38); tests in tests/js/hotspots.test.js |
+| R9 | Download a CSV of the hotspots found in the search. | done | DE-17; `docs/data/hotspots/` (54 files, `index.json`) and the "Download hotspots (CSV)" button (PR #38); tests in tests/js/hotspots.test.js |
 | R10 | Color ramps showing differences in hotspot counts across months. | todo | |
 
 ## Optional ("potential considerations")

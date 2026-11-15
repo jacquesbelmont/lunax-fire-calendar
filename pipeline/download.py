@@ -6,8 +6,8 @@ AI-assisted code (Claude Code); logged in AI_USE.md.
 Routes (DE-8), layouts read by clean.py:
 - FIRMS country yearly summary files (standard processing, no MAP_KEY), method/FIRMS_REFERENCE.md section 3.1:
     data/raw/country/<source>/<year>/<source>_<year>_<Country>.csv
-- FIRMS area API (MAP_KEY in .env), for NOAA-21, which has no country files (section 3.3):
-    data/raw/api/viirs-jpss2/<year>/viirs-jpss2_<year>_<API source>.csv   (bbox of config/area.json)
+- FIRMS area API (MAP_KEY in .env), for NOAA-21 (no country files) and for 2026 (section 3.3):
+    data/raw/api/<source>/<year>/<source>_<year>_<API source>.csv   (bbox of config/area.json)
 - data/raw/missing_days.csv   (columns: sat, date, processing)  -> read by aggregate.py
 
 Usage:
@@ -41,8 +41,10 @@ TIMEOUT_SECONDS = 120
 # A call with DATE returns DATE .. DATE + DAY_RANGE - 1, DAY_RANGE 1..5 (https://firms.modaps.eosdis.nasa.gov/api/area/).
 AREA_API_URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv/{key}/{source}/{bbox}/{days}/{date}"
 API_MAX_DAYS = 5
-# Area API source -> data/raw/api/<folder>; NOAA-21 = JPSS-2, named like the country folders (viirs-jpss1 = NOAA-20).
-API_FOLDERS = {"VIIRS_NOAA21_SP": "viirs-jpss2", "VIIRS_NOAA21_NRT": "viirs-jpss2"}
+# Area API source -> data/raw/api/<folder>, named like the country folders (viirs-jpss1 = NOAA-20, viirs-jpss2 = NOAA-21).
+API_FOLDERS = {f"{s}_{p}": folder for s, folder in (("MODIS", "modis"), ("VIIRS_SNPP", "viirs-snpp"),
+                                                    ("VIIRS_NOAA20", "viirs-jpss1"), ("VIIRS_NOAA21", "viirs-jpss2"))
+               for p in ("SP", "NRT")}
 
 # Names in the missing_data table -> normalized satellite names used by clean.py and aggregate.py.
 MISSING_DATA_SATELLITES = {

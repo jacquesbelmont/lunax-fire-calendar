@@ -34,6 +34,7 @@
     return data.months.map(function (ym, i) {
       const hw = variance ? LunaxCalc.halfWidth90(variance[i]) : NaN;
       return { ym: ym, value: value[i], lo: value[i] - hw, hi: value[i] + hw, estimated: est ? est[i] : false,
+        provisional: data.provisional.has(ym),
         inRange: i >= from && i <= to, median: stats[i].median, nYears: stats[i].nYears, diff: stats[i].diff, ratio: stats[i].ratio };
     });
   }
@@ -103,7 +104,8 @@
     const how = $("how-text");
     [["Target scale", meta.method.target_scale], ["Observed months", meta.method.native_months],
      ["Estimated months", meta.method.estimated_months], ["Uncertainty", meta.method.uncertainty],
-     ["Missing data", "An empty value means no data. It is never zero fire and is drawn in grey."]].forEach(function (p) {
+     ["Missing data", "An empty value means no data. It is never zero fire and is drawn in grey."],
+     ["Provisional months", "Months with FIRMS near real-time (NRT) data, after the last standard-processing date. FIRMS replaces them later with standard data, so their values can still change (DE-4)."]].forEach(function (p) {
       const para = document.createElement("p");
       const b = document.createElement("strong");
       b.textContent = p[0] + ": ";

@@ -95,7 +95,9 @@ def export_metadata(harmonized):
             "name": "NASA FIRMS (Fire Information for Resource Management System)",
             "url": "https://www.earthdata.nasa.gov/data/tools/firms",
             "product": "FIRMS country yearly summary CSVs, standard processing (SP)"
-                       + ("; NOAA-21 from the FIRMS area API (no NOAA-21 country files)" if api.any() else ""),
+                       + ("; FIRMS area API for NOAA-21 (no NOAA-21 country files) and for 2026: standard processing "
+                          "where available, then near real-time (NRT), whose months are flagged provisional in "
+                          "months.csv (DE-4)" if api.any() else ""),
             "files": "https://firms.modaps.eosdis.nasa.gov/data/country/"
                      + (" ; https://firms.modaps.eosdis.nasa.gov/api/area/" if api.any() else ""),
             "satellites": {"MODIS 1 km": ["Terra", "Aqua"],
