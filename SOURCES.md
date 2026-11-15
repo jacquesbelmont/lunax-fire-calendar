@@ -35,3 +35,6 @@
 | leaflet-draw | 1.0.4 | MIT (package.json; TODO(verify): license text) | docs/lib/leaflet-draw/ |
 | plotly.js-dist-min | 4.3.0 | MIT | docs/lib/plotly/ |
 | NASA FIRMS (data) | TODO(verify): product versions - data/PROVENANCE.md | TODO(verify): data license/citation - https://www.earthdata.nasa.gov/data/tools/firms | pipeline/, docs/data/ |
+
+## Map tiles (web app)
+- OpenStreetMap tiles, loaded by the browser from https://tile.openstreetmap.org (ODbL data, attribution shown in the app): https://www.openstreetmap.org/copyright

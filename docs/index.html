@@ -4,46 +4,92 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>LUNAX Fire Calendar</title>
+  <meta name="description" content="Monthly burning-activity calendar of harmonized MODIS and VIIRS hotspots from NASA FIRMS, for Rondônia, Brazil.">
+  <link rel="stylesheet" href="lib/leaflet/leaflet.css">
+  <link rel="stylesheet" href="lib/leaflet-draw/leaflet.draw.css">
   <link rel="stylesheet" href="css/style.css">
-  <!-- TODO(JA-5): add vendored libraries from lib/ (see lib/README.md) -->
 </head>
 <body>
   <header id="header">
-    <!-- TODO(JA-5): project name and one-line description (text from submission/PROJECT_PAGE.md) -->
+    <h1>LUNAX Fire Calendar</h1>
+    <p id="subtitle">Monthly burning activity from harmonized NASA FIRMS MODIS and VIIRS hotspots. Loading data&hellip;</p>
+    <p class="notice" id="archive-label" role="note"></p>
   </header>
 
   <main>
     <section id="controls" aria-label="Area and date range">
-      <!-- TODO(JA-5, R4, O1): area selection (rectangle and lat/lon input) -->
-      <!-- TODO(JA-6, R8): date-range selection -->
+      <h2>1. Choose an area and a period</h2>
+      <p class="hint">Draw a rectangle on the map, or type its limits in degrees. Only data inside the study area is available.</p>
+      <form id="bbox-form" class="row">
+        <label>West <input id="bbox-w" type="number" step="0.05" required></label>
+        <label>South <input id="bbox-s" type="number" step="0.05" required></label>
+        <label>East <input id="bbox-e" type="number" step="0.05" required></label>
+        <label>North <input id="bbox-n" type="number" step="0.05" required></label>
+        <button type="submit">Apply</button>
+        <button type="button" id="bbox-reset">Whole study area</button>
+      </form>
+      <div class="row">
+        <label>From <select id="range-from"></select></label>
+        <label>To <select id="range-to"></select></label>
+        <label>Series <select id="series-select"></select></label>
+      </div>
+      <p class="hint" id="series-note"></p>
+      <p id="selection-info" role="status"></p>
     </section>
 
-    <section id="map" aria-label="Map">
-      <!-- TODO(JA-5, R4): map -->
+    <section id="map-section" aria-label="Map">
+      <h2>Map</h2>
+      <div id="map" role="application" aria-label="Map for choosing the area"></div>
     </section>
 
-    <section id="calendar" aria-label="Monthly calendar">
-      <!-- TODO(JA-5, R3, R6, R10): monthly calendar (month x year); months with missing satellite data marked, not shown as zero -->
+    <section id="calendar-section" aria-label="Monthly calendar">
+      <h2>2. Monthly calendar</h2>
+      <p class="hint">Each cell is one month. Darker colors mean more hotspots. Grey cells have no data: they are never shown as zero fire. The dashed line separates estimated months (above/left) from observed ones.</p>
+      <div id="calendar" class="chart" role="img" aria-label="Calendar of monthly hotspot counts by year and month"></div>
+      <p><button type="button" id="png-calendar">Download calendar (PNG)</button></p>
     </section>
 
-    <section id="compare" aria-label="Current month vs historical median">
-      <!-- TODO(JA-6, R7): current month vs historical median -->
+    <section id="compare-section" aria-label="Month versus historical median">
+      <h2>3. A month compared with its historical median</h2>
+      <div class="row"><label>Month <select id="compare-month"></select></label></div>
+      <p id="compare-text" role="status"></p>
+      <div id="compare" class="chart" role="img" aria-label="Same calendar month across years with the historical median"></div>
+      <p><button type="button" id="png-compare">Download chart (PNG)</button></p>
     </section>
 
-    <section id="downloads" aria-label="Downloads">
-      <!-- TODO(JA-6, R8, R9): CSV and PNG downloads -->
+    <section id="downloads-section" aria-label="Downloads">
+      <h2>4. Downloads</h2>
+      <p>The files cover the area and period selected above and carry the NASA FIRMS acknowledgment and the data cut-off date.</p>
+      <p>
+        <button type="button" id="csv-series">Monthly series of the area (CSV)</button>
+        <button type="button" id="csv-cells">Monthly values per grid cell (CSV)</button>
+      </p>
+      <p class="hint">These files hold monthly counts, not individual hotspots. A list of individual hotspots is not available in this version.</p>
     </section>
 
-    <section id="how-it-works" aria-label="How it works and limitations">
-      <!-- TODO(TI-5, JA-7): text from method/HOW_IT_WORKS.md and method/METHOD.md -->
+    <section id="how-section" aria-label="How it works and limitations">
+      <h2>How it works and limitations</h2>
+      <div id="how-text"></div>
+      <p>Full text: <a href="https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/method/METHOD.md">method/METHOD.md</a> and <a href="https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/method/VALIDATION.md">method/VALIDATION.md</a> in the project repository.</p>
     </section>
   </main>
 
   <footer id="footer">
-    <!-- TODO(JA-7): NASA FIRMS attribution (no NASA logos) -->
-    <!-- TODO(JA-7): "archived data through TODO" label (cut-off date from docs/data/metadata.json) -->
+    <p id="attribution"></p>
+    <p><a id="disclaimer-link" href="#">LANCE disclaimer</a>. This tool is not an official NASA product and does not imply NASA endorsement. Do not use it for the preservation of life or property.</p>
+    <p>Map tiles &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Libraries: Leaflet, Leaflet.draw, Plotly.js (see <a href="https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/docs/lib/README.md">docs/lib/README.md</a>).</p>
+    <p id="archive-footer"></p>
   </footer>
 
-  <!-- TODO(JA-5): script tags for js/*.js -->
+  <script src="lib/leaflet/leaflet.js"></script>
+  <script src="lib/leaflet-draw/leaflet.draw.js"></script>
+  <script src="lib/plotly/plotly.min.js"></script>
+  <script src="js/calc.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/compare.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
