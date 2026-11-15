@@ -92,6 +92,13 @@ try {
   const legend9 = await evaluate(`document.querySelector('#map-legend').textContent`);
   check("map follows the comparison month (September)", /Hotspots per cell, 2026-09/.test(legend9), legend9.slice(0, 60));
   await evaluate(`(() => { const s = document.querySelector('#compare-month'); s.value = '10'; s.dispatchEvent(new Event('change')); return true; })()`);
+  // DE-21 points: the detections of the same month, per sensor (never one total).
+  await waitFor(`/Points: detections of 2026-10/.test(document.querySelector('#map-note').textContent)`);
+  const note10 = await evaluate(`document.querySelector('#map-note').textContent`);
+  const groups10 = await evaluate(`document.querySelectorAll('#map .cluster').length`);
+  check("map points are the detections of the same month, per satellite, grouped; the note names the calendar's satellite",
+    /NOAA-20 \(VIIRS\) [\d,]+/.test(note10) && /counts the NOAA-20 \(VIIRS\) detections only/.test(note10) && groups10 > 0,
+    groups10 + " groups; " + note10.slice(0, 100));
 
   // Area by coordinates (R4, O1): a 2x2 degree square north of the area.
   await selectArea(-65, -9.75, -63, -7.75);

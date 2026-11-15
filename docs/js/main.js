@@ -1,6 +1,6 @@
 /*
  * Purpose: entry point; wires controls, map, calendar, comparison and downloads together.
- * SCOPE: R1, R3, R4, R6, R7, R8, R9, R10, O1, O2, O3
+ * SCOPE: R1, R3, R4, R5, R6, R7, R8, R9, R10, O1, O2, O3
  * Owner issue: JA-5, JA-6, JA-7
  * AI-assisted code (Claude Code and Codex); logged in AI_USE.md.
  */
@@ -40,16 +40,51 @@
     });
   }
 
-  /** Map colors: per-cell values of the month shown in the comparison (same column and month as the calendar). */
-  function mapPaint() {
-    const m = LunaxCalc.comparedMonthIndex(state.rows, Number($("compare-month").value));
+  /** DE-21: month index of the map: the month clicked in the calendar, else the month shown in the comparison; -1 if none. */
+  function mapMonthIndex() {
+    if (!state.rows) return -1;
+    return state.mapMonth !== null ? state.mapMonth : LunaxCalc.comparedMonthIndex(state.rows, Number($("compare-month").value));
+  }
+
+  /** Map colors: per-cell values of month index m (same column and per-cell numbers as the calendar). */
+  function mapPaint(m) {
     if (m < 0) return null;
     const column = $("series-select").value, row = state.rows[m];
     const values = LunaxCalc.cellMonthValues(state.data, state.sel, column, m).map((c) => c.value);
     const cap = LunaxCalc.colorCap(values);
     const status = row.estimated ? "Estimated from MODIS" : row.provisional ? "Provisional (near real-time data)" :
       column === "viirs_eq" ? "Observed (VIIRS)" : "Raw counts of one sensor";
-    return { values: values, cap: cap, legend: { title: "Hotspots per cell, " + row.ym, status: status, cap: cap, unit: "hotspots" } };
+    return { values: values, cap: cap, ym: row.ym, legend: { title: "Hotspots per cell, " + row.ym, status: status, cap: cap, unit: "hotspots" } };
+  }
+
+  /** DE-21: both map layers for the same month. */
+  function refreshMap() {
+    const m = mapMonthIndex();
+    state.map.showSelection(state.bbox, state.sel.map((i) => state.data.cells[i]), mapPaint(m));
+    showMonthPoints(m >= 0 ? state.data.months[m] : null);
+  }
+
+  /** DE-21: detections of month ym in the selected cells, as points grouped per sensor; never added into one count. */
+  async function showMonthPoints(ym) {
+    const req = ++state.pointsReq, note = $("map-note");
+    state.map.showPoints([]);
+    if (!ym || !state.sel.length) { note.textContent = ""; return; }
+    note.textContent = "Loading the detections of " + ym + "...";
+    try {
+      state.hotspotIndex = state.hotspotIndex || await LunaxHotspots.loadIndex();
+      const res = await LunaxHotspots.load(state.hotspotIndex, state.sel.map((i) => state.data.cells[i].id), ym, ym, () => {});
+      if (req !== state.pointsReq) return; // a newer selection or month replaced this request
+      const pts = res.lines.length ? LunaxCalc.hotspotPoints(res.header, res.lines) : [];
+      state.map.showPoints(pts);
+      const source = $("series-select").value === "viirs_eq" ? "The harmonized calendar value of this month " + LunaxCalc.harmonizedSource(ym) +
+        " (DE-11)." : "The calendar shows the raw counts of the series chosen above.";
+      note.textContent = "Points: detections of " + ym + (state.data.provisional.has(ym) ? " (provisional: near real-time data)" : "") +
+        " in the selected cells, per satellite: " + (pts.length ? LunaxCalc.satelliteCountsText(LunaxCalc.countBySatellite(res.header, res.lines)) : "none") +
+        ". " + source + " One fire can be detected by several satellites, so the points are not a count of fires. " +
+        "Hover a cell for its value, click a point for its details, or click a month in the calendar to show it on the map.";
+    } catch (err) {
+      if (req === state.pointsReq) note.textContent = String(err.message || err);
+    }
   }
 
   function areaLabel() {
@@ -97,7 +132,7 @@
     const hasCells = cells.length > 0;
     state.rows = hasCells ? buildRows() : null;
     SELECTION_BUTTONS.forEach((id) => { $(id).disabled = !hasCells; });
-    state.map.showSelection(state.bbox, cells, hasCells ? mapPaint() : null);
+    refreshMap();
     const info = $("selection-info");
     if (!hasCells) {
       info.textContent = "No grid cell centres inside this rectangle. Adjust the rectangle to select cells.";
@@ -107,7 +142,10 @@
     info.textContent = cells.length + (cells.length === 1 ? " grid cell" : " grid cells") +
       " selected. The rectangle selects whole " + state.meta.grid.cell_size_deg + "° cells by their centres.";
     const unit = "hotspots";
-    LunaxCalendar.render($("calendar"), state.rows, unit);
+    LunaxCalendar.render($("calendar"), state.rows, unit, function (ym) {
+      const m = state.data.months.indexOf(ym);
+      if (m >= 0 && state.rows[m].inRange) { state.mapMonth = m; refreshMap(); } // months outside the period are ignored
+    });
     LunaxCompare.render($("compare"), $("compare-text"), state.rows, Number($("compare-month").value), unit);
   }
 
@@ -150,6 +188,8 @@
       addOptions($("compare-month"), ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((n, i) => [String(i + 1), n]));
       $("compare-month").value = String(Number(data.months[data.months.length - 1].slice(5, 7)));
       state.map = LunaxMap.create("map", boundary, meta.area.bbox_west_south_east_north, meta.grid.cell_size_deg, setBbox);
+      state.mapMonth = null; // DE-21: null = the map follows the comparison month; a calendar click sets a month index
+      state.pointsReq = 0;
       $("bbox-form").addEventListener("submit", function (e) {
         e.preventDefault();
         setBbox(["w", "s", "e", "n"].map((k) => Number($("bbox-" + k).value)));
@@ -157,6 +197,7 @@
       $("bbox-reset").addEventListener("click", () => setBbox(meta.area.bbox_west_south_east_north.slice()));
       ["range-from", "range-to", "series-select", "compare-month"].forEach((id) => $(id).addEventListener("change", function () {
         if (Number($("range-from").value) > Number($("range-to").value)) { $("selection-info").textContent = "The start of the period must not be after its end."; return; }
+        state.mapMonth = null; // a control change returns the map to the comparison month
         $("series-note").textContent = $("series-select").value === "viirs_eq" ? "" :
           "Raw counts of one sensor, as detected. MODIS (1 km) and VIIRS (375 m) counts are not comparable and are never added together.";
         update();

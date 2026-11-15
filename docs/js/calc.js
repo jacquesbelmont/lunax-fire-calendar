@@ -1,9 +1,9 @@
 /*
  * Purpose: pure calculations on docs/data/monthly_cells.csv (no DOM): parsing, area selection, area series,
- *          historical median and anomaly, CSV text. Runs in the browser and in Node (tests/js).
+ *          historical median and anomaly, CSV text, map layers. Runs in the browser and in Node (tests/js).
  * SCOPE: R3, R5, R6, R7, R8, R9, O3
  * Owner issue: JA-5, JA-6, JA-8
- * Rules: DE-13 (median/anomaly), DE-16 (uncertainty), DATA_CONTRACT.md (a). An empty value is NO DATA, never zero.
+ * Rules: DE-13 (median/anomaly), DE-16 (uncertainty), DE-21 (map layers), DATA_CONTRACT.md (a). An empty value is NO DATA, never zero.
  * AI-assisted code (Claude Code); logged in AI_USE.md.
  */
 (function (root, factory) {
@@ -182,7 +182,7 @@
 
   /**
    * Top of the map color scale: 95th percentile (nearest rank) of the cell values with data, so that one very active
-   * cell does not wash out the others (display choice, method/DECISIONS.md DE-20). Never below 1.
+   * cell does not wash out the others (display choice, method/DECISIONS.md DE-21). Never below 1.
    */
   function colorCap(values) {
     var v = values.filter(function (x) { return !Number.isNaN(x); }).sort(function (a, b) { return a - b; });
@@ -214,6 +214,21 @@
   /** CSS gradient of the reversed Viridis ramp, for the map legend. */
   function viridisReversedGradient() {
     return "linear-gradient(to right, " + VIRIDIS.map(function (s) { return s[1] + " " + ((1 - s[0]) * 100).toFixed(1) + "%"; }).reverse().join(", ") + ")";
+  }
+
+  /** DE-21: hotspot rows (filterHotspots output) as map points {lat, lon, sensor, sat, date, time, confidence, daynight, frp, version}. */
+  function hotspotPoints(header, lines) {
+    var h = header.split(","), col = {};
+    ["latitude", "longitude", "sensor", "sat", "acq_date", "acq_time", "confidence", "daynight", "frp", "version"].forEach(function (c) {
+      col[c] = h.indexOf(c);
+      if (col[c] < 0) throw new Error("hotspot files: missing column " + c);
+    });
+    return lines.map(function (l) {
+      var f = l.split(",");
+      return { lat: Number(f[col.latitude]), lon: Number(f[col.longitude]), sensor: f[col.sensor], sat: f[col.sat],
+               date: f[col.acq_date], time: f[col.acq_time], confidence: f[col.confidence], daynight: f[col.daynight],
+               frp: f[col.frp], version: f[col.version] };
+    });
   }
 
   /** 90 % interval half-width from a summed variance. */
@@ -272,11 +287,28 @@
     lines.forEach(function (l) { var s = l.split(",", i + 1)[i]; counts[s] = (counts[s] || 0) + 1; });
     return counts;
   }
+  /** "Terra (MODIS) 209, Aqua (MODIS) 315, ...": one count per satellite, never a total. */
+  function satelliteCountsText(counts) {
+    return SAT_LABELS.filter(function (p) { return counts[p[0]]; })
+      .map(function (p) { return p[1] + " " + counts[p[0]].toLocaleString("en-US"); }).join(", ");
+  }
   function hotspotCountText(counts, total, fromYm, toYm) {
-    var n = function (v) { return v.toLocaleString("en-US"); };
-    var parts = SAT_LABELS.filter(function (p) { return counts[p[0]]; }).map(function (p) { return p[1] + " " + n(counts[p[0]]); });
-    return n(total) + " rows in the hotspot list for the selected cells, " + fromYm + " to " + toYm + ": " + parts.join(", ") +
-      ". These are individual detections of each sensor, not a harmonized count; MODIS and VIIRS are never added together.";
+    return total.toLocaleString("en-US") + " rows in the hotspot list for the selected cells, " + fromYm + " to " + toYm + ": " +
+      satelliteCountsText(counts) + ". These are individual detections of each sensor, not a harmonized count; MODIS and VIIRS are never added together.";
+  }
+
+  /** DE-11 (docs/data/metadata.json method.native_months and estimated_months): source of the harmonized value of month ym. */
+  function harmonizedSource(ym) {
+    if (ym < "2012-02") return "is estimated from MODIS (Terra and Aqua, or Terra alone)";
+    return "counts the " + (ym < "2018-04" ? "Suomi NPP" : "NOAA-20") + " (VIIRS) detections only";
+  }
+
+  /** DE-21: text shown when a detection on the map is clicked (fields as in DATA_CONTRACT.md (b)). */
+  function hotspotPointText(p) {
+    var label = SAT_LABELS.filter(function (s) { return s[0] === p.sat; }).map(function (s) { return s[1]; })[0] || p.sat;
+    var conf = p.sensor === "VIIRS" ? ({ l: "low", n: "nominal", h: "high" }[p.confidence] || p.confidence) : p.confidence + " %";
+    return p.date + " " + p.time.slice(0, 2) + ":" + p.time.slice(2) + " UTC, " + label + ", confidence " + conf + ", " +
+      (p.daynight === "D" ? "day" : "night") + ", FRP " + p.frp + " MW" + (/NRT$/.test(p.version) ? ", near real-time (provisional)" : "");
   }
 
   /** CSV text of the selected hotspots with the attribution header (R9). */
@@ -294,5 +326,6 @@
            estimatedBoundaryPath: estimatedBoundaryPath, medianAnomaly: medianAnomaly, halfWidth90: halfWidth90,
            seriesCsv: seriesCsv, fmt: fmt, SENSOR_COLUMNS: SENSOR_COLUMNS,
            comparedMonthIndex: comparedMonthIndex, cellMonthValues: cellMonthValues, colorCap: colorCap,
-           viridisReversed: viridisReversed, viridisReversedGradient: viridisReversedGradient };
+           viridisReversed: viridisReversed, viridisReversedGradient: viridisReversedGradient, hotspotPoints: hotspotPoints,
+           satelliteCountsText: satelliteCountsText, harmonizedSource: harmonizedSource, hotspotPointText: hotspotPointText };
 });
