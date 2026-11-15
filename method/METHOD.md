@@ -71,6 +71,7 @@ Summary of `method/VALIDATION.md`; all numbers from `method/results/validation_m
 - **Without harmonization** the series would jump by a factor of 3.81 when VIIRS enters (2012-2014 raw VIIRS/MODIS).
 - **VIIRS continuity:** NOAA-20/S-NPP = 0.992 over 83 months; NOAA-21/NOAA-20 = 0.956 over 21 months (2024-04 to 2025-12).
 - **Method choice:** the negative binomial regression first proposed in DE-6 failed this pre-registered test (bias +143 %), so the ratio method was selected by the DE-15 rule.
+- **ML challenger (RA-6, DE-18):** gradient boosting did not beat the ratio method in the backcast (bias +3.3 %, MdAPE 17.5 %, against +0.6 % and 13.3 %; `method/results/ml_metrics.json`), so production is unchanged. An exploratory hybrid (ratio x ML correction, DE-19) was not promising either (`method/results/ml_hybrid_metrics.json`).
 
 ## Target scale and justification
 

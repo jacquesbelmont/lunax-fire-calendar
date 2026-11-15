@@ -131,3 +131,32 @@ class ExportedDataTests(unittest.TestCase):
             nrt |= set(zip(h["sat"], h["acq_date"].str[:7]))
         prov = self.months[self.months["provisional"].eq(1)]
         self.assertEqual(set(zip(prov["sat"], prov["year_month"])), nrt)
+
+
+class MLChallengerTests(unittest.TestCase):
+    def test_verdict_follows_the_pre_registered_rule(self):
+        """DE-18: the stored verdict must follow from the stored numbers and margin."""
+        path = ROOT / "method" / "results" / "ml_metrics.json"
+        if not path.exists():
+            self.skipTest("pipeline/ml.py has not been run")
+        r = json.loads(path.read_text())
+        ta, margin = r["backcast"]["TA"]["ml"], r["margin"]
+        wins = (ta["mdape_monthly_area"] <= margin["mdape_monthly_area_max"]
+                and abs(ta["relative_bias_total"]) <= margin["abs_relative_bias_total_max"])
+        self.assertEqual(r["verdict"]["ml_beats_ratio"], wins)
+        self.assertEqual(margin, {"mdape_monthly_area_max": 0.113, "abs_relative_bias_total_max": 0.02})
+        self.assertEqual(r["backcast"]["TA"]["ml"]["n_cell_months"], r["backcast"]["TA"]["ratio"]["n_cell_months"])
+
+    def test_hybrid_verdict_follows_the_pre_registered_rule(self):
+        """DE-19: the stored exploratory verdict must follow from the stored numbers."""
+        path = ROOT / "method" / "results" / "ml_hybrid_metrics.json"
+        if not path.exists():
+            self.skipTest("pipeline/ml.py --hybrid has not been run")
+        r = json.loads(path.read_text())
+        sel, c, a = r["selection_loyo_2015_2025"], r["chosen"], r["fresh_test_2026"]["2026_all"]
+        self.assertEqual(c, min(("A", "B", "C"), key=lambda k: sel[k]["median_mdape_monthly_area"]))
+        promising = (sel[c]["median_mdape_monthly_area"] < sel["ratio"]["median_mdape_monthly_area"]
+                     and a["hybrid"]["mdape_monthly_area"] < a["ratio"]["mdape_monthly_area"]
+                     and abs(sel[c]["pooled_relative_bias_total"]) <= 0.02
+                     and abs(a["hybrid"]["relative_bias_total"]) <= 0.02)
+        self.assertEqual(r["exploratory_verdict"]["promising"], promising)

@@ -26,6 +26,8 @@ PROPOSED rows become DECIDED when the team approves them in PR review. PR #27 wa
 
 ---
 | DE-17 | 2026-11-15 00:59 | Hotspot list for the CSV download (R9): one gzip file per FIRMS instrument and year in `docs/data/hotspots/<instrument>_<year>.csv.gz` (+ `index.json`), only the rows kept by the cleaning rules (SP, `type` 0, inside the Rondônia boundary), no confidence filter, with an attribution and cut-off header; the app reads only the years of the chosen period, keeps the selected cells, and shows the row count before the download | Monthly counts only (declare the limitation); per-year gzip files filtered in the browser; server-side filtering (not possible on GitHub Pages) | Jacques (proposed); approved by Rafael | R9 asks for a CSV of the hotspots found in the search; the files reuse the rows and `cell_id` of the pipeline, so they agree with `monthly_cells.csv` by construction and by test | 54 files (with NOAA-21 and 2026), 2,168,855 rows, 25,300,584 bytes (`docs/data/hotspots/index.json`); [details](#de-17-hotspot-list-for-the-csv-download) | DECIDED |
+| DE-18 | 2026-11-15 09:42 | ML challenger (RA-6): gradient boosting with Poisson loss (DE-6 option 4), fixed hyperparameters, evaluated with the DE-15 protocol against the **production ratio method** on the same rows. It "beats" the ratio only if the Terra + Aqua model has backcast MdAPE of monthly area totals <= 11.3 % (2 percentage points below 13.3 %) **and** |relative bias of the total| <= 2 %. Challenger only: production is unchanged whatever the result; adoption would be a separate team decision | Challenger only; adopt if it wins. Margins: MdAPE -2 pp with |bias| <= 2 %; any MdAPE gain with |bias| <= 2 %; 10 % relative MdAPE gain | Rafael | Fixed before any ML result, as DE-15 requires. The comparator is the ratio method because the count regression (option 3) failed the backcast; this amends DE-6 ('beats 3') | [details](#de-18-ml-challenger) ; result: method/results/ml_metrics.json (the ML model does not beat the ratio) | DECIDED |
+| DE-19 | 2026-11-15 09:48 | Exploratory hybrid ML (RA-6, after the DE-18 result): the ratio method stays the base and gradient boosting learns only a multiplicative correction, VIIRS_eq = k(month) x MODIS x f(features), fitted as a Poisson model with the ratio as offset. The variant is chosen by leave-one-year-out inside 2015-2025 only; 2012-2014 is reported as POST-HOC; 2026 (never used by any method) is the fresh test. Exploratory only: it cannot change production or the DE-18 verdict | Stop after DE-18; hybrid as exploratory analysis | Rafael | The DE-18 test years have been seen, so any new variant is post-hoc on them; selection on training years and a fresh 2026 test keep the comparison honest | [details](#de-19-exploratory-hybrid-ml) ; result: method/results/ml_hybrid_metrics.json (not promising) | DECIDED |
 | DE-20 | 2026-11-15 10:01 | Data end on the **last complete month** at the time of download (`DATA_END` in `pipeline/aggregate.py`, now 2026-10-31). A partial current month is not downloaded or shown; each new complete month is added by a new download, a new `DATA_END` and a rerun | Last complete month; include the partial month and mark it "partial" (new flag in months.csv and the app); include it and flag it as missing (DE-14 as is, shown grey) | Rafael | A partial month is not comparable with full months in the calendar or with the historical median (R7); under DE-14 it would be flagged and shown grey anyway. The NRT data of the current month stay available in FIRMS | method/METHOD.md (data period) ; README.md (Updating) | DECIDED |
 
 ## Decision details
@@ -142,7 +144,7 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
   - Option 3, with the cell climatology predictor, is the main method.
   - Option 2 is the fallback if 3 is not ready for M2 (both recorded here).
   - Option 2b is used only as a comparison if 3 fails validation.
-  - Option 4 only in RA-6, adopted only if it beats 3 in the backcast by the margin fixed in DE-15.
+  - Option 4 only in RA-6, as a challenger of the production ratio method, with the margin fixed in DE-18 before any result.
 - **Cell climatology (added 2026-11-14):**
   - The count regression predicts a value above 0 wherever MODIS counts 0. Without more information, cells that never burn would get the same small value as fire-prone cells.
   - Predictor added: log of the cell's mean monthly VIIRS count plus a small offset c, computed **only from training years**, so nothing leaks from the test years (DE-15). FIRMS data only.
@@ -284,7 +286,7 @@ Fixed before any test result is seen.
 - **VIIRS continuity:** monthly S-NPP/NOAA-20 ratio from 2018-04 to 2025; NOAA-20/NOAA-21 from 2024-01. Tolerance ±X % (X to be fixed by the team); outside it, a correction factor is added.
 - **Sensitivity:** confidence filter (DE-10), grid size (DE-12), training window (orbital drift).
 - **Selection:** the simplest method within a margin of the best backcast score wins. ML must beat the count regression by a margin fixed in advance (to be fixed by the team).
-- **Values fixed (2026-11-15):** training 2015-2025 and test 2012-2014 as above; tolerance X not needed while NOAA-21 is only a check (NOAA-20/S-NPP is within 1 %, and NOAA-21 is not used for `viirs_eq`; results below); ML margin not needed (RA-6 not pursued); minimum years N = 1 (DE-13).
+- **Values fixed (2026-11-15):** training 2015-2025 and test 2012-2014 as above; tolerance X not needed while NOAA-21 is only a check (NOAA-20/S-NPP is within 1 %, and NOAA-21 is not used for `viirs_eq`; results below); ML margin fixed in DE-18 (RA-6, registered before any ML result); minimum years N = 1 (DE-13).
 - **Results (2026-11-14):** see method/VALIDATION.md and method/results/ (PR #32).
   - **Backcast:** the ratio per month of year was selected (DE-6).
   - **Leave-one-year-out (ratio):** yearly bias -9.7 % to +7.9 %.
@@ -329,3 +331,50 @@ Fixed before any test result is seen.
   - every file has the attribution header.
   Months flagged as missing have hotspot rows but an empty raw column in `monthly_cells.csv`; they are not compared.
 - **Limits:** only the cleaned rows are exported, so the file is not the full FIRMS list (no `type` other than 0 in standard rows, nothing outside the boundary). The list is the same archived data as the rest of the app (cut-off 2026-10-31); NRT rows (version ending in NRT, August to October 2026) are provisional and have no `type`.
+
+### DE-18 ML challenger
+
+Registered on 2026-11-15 at 09:42 (UTC-4), before `pipeline/ml.py` existed or ran.
+- **Model:** `sklearn.ensemble.HistGradientBoostingRegressor(loss="poisson", learning_rate=0.05, max_iter=300, max_leaf_nodes=15, min_samples_leaf=50, l2_regularization=1.0, random_state=0, early_stopping=False)`, scikit-learn 1.9.1. Month of year is a categorical feature. The hyperparameters are fixed here and are not tuned on any test year.
+- **Unit and target:** cell × month; the count of the reference VIIRS satellite (`ref`, DE-11), as for the ratio method.
+- **Features** (DE-6 option 4, no location):
+  - **Terra + Aqua model:** month, Terra count, Aqua count, Terra FRP sum, Aqua FRP sum, night share and low-confidence share (C < 30 %, MODIS user guide Table 11) of the MODIS detections of the cell-month.
+  - **Terra-only model:** month and the Terra features. It is the model that would be used for 2000-11 to 2002-06 and for months with Aqua flagged (DE-11).
+  - Shares are empty when the cell-month has no MODIS detection.
+- **Protocol (DE-15):**
+  - backcast: fit on 2015-2025, test on 2012-2014, on the same cell-months as the ratio method;
+  - leave-one-year-out over 2012-2025, reported only.
+- **Rule:** the ML model beats the ratio method only if the Terra + Aqua model has a backcast MdAPE of monthly area totals ≤ 11.3 % and |relative bias of the total| ≤ 2 %. `pipeline/ml.py` computes the verdict and writes it to `method/results/ml_metrics.json`.
+- **Use:** challenger only. Production stays the ratio per month of year (DE-6). If the ML model wins, adopting it needs a separate team decision and an uncertainty method (as DE-16 did for the ratio).
+- **Options considered:**
+  - Adoption: challenger only (chosen) or adopt if it wins.
+  - Margin: MdAPE 2 pp lower with |bias| ≤ 2 % (chosen), any MdAPE gain with |bias| ≤ 2 %, or a 10 % relative MdAPE gain.
+- **Result (2026-11-15, `method/results/ml_metrics.json`, `ml_loyo.csv`):** the ML model **does not beat** the ratio method, so production is unchanged.
+  - Backcast, Terra + Aqua, same 12,784 cell-months: ML bias of the total +3.3 %, MdAPE 17.5 %; ratio +0.6 %, 13.3 %. Both margin conditions fail.
+  - Terra only: ML +2.0 %, MdAPE 33.5 %; ratio -8.5 %, 27.3 %. ML has the smaller bias but the larger monthly error.
+  - Leave-one-year-out 2012-2025 (Terra + Aqua): median MdAPE 13.5 % (ML) vs 11.7 % (ratio); ML yearly bias from -9.7 % to +15.2 %.
+  - The result is reproducible (`random_state=0`; two runs gave identical files).
+
+### DE-19 Exploratory hybrid ML
+
+Registered on 2026-11-15 at 09:48 (UTC-4), after the DE-18 result and before any hybrid code existed or ran.
+- **Why:** in DE-18 the ML model lost to the ratio method. The ratio method is fitted on area sums and is linear in MODIS, so its area totals are unbiased. A hybrid keeps that base and lets the ML model correct it only where the detection attributes carry information.
+- **Model:** mu = k(month) x (Terra + Aqua) from the ratio method (DE-6), fitted on the same training years. `HistGradientBoostingRegressor(loss="poisson")` is fitted to y / mu with sample weight mu, which is a Poisson model with offset log(mu). The prediction is mu x f(x). Cell-months with mu = 0 keep 0, as in the ratio method. Terra + Aqua configuration only.
+- **Features of the correction f:** month (categorical), log(1 + MODIS count), mean FRP per detection, night share and low-confidence share (C < 30 %) of the MODIS detections.
+- **Candidates (fixed here):**
+  - A: `max_leaf_nodes=7, min_samples_leaf=200, learning_rate=0.05, max_iter=100, l2_regularization=1.0`;
+  - B: as A with `max_iter=300`;
+  - C: the DE-18 parameters (`max_leaf_nodes=15, min_samples_leaf=50, learning_rate=0.05, max_iter=300, l2_regularization=1.0`).
+  - All with `random_state=0, early_stopping=False`.
+- **Selection:** the candidate with the lowest median MdAPE of monthly area totals in leave-one-year-out over 2015-2025 (k and f refitted without the held-out year). No 2012-2014 or 2026 data are used to choose.
+- **Reported:**
+  1. Leave-one-year-out 2015-2025 for every candidate and for the ratio method.
+  2. Backcast 2012-2014, labelled POST-HOC (these years were seen in DE-18).
+  3. Fresh test on 2026-01 to 2026-10 (fit on 2015-2025), all months and split into 2026-01 to 2026-07 (standard processing for both sensors) and 2026-08 to 2026-10 (NRT, provisional).
+- **Exploratory criterion:** the hybrid is "promising" only if the chosen candidate has a lower median MdAPE than the ratio method in leave-one-year-out 2015-2025 **and** a lower MdAPE on all 2026 months, with |relative bias of the total| ≤ 2 % in both. Even then it is not adopted: adoption would need a new team decision, an uncertainty method and more fresh data.
+- **Result (2026-11-15, `method/results/ml_hybrid_metrics.json`, `ml_hybrid_loyo.csv`): not promising.**
+  - Selection, leave-one-year-out 2015-2025: candidate A, median MdAPE 24.8 % (pooled bias -3.1 %), against 11.8 % (0.0 %) for the ratio method.
+  - Backcast 2012-2014 (POST-HOC): hybrid -2.9 %, MdAPE 12.8 %; ratio +0.6 %, 13.3 %.
+  - Fresh test 2026 (9 months; January has Terra flagged): hybrid -5.3 %, MdAPE 38.0 %; ratio -8.4 %, 20.1 %.
+  - Pattern seen only after the results (not tested, not a basis for any choice): the hybrid is better in the high-fire months (2026-08 to 2026-10, 91 % of the reference NOAA-20 hotspots in the 2026 test cell-months: MdAPE 6.5 % vs 7.6 %, bias -3.6 % vs -7.7 %) and worse in the low-fire months (2026-02 to 2026-07: 64.6 % vs 38.2 %). Testing it would need its own registration, for example a metric weighted by fire activity, on fresh data.
+

@@ -1,0 +1,145 @@
+{
+  "decision": "method/DECISIONS.md DE-19 (registered 2026-11-15 09:48 UTC-4, before any hybrid result); exploratory",
+  "scikit_learn_version": "1.9.1",
+  "candidates": {
+    "A": {
+      "max_leaf_nodes": 7,
+      "min_samples_leaf": 200,
+      "learning_rate": 0.05,
+      "max_iter": 100,
+      "l2_regularization": 1.0
+    },
+    "B": {
+      "max_leaf_nodes": 7,
+      "min_samples_leaf": 200,
+      "learning_rate": 0.05,
+      "max_iter": 300,
+      "l2_regularization": 1.0
+    },
+    "C": {
+      "max_leaf_nodes": 15,
+      "min_samples_leaf": 50,
+      "learning_rate": 0.05,
+      "max_iter": 300,
+      "l2_regularization": 1.0
+    }
+  },
+  "features": [
+    "month_no",
+    "log_modis",
+    "frp_mean",
+    "night_share",
+    "low_share"
+  ],
+  "train_years": [
+    2015,
+    2025
+  ],
+  "selection_loyo_2015_2025": {
+    "A": {
+      "median_mdape_monthly_area": 0.2478329655629567,
+      "pooled_relative_bias_total": -0.03113884988300153
+    },
+    "B": {
+      "median_mdape_monthly_area": 0.26794719685358737,
+      "pooled_relative_bias_total": -0.03191505616292156
+    },
+    "C": {
+      "median_mdape_monthly_area": 0.2765094754075998,
+      "pooled_relative_bias_total": -0.03119954657196211
+    },
+    "ratio": {
+      "median_mdape_monthly_area": 0.11776946823645601,
+      "pooled_relative_bias_total": 0.0004711487448265661
+    }
+  },
+  "chosen": "A",
+  "loyo_file": "method/results/ml_hybrid_loyo.csv",
+  "backcast_2012_2014_POSTHOC": {
+    "hybrid": {
+      "n_cell_months": 12784,
+      "n_months": 34,
+      "relative_bias_total": -0.029479111621632414,
+      "mdape_monthly_area": 0.12809361133244965,
+      "pearson_r_monthly_area": 0.997491205079493,
+      "obs_total": 129774.0,
+      "pred_total": 125948.37776841427
+    },
+    "ratio": {
+      "n_cell_months": 12784,
+      "n_months": 34,
+      "relative_bias_total": 0.006239460666318308,
+      "mdape_monthly_area": 0.13251500180268982,
+      "pearson_r_monthly_area": 0.9976542994276878,
+      "obs_total": 129774.0,
+      "pred_total": 130583.7197685108
+    }
+  },
+  "fresh_test_2026": {
+    "2026_all": {
+      "hybrid": {
+        "n_cell_months": 3384,
+        "n_months": 9,
+        "relative_bias_total": -0.053223772257065205,
+        "mdape_monthly_area": 0.38015801703242913,
+        "pearson_r_monthly_area": 0.9964685125934567,
+        "obs_total": 9060.0,
+        "pred_total": 8577.79262335099
+      },
+      "ratio": {
+        "n_cell_months": 3384,
+        "n_months": 9,
+        "relative_bias_total": -0.08448806714399282,
+        "mdape_monthly_area": 0.20148525885048446,
+        "pearson_r_monthly_area": 0.9933652255428992,
+        "obs_total": 9060.0,
+        "pred_total": 8294.538111675425
+      }
+    },
+    "2026_01_07_standard": {
+      "hybrid": {
+        "n_cell_months": 2256,
+        "n_months": 6,
+        "relative_bias_total": -0.23405305484818206,
+        "mdape_monthly_area": 0.645687750454885,
+        "pearson_r_monthly_area": 0.978275694369747,
+        "obs_total": 806.0,
+        "pred_total": 617.3532377923652
+      },
+      "ratio": {
+        "n_cell_months": 2256,
+        "n_months": 6,
+        "relative_bias_total": -0.15920023509962478,
+        "mdape_monthly_area": 0.38183570466331745,
+        "pearson_r_monthly_area": 0.9967278002735674,
+        "obs_total": 806.0,
+        "pred_total": 677.6846105097025
+      }
+    },
+    "2026_08_10_nrt": {
+      "hybrid": {
+        "n_cell_months": 1128,
+        "n_months": 3,
+        "relative_bias_total": -0.03556586072708712,
+        "mdape_monthly_area": 0.06494633970765314,
+        "pearson_r_monthly_area": 0.9312768853531112,
+        "obs_total": 8254.0,
+        "pred_total": 7960.439385558623
+      },
+      "ratio": {
+        "n_cell_months": 1128,
+        "n_months": 3,
+        "relative_bias_total": -0.07719245200318336,
+        "mdape_monthly_area": 0.07586846928601113,
+        "pearson_r_monthly_area": 0.8513347690931881,
+        "obs_total": 8254.0,
+        "pred_total": 7616.853501165724
+      }
+    }
+  },
+  "exploratory_verdict": {
+    "promising": false,
+    "rule": "chosen candidate: lower median MdAPE than the ratio in LOYO 2015-2025 and lower MdAPE on all 2026 months, with |bias| <= 0.02 in both (DE-19)",
+    "use": "exploratory only; cannot change production or the DE-18 verdict"
+  }
+}

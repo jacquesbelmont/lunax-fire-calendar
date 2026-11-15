@@ -19,5 +19,6 @@ The exact versions used in the setup are in `requirements.lock.txt`. Put `FIRMS_
 | 7 | `validate.py` | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv`, `data/interim/harmonized.csv.gz` | `method/results/` (validation_metrics.json, loyo.csv, continuity.csv, continuity_noaa21.csv, annual_ratio.csv), `method/figures/`; summary in `method/VALIDATION.md` | RA-3 |
 | 8 | `export.py` | `data/interim/harmonized.csv.gz`, `data/interim/month_flags.csv`, `config/area.json` | `docs/data/monthly_cells.csv`, `docs/data/months.csv`, `docs/data/metadata.json` (DATA_CONTRACT.md) | RA-2 |
 | 9 | `export_hotspots.py` | `data/interim/clean/*.csv.gz` | `docs/data/hotspots/<instrument>_<year>.csv.gz`, `docs/data/hotspots/index.json` (R9, DE-17) | JA-6 |
+| 10 | `ml.py` (optional, RA-6) | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv`, `data/interim/clean/modis_*.csv.gz` | `method/results/ml_metrics.json`, `method/results/ml_loyo.csv` (ML challenger, DE-18); with `--hybrid`: `ml_hybrid_metrics.json`, `ml_hybrid_loyo.csv` (DE-19). Does not change `docs/data/` | RA-6 |
 
 Tests: `.venv/bin/python -m unittest discover -s tests` and `node --test tests/js/calc.test.js tests/js/hotspots.test.js`
