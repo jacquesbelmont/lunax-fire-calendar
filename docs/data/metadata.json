@@ -1,0 +1,117 @@
+{
+  "title": "LUNAX Fire Calendar - harmonized monthly hotspot counts",
+  "area": {
+    "name": "Rondônia, Brazil (IBGE boundary in config/area_boundary.geojson; this bbox is the processing box)",
+    "bbox_west_south_east_north": [
+      -67.0,
+      -13.75,
+      -59.75,
+      -7.75
+    ],
+    "boundary_file": "area.geojson",
+    "boundary_source": "https://servicodados.ibge.gov.br/api/v3/malhas/estados/11?formato=application/vnd.geo+json&qualidade=maxima",
+    "rule": "only detections inside the boundary are counted; outside the boundary is outside the area, not zero fire (DE-1)",
+    "countries_in_data": [
+      "Bolivia",
+      "Brazil"
+    ]
+  },
+  "source": {
+    "name": "NASA FIRMS (Fire Information for Resource Management System)",
+    "url": "https://www.earthdata.nasa.gov/data/tools/firms",
+    "product": "FIRMS country yearly summary CSVs, standard processing (SP)",
+    "files": "https://firms.modaps.eosdis.nasa.gov/data/country/",
+    "satellites": {
+      "MODIS 1 km": [
+        "Terra",
+        "Aqua"
+      ],
+      "VIIRS 375 m": [
+        "S-NPP",
+        "NOAA-20"
+      ]
+    },
+    "versions_by_satellite": {
+      "Aqua": [
+        "6.03",
+        "6.2",
+        "61.03"
+      ],
+      "NOAA20": [
+        "2"
+      ],
+      "SNPP": [
+        "2"
+      ],
+      "Terra": [
+        "6.03",
+        "6.2",
+        "61.03"
+      ]
+    }
+  },
+  "period": {
+    "first_month": "2000-11",
+    "last_month": "2025-12"
+  },
+  "data_cutoff_date": "2025-12-31",
+  "archived": "Archived FIRMS data, not live; see data_cutoff_date.",
+  "grid": {
+    "cell_size_deg": 0.25,
+    "origin_lon_lat": [
+      -180,
+      -90
+    ],
+    "cell_id": "<row>_<col>, row = floor((lat+90)/0.25), col = floor((lon+180)/0.25)",
+    "area_rule": "a cell belongs to a selected area if its centre is inside the rectangle"
+  },
+  "method": {
+    "target_scale": "VIIRS-equivalent: monthly count of VIIRS 375 m hotspots per cell (DE-2)",
+    "native_months": "from 2012-02: S-NPP to 2018-03, NOAA-20 from 2018-04 (DE-11)",
+    "estimated_months": "2000-11 to 2012-01: viirs_eq = k(month of year) x MODIS count, with MODIS = Terra + Aqua when both are valid, else Terra (DE-6 option 2, selected by the DE-15 backcast; method/results/validation_metrics.json)",
+    "train_years": [
+      2015,
+      2025
+    ],
+    "k_by_month": {
+      "TA": {
+        "01": 4.628398791540786,
+        "02": 1.9718875502008033,
+        "03": 1.4547563805104409,
+        "04": 2.4037122969837585,
+        "05": 4.215311004784689,
+        "06": 4.343141153081511,
+        "07": 3.5754089379353524,
+        "08": 3.756891580161476,
+        "09": 3.772034430853318,
+        "10": 4.266866976236001,
+        "11": 4.2265009096422075,
+        "12": 3.698453608247423
+      },
+      "T": {
+        "01": 18.130177514792898,
+        "02": 5.987804878048781,
+        "03": 5.056451612903226,
+        "04": 6.125,
+        "05": 10.563549160671462,
+        "06": 11.055668016194332,
+        "07": 9.805323030693282,
+        "08": 9.171406447979727,
+        "09": 10.313633820826341,
+        "10": 11.257798826315248,
+        "11": 11.599722607489598,
+        "12": 11.908713692946058
+      }
+    },
+    "uncertainty": "viirs_eq_var = model variance x lambda (DE-16). For an area, sum viirs_eq and viirs_eq_var over its cells; the 90 % interval is sum +/- 1.645 x sqrt(summed variance). lambda was calibrated on the monthly totals of the whole demo area; see method/VALIDATION.md",
+    "uncertainty_lambda": 11.538036604104438,
+    "decisions": "method/DECISIONS.md"
+  },
+  "files": {
+    "monthly_cells.csv": "cell_id, year_month, viirs_eq (harmonized), viirs_eq_var (variance, 0 when observed), estimated (1 = converted from MODIS), terra, aqua, snpp, noaa20, noaa21 (raw counts). Empty value = no data, never zero fire. Active cells only: other cells inside the boundary had no detection; cells outside the boundary are outside the area. A cell that crosses the boundary counts only its detections inside it.",
+    "months.csv": "year_month, sat, missing_days, flagged (1 = missing data), provisional (1 = NRT)",
+    "area.geojson": "IBGE boundary of the area (DE-1); draw it and mark everything outside as outside the area"
+  },
+  "attribution": "We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Land, Atmosphere Near real-time Capability for Earth observations (LANCE) (https://earthdata.nasa.gov/lance) and NASA's Earth Science Data and Information System (ESDIS).",
+  "disclaimer_url": "https://www.earthdata.nasa.gov/data/projects/lance#ed-lance-disclaimer"
+}
