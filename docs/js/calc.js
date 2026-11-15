@@ -158,6 +158,64 @@
     return s;
   }
 
+  /**
+   * Index (in rows) of the month shown by "the latest month compared with its historical median": the latest year in
+   * the period with data for calendar month monthNo (1-12); if no year has data, the latest year in the period; -1 if none.
+   * The map colors the cells for this same month.
+   */
+  function comparedMonthIndex(rows, monthNo) {
+    var mm = String(monthNo).padStart(2, "0"), latest = -1;
+    for (var i = rows.length - 1; i >= 0; i--) {
+      var r = rows[i];
+      if (!r.inRange || r.ym.slice(5, 7) !== mm) continue;
+      if (latest < 0) latest = i;
+      if (!Number.isNaN(r.value)) return i;
+    }
+    return latest;
+  }
+
+  /** Value of one column per selected cell in month index m (the per-cell terms that areaSeries sums). NaN = no data. */
+  function cellMonthValues(data, sel, column, m) {
+    var nM = data.nMonths, arr = data.columns[column];
+    return sel.map(function (i) { return { index: i, value: arr[i * nM + m] }; });
+  }
+
+  /**
+   * Top of the map color scale: 95th percentile (nearest rank) of the cell values with data, so that one very active
+   * cell does not wash out the others (display choice, method/DECISIONS.md DE-20). Never below 1.
+   */
+  function colorCap(values) {
+    var v = values.filter(function (x) { return !Number.isNaN(x); }).sort(function (a, b) { return a - b; });
+    if (!v.length) return 1;
+    return Math.max(1, v[Math.max(0, Math.ceil(0.95 * v.length) - 1)]);
+  }
+
+  // Plotly.js 4.3.0 "Viridis" colorscale stops (docs/lib/plotly/plotly.min.js), used reversed as in the calendar.
+  var VIRIDIS = [[0, "#440154"], [0.06274509803921569, "#48186a"], [0.12549019607843137, "#472d7b"], [0.18823529411764706, "#424086"],
+    [0.25098039215686274, "#3b528b"], [0.3137254901960784, "#33638d"], [0.3764705882352941, "#2c728e"], [0.4392156862745098, "#26828e"],
+    [0.5019607843137255, "#21918c"], [0.5647058823529412, "#1fa088"], [0.6274509803921569, "#28ae80"], [0.6901960784313725, "#3fbc73"],
+    [0.7529411764705882, "#5ec962"], [0.8156862745098039, "#84d44b"], [0.8784313725490196, "#addc30"], [0.9411764705882353, "#d8e219"],
+    [1, "#fde725"]];
+
+  /** Color for value v on a 0..cap scale, reversed Viridis (0 = light yellow, cap and above = dark purple). */
+  function viridisReversed(v, cap) {
+    var t = 1 - Math.min(1, Math.max(0, v / cap));
+    for (var k = 1; k < VIRIDIS.length; k++) {
+      if (t <= VIRIDIS[k][0]) {
+        var a = VIRIDIS[k - 1], b = VIRIDIS[k], f = (t - a[0]) / (b[0] - a[0]);
+        var ca = parseInt(a[1].slice(1), 16), cb = parseInt(b[1].slice(1), 16);
+        var mix = [16, 8, 0].map(function (s) { return Math.round(((ca >> s) & 255) * (1 - f) + ((cb >> s) & 255) * f); });
+        return "#" + mix.map(function (x) { return x.toString(16).padStart(2, "0"); }).join("");
+      }
+    }
+    return VIRIDIS[VIRIDIS.length - 1][1];
+  }
+
+  /** CSS gradient of the reversed Viridis ramp, for the map legend. */
+  function viridisReversedGradient() {
+    return "linear-gradient(to right, " + VIRIDIS.map(function (s) { return s[1] + " " + ((1 - s[0]) * 100).toFixed(1) + "%"; }).reverse().join(", ") + ")";
+  }
+
   /** 90 % interval half-width from a summed variance. */
   function halfWidth90(variance) {
     return Number.isNaN(variance) ? NaN : Z90 * Math.sqrt(variance);
@@ -234,5 +292,7 @@
   return { parseCellsCsv: parseCellsCsv, filterHotspots: filterHotspots, countBySatellite: countBySatellite, hotspotCountText: hotspotCountText, hotspotsCsv: hotspotsCsv, selectCells: selectCells, areaSeries: areaSeries,
            estimatedMonths: estimatedMonths, provisionalMonths: provisionalMonths, firstObservedMonth: firstObservedMonth, monthComparisonText: monthComparisonText,
            estimatedBoundaryPath: estimatedBoundaryPath, medianAnomaly: medianAnomaly, halfWidth90: halfWidth90,
-           seriesCsv: seriesCsv, fmt: fmt, SENSOR_COLUMNS: SENSOR_COLUMNS };
+           seriesCsv: seriesCsv, fmt: fmt, SENSOR_COLUMNS: SENSOR_COLUMNS,
+           comparedMonthIndex: comparedMonthIndex, cellMonthValues: cellMonthValues, colorCap: colorCap,
+           viridisReversed: viridisReversed, viridisReversedGradient: viridisReversedGradient };
 });

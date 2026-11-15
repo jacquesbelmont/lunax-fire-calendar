@@ -106,3 +106,44 @@ test("the comparison sentence says when the latest month is provisional", () => 
   assert.ok(!fin.includes("provisional"));
   assert.ok(calc.monthComparisonText({ ym: "2025-12", value: 1, median: NaN, nYears: 0, diff: NaN, ratio: NaN }, "December", "hotspots").includes("1 hotspot."));
 });
+
+// O2 map colors: the map shows, per cell, the same numbers as the calendar for the month of the comparison.
+test("map cell values equal the calendar values for the compared month", () => {
+  const sel = calc.selectCells(data, expected.areas[0].bbox_west_south_east_north);
+  for (const column of ["viirs_eq", "noaa20", "terra"]) {
+    const area = calc.areaSeries(data, sel, column);
+    const rows = data.months.map((ym, i) => ({ ym, value: area[i], inRange: true }));
+    for (const monthNo of [1, 9, 10]) {
+      const m = calc.comparedMonthIndex(rows, monthNo);
+      assert.ok(m >= 0);
+      assert.strictEqual(Number(rows[m].ym.slice(5, 7)), monthNo);
+      const later = rows.slice(m + 1).filter((r) => Number(r.ym.slice(5, 7)) === monthNo && !Number.isNaN(r.value));
+      assert.strictEqual(later.length, 0, "no later year with data");
+      const cells = calc.cellMonthValues(data, sel, column, m);
+      cells.forEach((c) => {
+        const single = calc.areaSeries(data, [c.index], column)[m];
+        assert.ok(Object.is(c.value, single) || (Number.isNaN(c.value) && Number.isNaN(single)), column + " " + rows[m].ym + " cell " + c.index);
+      });
+      const sum = cells.reduce((s, c) => s + c.value, 0);
+      if (!Number.isNaN(area[m])) assert.ok(Math.abs(sum - area[m]) <= 1e-9 * Math.max(1, area[m]), column + " sum " + rows[m].ym);
+    }
+  }
+});
+
+test("comparedMonthIndex respects the period and falls back to a month without data", () => {
+  const rows = [
+    { ym: "2024-09", value: 5, inRange: true }, { ym: "2025-09", value: NaN, inRange: true }, { ym: "2026-09", value: 7, inRange: false },
+  ];
+  assert.strictEqual(calc.comparedMonthIndex(rows, 9), 0);
+  assert.strictEqual(calc.comparedMonthIndex([rows[1]], 9), 0);
+  assert.strictEqual(calc.comparedMonthIndex(rows, 10), -1);
+});
+
+test("map color scale: 95th percentile cap, no data ignored, reversed Viridis ends", () => {
+  const values = Array.from({ length: 20 }, (_, i) => i + 1).concat([NaN]);
+  assert.strictEqual(calc.colorCap(values), 19);
+  assert.strictEqual(calc.colorCap([NaN, 0]), 1);
+  assert.strictEqual(calc.viridisReversed(0, 10), "#fde725");
+  assert.strictEqual(calc.viridisReversed(10, 10), "#440154");
+  assert.strictEqual(calc.viridisReversed(50, 10), "#440154");
+});
