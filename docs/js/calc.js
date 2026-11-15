@@ -4,7 +4,8 @@
  * SCOPE: R3, R5, R6, R7, R8, R9, O3
  * Owner issue: JA-5, JA-6, JA-8
  * Rules: DE-13 (median/anomaly), DE-16 (uncertainty), DE-21 (map layers), DE-22 (usual), DE-23 (fire season),
- *        DE-24 (municipalities), DE-25 (KML), DE-26 (places that burn year after year), DE-28 (outlook), DE-29 (cell outlook), DATA_CONTRACT.md (a), (e), (f). An empty value is NO DATA, never zero.
+ *        DE-24 (municipalities), DE-25 (KML), DE-26 (places that burn year after year), DE-28 (outlook), DE-29 (cell outlook),
+ *        DE-30 (analysis view), DATA_CONTRACT.md (a), (e), (f). An empty value is NO DATA, never zero.
  * AI-assisted code (Claude Code); logged in AI_USE.md.
  */
 (function (root, factory) {
@@ -145,12 +146,13 @@
   }
 
   /**
-   * Sentence for "the latest month compared with its historical median". row: {ym, value, median, nYears, diff, ratio,
-   * estimated, provisional}. A provisional month (FIRMS near real-time data) says so, because its value can still change.
+   * Sentence for a month compared with its historical median (DE-30: "Latest" unless latest === false, i.e. the focus
+   * month is not the latest month with data). row: {ym, value, median, nYears, diff, ratio, estimated, provisional}. A provisional month (FIRMS near real-time data) says so, because its value can still change.
    */
-  function monthComparisonText(row, monthName, unit) {
+  function monthComparisonText(row, monthName, unit, latest) {
     var noun = Math.round(row.value) === 1 ? unit.replace(/s$/, "") : unit;
-    var s = "Latest " + monthName + " in the data (" + row.ym.slice(0, 4) + "): " + fmt(row.value, 0) + " " + noun;
+    var s = (latest === false ? monthName + " " + row.ym.slice(0, 4) : "Latest " + monthName + " in the data (" + row.ym.slice(0, 4) + ")") +
+      ": " + fmt(row.value, 0) + " " + noun;
     if (row.provisional) s += " (provisional: near real-time data)";
     if (Number.isNaN(row.median)) s += ". No earlier year to compare with.";
     else {
@@ -569,7 +571,25 @@
     return s[Math.max(0, Math.ceil(q * s.length) - 1)];
   }
 
-  return { parseCellsCsv: parseCellsCsv, hotspotsKml: hotspotsKml, RECURRENCE_CLASSES: RECURRENCE_CLASSES,
+  /** DE-30: January-December total per year of rows [{ym, value, inRange}]; NaN unless all 12 months are in the period and have data. */
+  function yearTotals(rows) {
+    var acc = {}, out = {};
+    rows.forEach(function (r) {
+      var a = acc[r.ym.slice(0, 4)] = acc[r.ym.slice(0, 4)] || { n: 0, s: 0 };
+      if (r.inRange && !Number.isNaN(r.value)) { a.n++; a.s += r.value; }
+    });
+    Object.keys(acc).forEach(function (y) { out[y] = acc[y].n === 12 ? acc[y].s : NaN; });
+    return out;
+  }
+
+  /** DE-30: median of each calendar month (index 0-11) over the rows in the period with data; NaN when none. */
+  function monthMedians(rows) {
+    var by = [[], [], [], [], [], [], [], [], [], [], [], []];
+    rows.forEach(function (r) { if (r.inRange && !Number.isNaN(r.value)) by[Number(r.ym.slice(5, 7)) - 1].push(r.value); });
+    return by.map(function (v) { return v.length ? median(v) : NaN; });
+  }
+
+  return { parseCellsCsv: parseCellsCsv, hotspotsKml: hotspotsKml, RECURRENCE_CLASSES: RECURRENCE_CLASSES, yearTotals: yearTotals, monthMedians: monthMedians,
            seasonTotals: seasonTotals, outlookForecast: outlookForecast, outlookErrors: outlookErrors, quantile: quantile, recurrenceClass: recurrenceClass,
            gridCellRect: gridCellRect, mercatorHeight: mercatorHeight, OUTLOOK_CLASSES: OUTLOOK_CLASSES, outlookClass: outlookClass, parseMunicipalities: parseMunicipalities, municipalityIndex: municipalityIndex, cellUsual: cellUsual, USUAL_CLASSES: USUAL_CLASSES, usualClass: usualClass,
            seasonByYear: seasonByYear, typicalSeason: typicalSeason, filterHotspots: filterHotspots, countBySatellite: countBySatellite, hotspotCountText: hotspotCountText, hotspotsCsv: hotspotsCsv, selectCells: selectCells, areaSeries: areaSeries,

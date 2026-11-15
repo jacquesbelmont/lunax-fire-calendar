@@ -40,11 +40,16 @@
       </div>
       <p class="hint" id="series-note"></p>
       <p id="selection-info" role="status"></p>
+      <div class="cards" aria-label="Summary of the selection">
+        <a class="card" href="#compare-section"><span class="card-title">Focus month</span><span class="card-big" id="card-month-big"></span><span class="card-sub" id="card-month-sub"></span></a>
+        <a class="card" href="#calendar-section"><span class="card-title">Fire season</span><span class="card-big" id="card-season-big"></span><span class="card-sub" id="card-season-sub"></span></a>
+        <a class="card" href="#outlook-section"><span class="card-title">Next season outlook (experimental)</span><span class="card-big" id="card-outlook-big"></span><span class="card-sub" id="card-outlook-sub"></span></a>
+      </div>
     </section>
 
     <section id="map-section" aria-label="Map">
       <h2>Map</h2>
-      <p class="hint">Choose what the map shows in the panel on the map (top right). The month views show the month of section 5, or the month you click in the calendar; their grid cells are about 27 x 27 km (0.25°), and grey cells have no data, which is not zero fire. <span class="dot modis" aria-hidden="true"></span> MODIS and <span class="dot viirs" aria-hidden="true"></span> VIIRS detections of the month are points at their real position; a number is a group of nearby detections of one sensor, so zoom in to separate them. Click the map before zooming with the mouse wheel. The layers button hides cells, points or municipal borders.</p>
+      <p class="hint">Choose what the map shows in the panel on the map (top right). The month views show the focus month (the latest month, or the month you click in the calendar or the comparison); their grid cells are about 27 x 27 km (0.25°), and grey cells have no data, which is not zero fire. <span class="dot modis" aria-hidden="true"></span> MODIS and <span class="dot viirs" aria-hidden="true"></span> VIIRS detections of the month are points at their real position; a number is a group of nearby detections of one sensor, so zoom in to separate them. Click the map before zooming with the mouse wheel. The layers button hides cells, points or municipal borders.</p>
       <div id="map-panel" class="map-panel no-print">
         <details id="map-panel-details" open>
           <summary>Map view: <span id="map-view-name">Hotspots in the month</span></summary>
@@ -70,39 +75,40 @@
       <div class="table-wrap"><table id="ranking"></table></div>
     </section>
 
-    <section id="calendar-section" aria-label="Monthly calendar">
-      <h2>2. Monthly calendar</h2>
-      <p class="hint">Each cell is one month. Darker colors mean more hotspots. Grey cells mark months with missing data in the displayed series. The dashed line separates estimated months (above/left) from observed ones. Years marked "prov." contain provisional months from FIRMS near real-time data. Hover for the month status. Click a month to show it on the map above.</p>
-      <div id="calendar" class="chart" role="img" aria-label="Calendar of monthly hotspot counts by year and month"></div>
+    <section id="calendar-section" aria-label="Monthly calendar and fire season">
+      <h2>2. Calendar and fire season</h2>
+      <p class="hint">Each cell is one month; click a month to focus the whole page on it (map, comparison, cards). Top bars: the median of each month over the period. Right bars: the total of each year with all 12 months of data. Red outlines: the fire season of each year, from the month in which 10% of the year's hotspots had been detected to the month of 90%, with a dot on the peak month. Grey: missing data, never zero. The dashed line separates estimated months (above/left) from observed ones; "prov." marks provisional months.</p>
+      <div class="row no-print">
+        <div class="seg" role="radiogroup" aria-label="Calendar colors" id="cal-mode">
+          <label><input type="radio" name="cal-mode" value="hotspots" checked> Hotspots</label>
+          <label><input type="radio" name="cal-mode" value="usual"> Compared with the usual</label>
+        </div>
+        <label class="check"><input type="checkbox" id="cal-season" checked> Show the fire season</label>
+      </div>
+      <div id="calendar" class="chart" role="img" aria-label="Calendar of monthly hotspot counts by year and month, with the fire season of each year"></div>
+      <p id="season-text" role="status"></p>
       <p><button type="button" id="png-calendar" disabled>Download calendar (PNG)</button></p>
     </section>
 
-    <section id="season-section" aria-label="Fire season">
-      <h2>3. Fire season</h2>
-      <p class="hint">For each year, the bar runs from the month in which 10% of the year's hotspots had been detected (start) to the month in which 90% had been (end); the diamond is the month with the most hotspots (peak). Harmonized values, so years before and after 2012 are comparable. A year with missing months is drawn only if they cannot change the result. Whole months only: the data are monthly.</p>
-      <p id="season-text" role="status"></p>
-      <div id="season" class="chart" role="img" aria-label="Fire season start, peak and end month for each year"></div>
-    </section>
-
-    <section id="outlook-section" aria-label="Outlook for the next fire season">
-      <h2>4. Outlook for the next fire season (experimental)</h2>
-      <p class="hint">How many hotspots to expect in August-October next year in the selected area, with the method that won a test fixed in advance on 13 past seasons of the 52 municipalities. Bars: what happened; diamonds: what the method would have forecast each year from earlier years only; the last diamond is the outlook, with the range in which 80% of this area's past seasons fell. Harmonized values, so the years before 2012 count too.</p>
-      <p id="outlook-text" role="status"></p>
-      <div id="outlook" class="chart" role="img" aria-label="Past forecasts against observed August-October hotspots, and the outlook for next year"></div>
-    </section>
-
-    <section id="compare-section" aria-label="Month versus historical median">
-      <h2>5. The latest month compared with its historical median</h2>
-      <p class="hint">The data ends at its cut-off date, so the latest month shown here is not the current calendar month.</p>
-      <div class="row"><label>Month <select autocomplete="off" id="compare-month"></select></label></div>
-      <p id="compare-text" role="status"></p>
-      <div id="compare" class="chart" role="img" aria-label="Same calendar month across years with the historical median"></div>
-      <p class="hint">Light bars: estimated from MODIS. Dark bars: observed by VIIRS. Dashed line: median of the earlier years. Error bars: 90% interval. "prov.": provisional month (FIRMS near real-time data; the value can still change).</p>
-      <p><button type="button" id="png-compare" disabled>Download chart (PNG)</button></p>
-    </section>
+    <div class="two-col">
+      <section id="compare-section" aria-label="The focus month across years">
+        <h2>3. Same month across years</h2>
+        <p class="hint">The focus month (outlined) against the same month in other years; click a bar to focus that year. Dashed line: median of the earlier years. Light bars: estimated from MODIS; dark bars: observed by VIIRS; error bars: 90% interval. The data ends at its cut-off date, so the latest month is not the current calendar month.</p>
+        <div class="row"><label>Month <select autocomplete="off" id="compare-month"></select></label></div>
+        <p id="compare-text" role="status"></p>
+        <div id="compare" class="chart" role="img" aria-label="Same calendar month across years with the historical median"></div>
+        <p><button type="button" id="png-compare" disabled>Download chart (PNG)</button></p>
+      </section>
+      <section id="outlook-section" aria-label="Outlook for the next fire season">
+        <h2>4. Next season outlook (experimental)</h2>
+        <p class="hint">How many hotspots to expect in August-October next year in the selected area, with the method that won a test fixed in advance on past seasons of the 52 municipalities. Bars: what happened; diamonds: what the method would have forecast from earlier years only; the last diamond is the outlook, with the range in which 80% of this area's past seasons fell.</p>
+        <p id="outlook-text" role="status"></p>
+        <div id="outlook" class="chart" role="img" aria-label="Past forecasts against observed August-October hotspots, and the outlook for next year"></div>
+      </section>
+    </div>
 
     <section id="downloads-section" aria-label="Downloads">
-      <h2>6. Downloads and briefing</h2>
+      <h2>5. Downloads and briefing</h2>
       <p>CSV files cover the selected cells and period and include the NASA FIRMS acknowledgment and the data cut-off date.</p>
       <p>
         <button type="button" id="csv-series" disabled>Monthly series of the area (CSV)</button>
@@ -113,7 +119,7 @@
         <button type="button" id="hotspots-download" disabled>Download hotspots (CSV)</button>
         <button type="button" id="hotspots-kml" disabled>Download hotspots (KML: Google Earth, Avenza, QGIS)</button>
       </p>
-      <p><button type="button" id="print-briefing">Print a briefing (map, calendar, fire season, outlook, comparison)</button></p>
+      <p><button type="button" id="print-briefing">Print a briefing (summary, map, calendar, comparison, outlook)</button></p>
       <p id="hotspots-status" role="status" class="hint">The hotspot list holds the individual FIRMS detections in the selected cells and period. Count them first to see how many rows the file will have.</p>
     </section>
 

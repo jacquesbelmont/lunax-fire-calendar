@@ -244,3 +244,18 @@ test("DE-29 chance classes: under 10% not drawn; edges at 10, 25, 50 and 75%", (
   const a = calc.gridCellRect("1530_2368", 0.05, meta.area.bbox_west_south_east_north, 1450, 1200), b = calc.gridCellRect("7650_11840", 0.01, meta.area.bbox_west_south_east_north, 1450, 1200);
   assert.ok(Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[2] - 5 * b[2]) < 1e-6, "a 0.05° cell is 5 cells of 0.01° wide, same west edge");
 });
+
+// DE-30: calendar margins and the focus wording, on the whole state.
+test("DE-30 year totals (complete years only), month medians and the comparison wording", () => {
+  const all = calc.selectCells(data, meta.area.bbox_west_south_east_north);
+  const v = calc.areaSeries(data, all, "viirs_eq");
+  const rows = data.months.map((ym, i) => ({ ym: ym, value: v[i], inRange: true }));
+  const tot = calc.yearTotals(rows), at = (ym) => v[data.months.indexOf(ym)];
+  assert.ok(Number.isNaN(tot[2023]) && Number.isNaN(tot[2026]) && Number.isNaN(tot[2000]), "years with missing or absent months have no total");
+  same(tot[2025], ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"].reduce((s, m) => s + at("2025-" + m), 0), "2025 total");
+  const sep = data.months.filter((ym) => ym.endsWith("-09") && !Number.isNaN(at(ym))).map(at).sort((a, b) => a - b), h = sep.length >> 1;
+  same(calc.monthMedians(rows)[8], sep.length % 2 ? sep[h] : (sep[h - 1] + sep[h]) / 2, "September median");
+  const r = { ym: "2015-09", value: 10, median: 5, nYears: 3, diff: 5, ratio: 2 };
+  assert.match(calc.monthComparisonText(r, "September", "hotspots", false), /^September 2015: 10 hotspots, compared/);
+  assert.match(calc.monthComparisonText(r, "September", "hotspots"), /^Latest September in the data \(2015\)/);
+});

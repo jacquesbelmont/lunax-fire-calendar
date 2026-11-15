@@ -10,3 +10,6 @@ The slide 4 chart, `porto_velho_september_2025.png`, was captured from the publi
 
 PR RA-7 (DE-22 to DE-25), local build of the branch `RA-7-field-use`, headless Chrome, 2026-11-15, 1280 px, light:
 `app_map_usual_2026-10.png` (map view "Compared with the usual" for the whole area, 2026-10, provisional, with its legend), `app_fire_season.png` (section 3 for the whole area: 23 years computed, typical season August to October with the peak in September) and `app_municipality_porto_velho.png` (Porto Velho, IBGE code 1100205, selected as the area: outline, cells around it for context, its detections of 2026-10).
+
+PR RA-10 (DE-30), local build of the branch `RA-10-analysis-view`, headless Chrome, 2026-11-15, 1280 px, light, whole study area:
+`app_summary_cards.png` (focus month October 2026, fire season, next season outlook) and `app_calendar_season_margins.png` (calendar with the month medians on top, the totals of complete years on the right, the fire season of each year outlined and the focus month 2026-10 outlined).
