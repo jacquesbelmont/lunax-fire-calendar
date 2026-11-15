@@ -17,23 +17,14 @@
     if (!last) {
       textEl.textContent = "No data for " + MONTH_NAMES[monthNo - 1] + " in this area and period.";
     } else {
-      const noun = Math.round(last.value) === 1 ? unit.replace(/s$/, "") : unit;
-      let s = "Latest " + MONTH_NAMES[monthNo - 1] + " in the data (" + last.ym.slice(0, 4) + "): " + f(last.value, 0) + " " + noun;
-      if (Number.isNaN(last.median)) s += ". No earlier year to compare with.";
-      else {
-        s += ", compared with a historical median of " + f(last.median, 0) + " (" + last.nYears + " earlier years)";
-        s += ": " + (last.diff >= 0 ? "+" : "") + f(last.diff, 0);
-        if (!Number.isNaN(last.ratio)) s += " (" + f(last.ratio, 2) + " times the median)";
-        s += ".";
-      }
-      textEl.textContent = s + (last.estimated ? " This month is estimated from MODIS." : "");
+      textEl.textContent = LunaxCalc.monthComparisonText(last, MONTH_NAMES[monthNo - 1], unit);
     }
     const withData = mine.filter((r) => !Number.isNaN(r.value));
     const traces = [{
       type: "bar", x: withData.map((r) => r.ym.slice(0, 4)), y: withData.map((r) => r.value),
       marker: { color: withData.map((r) => (r.estimated ? "#9ecae1" : "#0b5cad")) },
       error_y: { type: "data", visible: true, array: withData.map((r) => (Number.isNaN(r.hi) ? 0 : r.hi - r.value)), color: "#555" },
-      hovertext: withData.map((r) => r.ym + ": " + f(r.value, 0) + " " + unit + (r.estimated ? " (estimated from MODIS)" : "")),
+      hovertext: withData.map((r) => r.ym + ": " + f(r.value, 0) + " " + unit + (r.estimated ? " (estimated from MODIS)" : "") + (r.provisional ? " (provisional)" : "")),
       hoverinfo: "text", name: "Monthly value",
     }];
     const shapes = [];

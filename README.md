@@ -55,7 +55,8 @@ Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logo
    then open http://localhost:8000 (opening `index.html` via `file://` will not load data).
 
 ## AI use
-Tools: Claude and Claude Code (Anthropic), used for code, comparison of options for the method decisions, analyses and documentation. Every AI-assisted step is logged in [AI_USE.md](AI_USE.md), and AI-assisted code carries a header comment. No AI-generated images, video or audio, and no NASA logos. The decisions on the area, the target scale and the method were made by team members and are recorded with who chose in [method/DECISIONS.md](method/DECISIONS.md); the AI drafted options and ran analyses. The Space Apps rule is that AI is not used to come up with the solution idea: the team confirms this in [submission/FACT_CHECK.md](submission/FACT_CHECK.md) (open item 4).
+Tools: Claude and Claude Code (Anthropic), used for code, comparison of options for the method decisions, analyses and documentation. Every AI-assisted step is logged in [AI_USE.md](AI_USE.md), and AI-assisted code carries a header comment; the data files record it in `docs/data/metadata.json` (`ai_use`). No AI-generated images, video or audio, and no NASA logos.
+The team chose the challenge and the goal; the target scale (VIIRS-equivalent) was proposed by Rafael and agreed by the team; the demo area (Rondônia) was chosen by the team. For the method decisions an AI assistant drafted options with pros and cons, the team chose among them, and the harmonization method was selected by a validation test fixed before the results were seen. Who chose each decision: [method/DECISIONS.md](method/DECISIONS.md).
 
 ## License
 Apache-2.0 (see [LICENSE](LICENSE)). Vendored libraries keep their own licenses ([docs/lib/README.md](docs/lib/README.md)).

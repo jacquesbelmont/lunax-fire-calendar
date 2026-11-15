@@ -94,3 +94,13 @@ test("dashed boundary of the estimated months is at the first VIIRS-observed mon
 test("no boundary when no month is estimated", () => {
   assert.strictEqual(calc.firstObservedMonth([{ ym: "2020-01", estimated: false }, { ym: "2020-02", estimated: false }]), null);
 });
+
+test("the comparison sentence says when the latest month is provisional", () => {
+  const base = { ym: "2026-10", value: 2734, median: 13000, nYears: 25, diff: -10266, ratio: 0.21, estimated: false };
+  const prov = calc.monthComparisonText(Object.assign({}, base, { provisional: true }), "October", "hotspots");
+  assert.ok(prov.includes("(provisional: near real-time data)"));
+  assert.ok(prov.includes("can still change"));
+  const fin = calc.monthComparisonText(Object.assign({}, base, { provisional: false }), "October", "hotspots");
+  assert.ok(!fin.includes("provisional"));
+  assert.ok(calc.monthComparisonText({ ym: "2025-12", value: 1, median: NaN, nYears: 0, diff: NaN, ratio: NaN }, "December", "hotspots").includes("1 hotspot."));
+});

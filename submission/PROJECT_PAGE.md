@@ -40,7 +40,8 @@ https://jacquesbelmont.github.io/lunax-fire-calendar/ (public, no login). Source
 - drafting the documentation and the texts of this page.
 
 Every AI-assisted step is logged with date, person, tool and files in AI_USE.md (https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/AI_USE.md). AI-assisted code carries a header comment, and the data files record it in `docs/data/metadata.json` (`ai_use`).
-**What AI did not do:** no images, video or audio were generated with AI, and no NASA logos, flags or mission identifiers are used. The decisions on the area, the target scale and the harmonization method were made by team members and are recorded with who chose in method/DECISIONS.md; the AI drafted options and ran analyses. The team confirms that the solution idea was theirs (see FACT_CHECK.md, open items: this sentence needs the team's confirmation).
+**What AI did not do:** no images, video or audio were generated with AI, and no NASA logos, flags or mission identifiers are used.
+**Where the ideas came from:** the team chose the challenge and set the goal from the challenge statement. The target scale (VIIRS-equivalent) was proposed by Rafael in the team chat and agreed by the team, and the demo area (Rondônia, our own region) was chosen by the team. For the method decisions, an AI assistant researched sources and drafted options with their pros and cons; the team chose among them, and the harmonization method was selected by a validation test fixed before the results were seen. Who chose each decision is recorded in method/DECISIONS.md.
 
 ## NASA data
 NASA FIRMS (Fire Information for Resource Management System), the data resource of the challenge: https://www.earthdata.nasa.gov/data/tools/firms
