@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUNAX Brazil pilot</title>
+<!-- RA-11 pilot viewer (issue #66). Local only: serve the repository root and open /method/pilot/brazil_viewer.html after
+     python pipeline/pilot_brazil.py. Not part of the published app. AI-assisted code (Claude Code); logged in AI_USE.md. -->
+<link rel="stylesheet" href="/docs/lib/leaflet/leaflet.css">
+<link rel="stylesheet" href="/docs/css/style.css">
+<style>
+  main { max-width: 1300px; }
+  .layout { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  #map { height: 72vh; }
+  #log { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  #log td, #log th { border-bottom: 1px solid var(--line); padding: 3px 6px; text-align: left; }
+  #log td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } #map { height: 60vh; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Brazil pilot, 2024 (RA-11)</h1>
+  <p class="notice">Local pilot, not the published app: one year (2024), observed VIIRS (NOAA-20 is the series, DE-11), FIRMS country files of Brazil and Bolivia kept inside the IBGE state polygons. It measures how a national version would load in your browser.</p>
+</header>
+<main>
+  <div class="layout">
+    <div>
+      <div id="map"></div>
+      <p class="hint">States are colored by their NOAA-20 detections of August-October 2024 (the core of the season). Click a state to load its 0.25° cells and municipalities; then load the detections of the chosen month as points.</p>
+    </div>
+    <div>
+      <h2 id="state-name">Brazil</h2>
+      <div class="row">
+        <label>Month <select id="month"></select></label>
+        <button type="button" id="points" disabled>Load the detections of this month</button>
+      </div>
+      <p id="state-text" class="hint">Click a state on the map.</p>
+      <div id="chart" class="chart" style="min-height:260px"></div>
+      <h3>What your browser loaded</h3>
+      <table id="log"><tr><th>File</th><th>Size</th><th>Load and read</th><th>JS memory</th></tr></table>
+    </div>
+  </div>
+  <footer><p id="attribution"></p></footer>
+</main>
+<script src="/docs/lib/leaflet/leaflet.js"></script>
+<script src="/docs/lib/plotly/plotly.min.js"></script>
+<script src="/docs/js/calc.js"></script>
+<script>
+"use strict";
+const DATA = "/data/pilot/brazil/", MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const $ = (id) => document.getElementById(id), f = LunaxCalc.fmt;
+const state = { uf: null, cells: null, layer: L.layerGroup(), pts: null };
+const map = L.map("map").setView([-14, -52], 4);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 12, attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
+state.layer.addTo(map);
+MONTHS.forEach((m, i) => $("month").add(new Option(m + " 2024", "2024-" + String(i + 1).padStart(2, "0"))));
+$("month").value = "2024-09";
+
+/** Fetch a file (gzip-aware), read it with fn, and log size, time and JS memory. */
+async function timed(label, url, fn, gz) {
+  const t0 = performance.now(), resp = await fetch(url);
+  if (!resp.ok) throw new Error(url + ": " + resp.status + " (run pipeline/pilot_brazil.py first)");
+  const bytes = Number(resp.headers.get("content-length")) || null;
+  const text = gz ? await new Response(resp.body.pipeThrough(new DecompressionStream("gzip"))).text() : await resp.text();
+  const out = fn(text), ms = performance.now() - t0;
+  const mem = performance.memory ? (performance.memory.usedJSHeapSize / 1e6).toFixed(0) + " MB" : "n/a";
+  const tr = $("log").insertRow();
+  [label, bytes ? (bytes / 1e6).toFixed(2) + " MB" : (text.length / 1e6).toFixed(2) + " MB (text)", Math.round(ms) + " ms", mem]
+    .forEach((v, i) => { const td = tr.insertCell(); td.textContent = v; if (i) td.className = "num"; });
+  return out;
+}
+
+const series = (data, i, col) => data.months.map((m, k) => data.columns[col][i * data.nMonths + k]);
+
+async function init() {
+  const geo = await timed("states.geojson", DATA + "states.geojson", JSON.parse);
+  const nat = await timed("states.csv (national summary)", DATA + "states.csv", (t) => LunaxCalc.parseCellsCsv(t, 0.25, "area_id"));
+  const season = new Map(nat.cells.map((c, i) => [c.id, series(nat, i, "viirs_eq").slice(7, 10).reduce((a, b) => a + b, 0)]));
+  const cap = LunaxCalc.colorCap([...season.values()]);
+  state.states = L.geoJSON(geo, {
+    style: (ft) => ({ color: "#333", weight: 1, fillOpacity: 0.7, fillColor: LunaxCalc.viridisReversed(season.get(ft.properties.code) || 0, cap) }),
+    onEachFeature: (ft, lyr) => {
+      lyr.bindTooltip(ft.properties.name + ": " + f(season.get(ft.properties.code), 0) + " NOAA-20 detections, Aug-Oct 2024");
+      lyr.on("click", () => selectState(ft.properties.code, ft.properties.name, lyr.getBounds()));
+    },
+  }).addTo(map);
+  state.nat = nat;
+}
+
+async function selectState(code, name, bounds) {
+  state.uf = name; state.pts = null;
+  state.states.setStyle({ fillOpacity: 0.12 }); // the state colors step back behind the cells
+  $("state-name").textContent = name; $("points").disabled = false;
+  if (bounds) map.fitBounds(bounds);
+  state.cells = await timed(name + "/monthly_cells.csv", DATA + name + "/monthly_cells.csv", (t) => LunaxCalc.parseCellsCsv(t, 0.25));
+  state.munis = await timed(name + "/municipalities.geojson", DATA + name + "/municipalities.geojson", JSON.parse);
+  const i = state.nat.cells.findIndex((c) => c.id === code);
+  Plotly.react("chart", [
+    { type: "bar", name: "NOAA-20 (the series)", x: MONTHS, y: series(state.nat, i, "noaa20"), marker: { color: "#0b5cad" } },
+    { type: "scatter", mode: "lines+markers", name: "Suomi NPP", x: MONTHS, y: series(state.nat, i, "snpp"), line: { color: "#D55E00" } },
+  ], { margin: { l: 50, r: 10, t: 10, b: 30 }, height: 260, legend: { orientation: "h", y: 1.15 }, paper_bgcolor: "rgba(0,0,0,0)",
+       plot_bgcolor: "rgba(0,0,0,0)", font: { color: getComputedStyle(document.body).color } }, { displayModeBar: false, responsive: true });
+  draw();
+}
+
+/** 0.25° cells of the chosen month (NOAA-20; empty months are grey, never zero) and the municipal borders. */
+function draw() {
+  const d = state.cells, m = d.months.indexOf($("month").value), half = 0.125;
+  state.layer.clearLayers();
+  const v = d.cells.map((c, i) => d.columns.viirs_eq[i * d.nMonths + m]), cap = LunaxCalc.colorCap(v);
+  d.cells.forEach((c, i) => L.rectangle([[c.lat - half, c.lon - half], [c.lat + half, c.lon + half]], { stroke: false, fillOpacity: 0.7,
+    fillColor: Number.isNaN(v[i]) ? "#9e9e9e" : LunaxCalc.viridisReversed(v[i], cap) }).bindTooltip(c.id + ": " + (Number.isNaN(v[i]) ? "no data" : f(v[i], 0))).addTo(state.layer));
+  L.geoJSON(state.munis, { style: { color: "#555", weight: 0.5, fill: false }, interactive: false }).addTo(state.layer);
+  const total = v.filter((x) => !Number.isNaN(x)).reduce((a, b) => a + b, 0);
+  $("state-text").textContent = d.cells.length + " cells of 0.25°. " + $("month").selectedOptions[0].text + ": " +
+    (v.every(Number.isNaN) ? "no NOAA-20 data (missing days, never zero)" : f(total, 0) + " NOAA-20 detections") + ".";
+  if (state.pts) drawPoints(); // after the sentence, which it extends
+}
+
+/** Points of the chosen month drawn as one image (Web Mercator rows): fast even with hundreds of thousands. */
+function drawPoints() {
+  const ym = $("month").value, h = state.pts.header.split(","), ia = h.indexOf("latitude"), io = h.indexOf("longitude"), is = h.indexOf("sensor");
+  const lines = state.pts.lines.filter((l) => l.split(",", 4)[3].slice(0, 7) === ym);
+  let w = 180, s = 90, e = -180, n = -90;
+  const pts = lines.map((l) => { const x = l.split(","); const lo = +x[io], la = +x[ia]; w = Math.min(w, lo); e = Math.max(e, lo); s = Math.min(s, la); n = Math.max(n, la); return [lo, la, x[is]]; });
+  if (!pts.length) return;
+  const my = (la) => Math.log(Math.tan(Math.PI / 4 + la * Math.PI / 360));
+  const W = 1600, H = Math.max(1, Math.round(W * (my(n) - my(s)) / ((e - w) * Math.PI / 180)));
+  const cv = document.createElement("canvas"), ctx = cv.getContext("2d");
+  cv.width = W; cv.height = H;
+  pts.forEach((p) => { ctx.fillStyle = p[2] === "MODIS" ? "#0072B2" : "#D55E00";
+    ctx.fillRect((p[0] - w) / (e - w) * (W - 2), (my(n) - my(p[1])) / (my(n) - my(s)) * (H - 2), 2, 2); });
+  L.imageOverlay(cv.toDataURL(), [[s, w], [n, e]]).addTo(state.layer);
+  $("state-text").textContent += " Points: " + LunaxCalc.satelliteCountsText(LunaxCalc.countBySatellite(state.pts.header, lines)) +
+    " (MODIS blue, VIIRS orange; each sensor's own detections, never added together).";
+}
+
+async function loadPoints() {
+  $("points").disabled = true;
+  state.pts = await timed(state.uf + "/hotspots_2024.csv.gz (all of 2024)", DATA + state.uf + "/hotspots_2024.csv.gz", function (t) {
+    const o = { header: null, lines: [] };
+    LunaxCalc.filterHotspots(t, { has: () => true }, "0000-00", "9999-99", o);
+    return o;
+  }, true);
+  const t0 = performance.now();
+  draw();
+  const tr = $("log").insertRow();
+  ["draw the points of " + $("month").value, "", Math.round(performance.now() - t0) + " ms", ""].forEach((v) => { tr.insertCell().textContent = v; });
+  $("points").disabled = false;
+}
+
+$("month").addEventListener("change", () => state.cells && draw());
+$("points").addEventListener("click", loadPoints);
+$("attribution").textContent = "We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Land, Atmosphere Near real-time Capability for Earth observations (LANCE) (https://earthdata.nasa.gov/lance) and NASA's Earth Science Data and Information System (ESDIS). Archived FIRMS country files (2024, standard processing), not live. Boundaries: IBGE malhas API v3. Map tiles: OpenStreetMap contributors. Pilot only; not for the preservation of life or property.";
+window.selectState = selectState; window.loadPoints = loadPoints; // for the headless check
+init().catch((e) => { $("state-text").textContent = String(e.message || e); });
+</script>
+</body>
+</html>

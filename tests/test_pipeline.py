@@ -233,3 +233,19 @@ class CellOutlookTest(unittest.TestCase):
             best = "G" if s["pooled"]["log_loss"]["G"] <= 0.98 * s["pooled"]["log_loss"]["L"] else "L"
             ok = all(d["capture"][best] > d["capture"]["P"] and d["log_loss"][best] < d["log_loss"]["B0"] for d in (s["pooled"], s["fresh"]))
             self.assertEqual((s["best_model"], s["shown"]), (best, best if ok else "P"))
+class BrazilPilotTest(unittest.TestCase):
+    """RA-11 pilot: the two-level assignment puts Rondonia's detections in Rondonia (skipped without the pilot data)."""
+
+    def test_rondonia_points_in_state_11(self):
+        pilot = ROOT / "data" / "pilot" / "brazil" / "states.geojson"
+        src = ROOT / "data" / "interim" / "clean" / "viirs-jpss1_2024.csv.gz"
+        if not (pilot.exists() and src.exists()):
+            self.skipTest("pilot data or cleaned files not present")
+        import pilot_brazil  # noqa: E402
+        states = pilot_brazil.load_areas(pilot)
+        d = pd.read_csv(src, usecols=["latitude", "longitude", "acq_date", "country"])
+        d = d[d["acq_date"].eq("2024-09-01") & d["country"].eq("Brazil")]
+        k = pilot_brazil.assign(d["longitude"].to_numpy(), d["latitude"].to_numpy(), states)
+        codes = [states[i]["code"] if i >= 0 else None for i in k]
+        self.assertGreater(len(d), 100)
+        self.assertGreaterEqual(codes.count("11") / len(codes), 0.99)  # boundary detail differs slightly (maxima vs intermediaria)
