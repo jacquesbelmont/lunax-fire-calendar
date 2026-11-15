@@ -6,13 +6,13 @@ Written for: the Space Apps judges and reviewers (S1: English). Every number or 
 LUNAX Fire Calendar
 
 ## Team
-Team LUNAX: Jacques Belmont, Rafael Silva de Souza, Tiara (full name: to be written by Tiara; see FACT_CHECK.md, open items).
+Team LUNAX: Jacques Belmont, Rafael Silva de Souza, Tiara Martell.
 
 ## Summary (50-200 words)
 LUNAX Fire Calendar is a web app that shows how much burning happened in Rondônia, Brazil, month by month since November 2000. NASA's FIRMS archive holds fire hotspot detections from two kinds of sensors: MODIS (1 km pixels, since 2000) and VIIRS (375 m pixels, since 2012). MODIS is being retired and the two sensors count differently, so their raw numbers cannot be joined. We harmonized them: from 2012 the series uses observed VIIRS counts, and for 2000 to 2012 we convert MODIS counts to the VIIRS scale with a ratio learned where both sensors overlap. In a backward test on 2012 to 2014, the converted total was within 0.6% of what VIIRS actually observed. Users draw an area on the map, read a year-by-month calendar, compare a month with its historical median, and download monthly series and hotspot lists. Months with missing satellite data are grey, never zero, and estimated months are marked. The data are archived FIRMS data that end on 2026-10-31; the most recent months are provisional.
 
 ## Demo link
-Slides (public, no login): to be added by Tiara when the slides are published (see SLIDES_OUTLINE.md).
+7-slide deck (PDF, public, no login): https://jacquesbelmont.github.io/lunax-fire-calendar/demo/LUNAX_Fire_Calendar_slides.pdf
 
 ## Final project link
 https://jacquesbelmont.github.io/lunax-fire-calendar/ (public, no login). Source code: https://github.com/jacquesbelmont/lunax-fire-calendar
@@ -40,7 +40,8 @@ https://jacquesbelmont.github.io/lunax-fire-calendar/ (public, no login). Source
 - drafting the documentation and the texts of this page.
 
 Every AI-assisted step is logged with date, person, tool and files in AI_USE.md (https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/AI_USE.md). AI-assisted code carries a header comment, and the data files record it in `docs/data/metadata.json` (`ai_use`).
-**What AI did not do:** no images, video or audio were generated with AI, and no NASA logos, flags or mission identifiers are used. The decisions on the area, the target scale and the harmonization method were made by team members and are recorded with who chose in method/DECISIONS.md; the AI drafted options and ran analyses. The team confirms that the solution idea was theirs (see FACT_CHECK.md, open items: this sentence needs the team's confirmation).
+**What AI did not do:** no images, video or audio were generated with AI, and no NASA logos, flags or mission identifiers are used.
+**Where the ideas came from:** the team chose the challenge and set the goal from the challenge statement. The target scale (VIIRS-equivalent) was proposed by Rafael in the team chat and agreed by the team, and the demo area (Rondônia, our own region) was chosen by the team. For the method decisions, an AI assistant researched sources and drafted options with their pros and cons; the team chose among them, and the harmonization method was selected by a validation test fixed before the results were seen. Who chose each decision is recorded in method/DECISIONS.md.
 
 ## NASA data
 NASA FIRMS (Fire Information for Resource Management System), the data resource of the challenge: https://www.earthdata.nasa.gov/data/tools/firms

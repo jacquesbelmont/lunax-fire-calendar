@@ -138,6 +138,26 @@
     return "M -0.5 " + (r + 0.5) + " L " + (c - 0.5) + " " + (r + 0.5) + " L " + (c - 0.5) + " " + (r - 0.5) + " L 11.5 " + (r - 0.5);
   }
 
+  /**
+   * Sentence for "the latest month compared with its historical median". row: {ym, value, median, nYears, diff, ratio,
+   * estimated, provisional}. A provisional month (FIRMS near real-time data) says so, because its value can still change.
+   */
+  function monthComparisonText(row, monthName, unit) {
+    var noun = Math.round(row.value) === 1 ? unit.replace(/s$/, "") : unit;
+    var s = "Latest " + monthName + " in the data (" + row.ym.slice(0, 4) + "): " + fmt(row.value, 0) + " " + noun;
+    if (row.provisional) s += " (provisional: near real-time data)";
+    if (Number.isNaN(row.median)) s += ". No earlier year to compare with.";
+    else {
+      s += ", compared with a historical median of " + fmt(row.median, 0) + " (" + row.nYears + " earlier years)";
+      s += ": " + (row.diff >= 0 ? "+" : "") + fmt(row.diff, 0);
+      if (!Number.isNaN(row.ratio)) s += " (" + fmt(row.ratio, 2) + " times the median)";
+      s += ".";
+    }
+    if (row.estimated) s += " This month is estimated from MODIS.";
+    if (row.provisional) s += " FIRMS will replace this month with standard data, so the value can still change.";
+    return s;
+  }
+
   /** 90 % interval half-width from a summed variance. */
   function halfWidth90(variance) {
     return Number.isNaN(variance) ? NaN : Z90 * Math.sqrt(variance);
@@ -193,7 +213,7 @@
   }
 
   return { parseCellsCsv: parseCellsCsv, filterHotspots: filterHotspots, hotspotsCsv: hotspotsCsv, selectCells: selectCells, areaSeries: areaSeries,
-           estimatedMonths: estimatedMonths, provisionalMonths: provisionalMonths, firstObservedMonth: firstObservedMonth,
+           estimatedMonths: estimatedMonths, provisionalMonths: provisionalMonths, firstObservedMonth: firstObservedMonth, monthComparisonText: monthComparisonText,
            estimatedBoundaryPath: estimatedBoundaryPath, medianAnomaly: medianAnomaly, halfWidth90: halfWidth90,
            seriesCsv: seriesCsv, fmt: fmt, SENSOR_COLUMNS: SENSOR_COLUMNS };
 });

@@ -1,5 +1,7 @@
 # Slides outline (S2: max 7 slides including the title)
 
+Draft deck built from this outline: `submission/slides/slides.html`, published as https://jacquesbelmont.github.io/lunax-fire-calendar/demo/LUNAX_Fire_Calendar_slides.pdf (7 pages). Tiara reviews and owns it.
+
 Written for: Tiara, who builds the deck, and for the judges who watch it. Rules: real app screenshots and real pipeline figures only (no generated images; if one is ever added: visible watermark, no NASA logos); no people under 18; English only; public link, no login. Every number is in FACT_CHECK.md.
 Screenshots must be taken by a person from the published app (https://jacquesbelmont.github.io/lunax-fire-calendar/) with the **harmonized** series selected (the default). Pipeline figures are the files in method/figures/.
 

@@ -45,8 +45,8 @@
         reversescale: true, xgap: 1, ygap: 1, colorbar: { title: { text: unit } } },
     ];
     const layout = {
-      margin: { l: 80, r: 10, t: 10, b: 40 }, shapes: shapes,
-      xaxis: { side: "top", fixedrange: true },
+      margin: { l: 80, r: 10, t: 40, b: 20 }, shapes: shapes,
+      xaxis: { side: "top", fixedrange: true, automargin: true, tickangle: 0 },
       yaxis: { type: "category", autorange: "reversed", tickvals: years.map(String), ticktext: ticks, fixedrange: true },
       paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)", font: { color: LunaxTheme.text() },
       height: Math.max(360, years.length * 22 + 80),

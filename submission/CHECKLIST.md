@@ -21,6 +21,9 @@ Owner: Tiara (TI-8, TI-9). Status on 2026-11-15, checked by Claude Code unless a
 ## Data files published with the app (checked by URL, 2026-11-15)
 The page, scripts, docs/data/metadata.json, monthly_cells.csv, hotspots/index.json, a hotspot file and the libraries answer 200.
 
+## Visual check with headless Chrome (2026-11-15, Claude Code)
+Screenshots in submission/screenshots/: desktop light, desktop dark, 375 px. Found and fixed: month names missing above the calendar, "Year" overlapping the year labels at 375 px, the comparison sentence not saying that the latest month is provisional. No horizontal overflow at 375 px; dark-mode chart text readable. Drawing a rectangle and the downloads were not exercised (no clicks in headless mode).
+
 ## Test checklist (TI-8): a person must do these
 - [ ] Private/incognito window: the app link and every link on the project page open without login
 - [ ] Another computer
