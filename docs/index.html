@@ -49,7 +49,7 @@
 
     <section id="map-section" aria-label="Map">
       <h2>Map</h2>
-      <p class="hint">Choose what the map shows in the panel on the map (top right). The month views show the focus month (the latest month, or the month you click in the calendar or the comparison); their grid cells are about 27 x 27 km (0.25°), and grey cells have no data, which is not zero fire. <span class="dot modis" aria-hidden="true"></span> MODIS and <span class="dot viirs" aria-hidden="true"></span> VIIRS detections of the month are points at their real position; a number is a group of nearby detections of one sensor, so zoom in to separate them. Click the map before zooming with the mouse wheel. The layers button hides cells, points or municipal borders.</p>
+      <p class="hint">Choose what the map shows in the panel on the map (top right). The month views show the focus month (the latest month, or the month you click in the calendar or the comparison); their grid cells are about 27 x 27 km (0.25°), and grey cells have no data, which is not zero fire. <span class="dot modis" aria-hidden="true"></span> MODIS and <span class="dot viirs" aria-hidden="true"></span> VIIRS detections of the month are points at their real position; a number is a group of nearby detections of one sensor, so zoom in to separate them. Click the map before zooming with the mouse wheel. The layers button (top right, above the panel) hides cells, points or municipal borders and changes the background: street map, NASA Blue Marble, or the NASA satellite image of one day in true color or in false color, where burn scars appear deep or bright red (NASA Worldview layer description). The image day is the day of the map month with the most detections; choose another day in the box on the map, or click a detection to see the image of its day. Satellite images stop at zoom level 9 (about 300 m per pixel); closer, they are only enlarged.</p>
       <div id="map-panel" class="map-panel no-print">
         <details id="map-panel-details" open>
           <summary>Map view: <span id="map-view-name">Hotspots in the month</span></summary>
@@ -135,6 +135,7 @@
     <p><a id="disclaimer-link" href="#">LANCE disclaimer</a>. This tool is not an official NASA product and does not imply NASA endorsement. Do not use it for the preservation of life or property.</p>
     <p>Area boundary of Rondônia and municipal boundaries: IBGE, Malhas territoriais (<a href="https://servicodados.ibge.gov.br/api/docs/malhas?versao=3">API v3</a>), retrieved 2026-11-14 (state) and 2026-11-15 (municipalities); geometry used as published.</p>
     <p>Map tiles &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Libraries: Leaflet, Leaflet.draw, Plotly.js (see <a href="https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/docs/lib/README.md">docs/lib/README.md</a>).</p>
+    <p>Satellite images on the map (Blue Marble, true and false color of a day): we acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS) (<a href="https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs-api">GIBS</a>).</p>
     <p id="archive-footer"></p>
     <p>Claude and Claude Code assisted with code, text and method comparisons. Codex reviewed the app and helped revise the app and submission. The team chose the methods. See the <a href="https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/AI_USE.md">AI use log</a>.</p>
   </footer>
@@ -145,6 +146,7 @@
   <script src="lib/plotly/plotly.min.js"></script>
   <script src="js/calc.js"></script>
   <script src="js/data.js"></script>
+  <script src="js/imagery.js"></script>
   <script src="js/map.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/compare.js"></script>

@@ -100,6 +100,17 @@ try {
     /NOAA-20 \(VIIRS\) [\d,]+/.test(note10) && /counts the NOAA-20 \(VIIRS\) detections only/.test(note10) && groups10 > 0,
     groups10 + " groups; " + note10.slice(0, 100));
 
+  // DE-27: NASA GIBS image of one day as the base layer; the day is a day of the map month, the satellite NOAA-20 (from 2018-04).
+  await evaluate(`(() => { const l = [...document.querySelectorAll('.leaflet-control-layers-base label')].find((x) => /true color/.test(x.textContent));
+    l.querySelector('input').click(); return true; })()`);
+  await waitFor(`[...document.querySelectorAll('#map img.leaflet-tile')].some((i) => i.src.includes('gibs.earthdata.nasa.gov') && i.complete && i.naturalWidth > 0)`, 30000);
+  const imgText = await evaluate(`document.querySelector('#map-imagery').hidden ? '' : document.querySelector('#map-imagery').textContent`);
+  check("satellite image of a day from NASA GIBS loads, with its day (map month) and satellite named on the map",
+    /^Satellite image of 2026-10-\d\d \(one day, UTC\): NOAA-20 VIIRS, true color\./.test(imgText) &&
+    await evaluate(`/^2026-10-\\d\\d$/.test(document.querySelector('#imagery-day').value) && document.querySelector('#imagery-day').min === '2026-10-01'`),
+    imgText.slice(0, 90));
+  await evaluate(`(() => { [...document.querySelectorAll('.leaflet-control-layers-base label')].find((x) => /OpenStreetMap/.test(x.textContent)).querySelector('input').click(); return true; })()`);
+
   // DE-22: "Compared with the usual" view of the same month, then back to the hotspots view.
   await evaluate(`document.querySelector('input[name="map-mode"][value="usual"]').click(), true`);
   const legendU = await evaluate(`document.querySelector('#map-legend').textContent`);

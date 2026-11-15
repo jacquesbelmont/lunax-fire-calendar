@@ -239,6 +239,7 @@
   async function showMonthPoints(ym) {
     const req = ++state.pointsReq, note = $("map-note");
     state.map.showPoints([]);
+    state.map.setImageryMonth(ym, []); // DE-27: the 15th until the detections are loaded
     if (!ym || !state.sel.length) { note.textContent = ""; return; }
     note.textContent = "Loading the detections of " + ym + "...";
     try {
@@ -247,6 +248,7 @@
       if (req !== state.pointsReq) return; // a newer selection or month replaced this request
       const pts = res.lines.length ? LunaxCalc.hotspotPoints(res.header, res.lines) : [];
       state.map.showPoints(pts);
+      state.map.setImageryMonth(ym, pts);
       const source = $("series-select").value === "viirs_eq" ? "The harmonized calendar value of this month " + LunaxCalc.harmonizedSource(ym) +
         " (DE-11)." : "The calendar shows the raw counts of the series chosen above.";
       note.textContent = "Points: detections of " + ym + (state.data.provisional.has(ym) ? " (provisional: near real-time data)" : "") +
