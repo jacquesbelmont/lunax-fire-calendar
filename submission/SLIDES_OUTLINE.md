@@ -17,21 +17,19 @@ Screenshots must be taken by a person from the published app (https://jacquesbel
 - **Text:** One consistent monthly series on the VIIRS scale, 2000-11 to 2026-10, for Rondônia, Brazil. From 2012: observed VIIRS (Suomi NPP, then NOAA-20; NOAA-21 as a check). Before 2012: MODIS counts times a ratio per month of the year, learned where both sensors overlap (2015-2025). Both sensors are needed.
 - **Image:** method/figures/backcast.png (converted MODIS vs observed VIIRS in the test years).
 
-## Slide 4 — The user experience
-- **Text:** Draw an area or type coordinates. Read the year-by-month calendar. Compare a month with the historical median. Grey = no data (never zero). Dashed line and "est." = estimated months. Download the monthly series, values per cell, hotspot list and charts.
-- **Images (3 screenshots):** (1) map with a drawn rectangle and the selected cells; (2) calendar with grey cells and the dashed line; (3) the month-vs-median chart with its text.
+## Slide 4 — September 2025 near Porto Velho
+- A rectangle selects 33 grid cells. In September 2025 the app shows 309 observed hotspots against a median of 5,545 across 23 earlier Septembers. An analyst can flag that month for follow-up in imagery and field reports. See FACT_CHECK.md for the coordinates and data source.
+- Chart captured from the published app in `submission/screenshots/porto_velho_september_2025.png`.
 
 ## Slide 5 — How we know it works
-- **Text:** Test fixed before seeing the results: fit on 2015-2025, predict 2012-2014 from MODIS, compare with observed VIIRS. Total within 0.6%; median error of monthly totals 13.3%; correlation 0.998. A more complex model failed the same test (bias +143%) and was not used. Suomi NPP and NOAA-20 agree (ratio of totals 0.992). Intervals: 90% interval covers 85% of monthly totals in the test.
+- Fit on 2015-2025 and test on 34 statewide months in 2012-2014. The Terra and Aqua conversion had 13.3% median absolute percentage error across monthly statewide totals and a +0.6% bias in the combined total. The first regression had +143% bias. NOAA-20/Suomi NPP totals had a ratio of 0.992. The nominal 90% intervals covered 85% of the monthly statewide totals.
 - **Image:** method/figures/continuity.png.
 
 ## Slide 6 — How NASA data makes it possible, and the limits
-- **Text:** NASA FIRMS is the only data used: MODIS (Terra, Aqua) and VIIRS (Suomi NPP, NOAA-20, NOAA-21) active-fire detections: Brazil and Bolivia country files (standard processing, 2000-11-01 to 2025-12-31) and the FIRMS area API for NOAA-21 and 2026 (to 2026-10-31), clipped to the IBGE boundary of Rondônia. Limits: 2000-11 to 2012-01 are estimates; Terra-only months are less accurate; data end on 2026-10-31 and the last months (near real-time) are provisional; hotspots are not fires.
-- **Image:** screenshot of the footer with the FIRMS acknowledgment and the "Archived data through 2026-10-31" label.
+- NASA FIRMS provides the detections from Brazil and Bolivia country files and the area API. IBGE supplies the Rondônia boundary and OpenStreetMap the map background. Available early months are estimates and the latest months are provisional. Grey marks missing values. Counts describe thermal detections, which can repeat for the same fire.
 
 ## Slide 7 — AI use, credits, references
-- **Text:** AI use (from AI_USE.md): Claude and Claude Code for code, option analysis and documentation, logged step by step; decisions made by the team and recorded in method/DECISIONS.md; no AI-generated images, video or audio. Credits: FIRMS acknowledgment text (exact, from docs/data/metadata.json); IBGE; CAMS; Schroeder et al. 2014; Leaflet, Leaflet.draw, Plotly.js, OpenStreetMap, Python libraries (licenses in SOURCES.md). Links: app, repository.
-- **Image:** QR code or link of the app (any QR image must be generated from the real link, not an AI image).
+- Claude and Claude Code assisted with the original code, analysis and documentation. Codex assisted with the TI-8 review and revisions. AI_USE.md records the steps and method/DECISIONS.md records the team's decisions. Include the FIRMS acknowledgment, the reference and license list and the app link.
 
 ## Before publishing the slides
 - Check S2: team name, member names, challenge, an image of the project, the user experience, how NASA data makes the solution possible: slides 1, 4 and 6.

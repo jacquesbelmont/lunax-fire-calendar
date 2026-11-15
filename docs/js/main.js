@@ -2,7 +2,7 @@
  * Purpose: entry point; wires controls, map, calendar, comparison and downloads together.
  * SCOPE: R1, R3, R4, R6, R7, R8, R9, R10, O1, O2, O3
  * Owner issue: JA-5, JA-6, JA-7
- * AI-assisted code (Claude Code); logged in AI_USE.md.
+ * AI-assisted code (Claude Code and Codex); logged in AI_USE.md.
  */
 (function () {
   "use strict";
@@ -14,6 +14,7 @@
     ["noaa21", "NOAA-21 only (VIIRS, raw counts)"],
   ];
   const state = {};
+  const SELECTION_BUTTONS = ["png-calendar", "png-compare", "csv-series", "csv-cells", "hotspots-count"];
 
   function addOptions(select, items) {
     items.forEach(function (it) {
@@ -39,6 +40,18 @@
     });
   }
 
+  /** Map colors: per-cell values of the month shown in the comparison (same column and month as the calendar). */
+  function mapPaint() {
+    const m = LunaxCalc.comparedMonthIndex(state.rows, Number($("compare-month").value));
+    if (m < 0) return null;
+    const column = $("series-select").value, row = state.rows[m];
+    const values = LunaxCalc.cellMonthValues(state.data, state.sel, column, m).map((c) => c.value);
+    const cap = LunaxCalc.colorCap(values);
+    const status = row.estimated ? "Estimated from MODIS" : row.provisional ? "Provisional (near real-time data)" :
+      column === "viirs_eq" ? "Observed (VIIRS)" : "Raw counts of one sensor";
+    return { values: values, cap: cap, legend: { title: "Hotspots per cell, " + row.ym, status: status, cap: cap, unit: "hotspots" } };
+  }
+
   function areaLabel() {
     const b = state.bbox.map((v) => LunaxCalc.fmt(v, 4));
     return state.meta.area.name + "; rectangle west " + b[0] + ", south " + b[1] + ", east " + b[2] + ", north " + b[3];
@@ -51,22 +64,29 @@
   }
 
   async function countHotspots() {
+    const rows = state.rows;
+    if (!rows) return;
+    const isCurrent = () => state.rows === rows;
+    const cellIds = state.sel.map((i) => state.data.cells[i].id);
     const status = $("hotspots-status"), btn = $("hotspots-count");
     const from = state.data.months[Number($("range-from").value)], to = state.data.months[Number($("range-to").value)];
     btn.disabled = true; $("hotspots-download").disabled = true;
     try {
       state.hotspotIndex = state.hotspotIndex || await LunaxHotspots.loadIndex();
-      const res = await LunaxHotspots.load(state.hotspotIndex, state.sel.map((i) => state.data.cells[i].id), from, to,
-        (d, t) => { status.textContent = "Reading files " + d + " of " + t + "..."; });
+      if (!isCurrent()) return;
+      const res = await LunaxHotspots.load(state.hotspotIndex, cellIds, from, to, (d, t) => {
+        if (isCurrent()) status.textContent = "Reading files " + d + " of " + t + "...";
+      });
+      if (!isCurrent()) return;
       state.hotspots = { res: res, from: from, to: to };
       status.textContent = (res.lines.length ? LunaxCalc.hotspotCountText(LunaxCalc.countBySatellite(res.header, res.lines), res.lines.length, from, to)
         : "No hotspot rows in the selected cells, " + from + " to " + to + ".") +
         " (" + res.files + " yearly files, " + (res.bytes / 1e6).toFixed(1) + " MB read)." + (res.lines.length ? " Press Download to save them." : "");
       $("hotspots-download").disabled = res.lines.length === 0;
     } catch (err) {
-      status.textContent = String(err.message || err);
+      if (isCurrent()) status.textContent = String(err.message || err);
     } finally {
-      btn.disabled = false;
+      if (isCurrent()) btn.disabled = false;
     }
   }
 
@@ -74,15 +94,18 @@
     resetHotspots();
     state.sel = LunaxCalc.selectCells(state.data, state.bbox);
     const cells = state.sel.map((i) => state.data.cells[i]);
-    state.map.showSelection(state.bbox, cells);
+    const hasCells = cells.length > 0;
+    state.rows = hasCells ? buildRows() : null;
+    SELECTION_BUTTONS.forEach((id) => { $(id).disabled = !hasCells; });
+    state.map.showSelection(state.bbox, cells, hasCells ? mapPaint() : null);
     const info = $("selection-info");
-    if (!cells.length) {
-      info.textContent = "No grid cell of the study area has its centre inside this rectangle. Draw a larger rectangle.";
+    if (!hasCells) {
+      info.textContent = "No grid cell centres inside this rectangle. Adjust the rectangle to select cells.";
       Plotly.purge($("calendar")); Plotly.purge($("compare")); $("compare-text").textContent = "";
       return;
     }
-    info.textContent = cells.length + " grid cells selected (" + state.meta.grid.cell_size_deg + " degree cells whose centre is inside the rectangle and inside the study area).";
-    state.rows = buildRows();
+    info.textContent = cells.length + (cells.length === 1 ? " grid cell" : " grid cells") +
+      " selected. The rectangle selects whole " + state.meta.grid.cell_size_deg + "° cells by their centres.";
     const unit = "hotspots";
     LunaxCalendar.render($("calendar"), state.rows, unit);
     LunaxCompare.render($("compare"), $("compare-text"), state.rows, Number($("compare-month").value), unit);
@@ -96,7 +119,7 @@
   }
 
   function renderStatic(meta) {
-    $("subtitle").textContent = "Monthly burning activity from harmonized NASA FIRMS MODIS and VIIRS hotspots, for " + meta.area.name.split(" (")[0] + ".";
+    $("subtitle").textContent = "Monthly NASA FIRMS hotspot detections from harmonized MODIS and VIIRS records for " + meta.area.name.split(" (")[0] + ".";
     const archived = "Archived data through " + meta.data_cutoff_date + ". " + meta.archived;
     $("archive-label").textContent = archived;
     $("archive-footer").textContent = archived;
@@ -140,7 +163,7 @@
       }));
       $("png-calendar").addEventListener("click", () => LunaxExport.png($("calendar"), "lunax_calendar"));
       $("png-compare").addEventListener("click", () => LunaxExport.png($("compare"), "lunax_month_vs_median"));
-      $("hotspots-count").addEventListener("click", () => state.sel && state.sel.length && countHotspots());
+      $("hotspots-count").addEventListener("click", countHotspots);
       $("hotspots-download").addEventListener("click", function () {
         const h = state.hotspots;
         if (h) LunaxExport.hotspotsFile(meta, h.res.header, h.res.lines, areaLabel(), h.from, h.to);

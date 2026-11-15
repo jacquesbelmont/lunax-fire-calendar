@@ -7,9 +7,9 @@ Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logo
 
 ## Status (2026-11-15)
 - **Published:** https://jacquesbelmont.github.io/lunax-fire-calendar/ (GitHub Pages from `main`, folder `/docs`).
-- **What the app does:** map with the study-area boundary and area selection (rectangle or latitude/longitude); monthly calendar (month x year) of harmonized hotspot counts; the latest month compared with the historical median; period selection; per-sensor view (Terra, Aqua, S-NPP, NOAA-20, NOAA-21); downloads (monthly series, values per grid cell, hotspot list, chart PNG) with the FIRMS acknowledgment and the data cut-off date.
-- **Data:** NASA FIRMS data for Rondônia, Brazil, 2000-11 to 2026-10 (archived data, cut-off 2026-10-31): country CSVs (standard processing) for 2000-2025 and the FIRMS area API for NOAA-21 (from 2024) and for 2026. August to October 2026 are near real-time data, marked provisional in the app.
-- **Method:** MODIS-only months (2000-11 to 2012-01) are converted to the VIIRS 375 m scale with a ratio per month of year, learned where both sensors overlap (2015-2025). Selected by a pre-registered backcast: bias of the total +0.6% on 2012-2014. VIIRS continuity: NOAA-20/S-NPP 0.992 (83 months), NOAA-21/NOAA-20 0.956 (21 months). See [method/METHOD.md](method/METHOD.md), [method/VALIDATION.md](method/VALIDATION.md) and [method/DECISIONS.md](method/DECISIONS.md) (all decisions DECIDED).
+- **What the app does.** Draw a rectangle or enter coordinates to select whole 0.25-degree cells by their centres. Counts use detections inside the IBGE boundary of Rondônia. Explore a monthly calendar of harmonized hotspot counts, compare a month with its historical median or inspect one satellite at a time. The map colors the selected cells by the month shown in the comparison (same values and colors as the calendar; grey = no data). Download the charts as PNGs. The monthly series, per-cell values and hotspot list are CSVs with the FIRMS acknowledgment and data cut-off date.
+- **Data.** The archived NASA FIRMS record for Rondônia runs from 2000-11 to 2026-10, with a cut-off of 2026-10-31. It uses standard country CSVs for 2000-2025 and the FIRMS area API for NOAA-21 from 2024 and for 2026. Near real-time data are marked provisional: August to October 2026 for VIIRS and September to October for MODIS.
+- **Method.** Available MODIS-only counts (2000-11 to 2012-01) are converted to the VIIRS 375 m scale with ratios fitted on the 2015-2025 overlap. The 2012-2014 backcast gave a median absolute percentage error of 13.3% for monthly statewide totals and a +0.6% bias in the combined statewide total. VIIRS continuity ratios are 0.992 for NOAA-20/S-NPP (83 months) and 0.956 for NOAA-21/NOAA-20 (21 months). See [method/METHOD.md](method/METHOD.md), [method/VALIDATION.md](method/VALIDATION.md) and [method/DECISIONS.md](method/DECISIONS.md).
 - **Plain-English explanation:** [method/HOW_IT_WORKS.md](method/HOW_IT_WORKS.md).
 - **Submission drafts:** [submission/](submission/) (project page, slides outline, fact check, checklist).
 - **Updating:** a new month needs `pipeline/download.py --api-source` for the new dates, a new `DATA_END` in `pipeline/aggregate.py` and a pipeline rerun (see [pipeline/README.md](pipeline/README.md)).
@@ -39,7 +39,8 @@ Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logo
    - The rest, after the download:
    ```
    # one instrument-year at a time (MODIS 2000-2025, VIIRS S-NPP 2012-2025, NOAA-20 2018-2025);
-   # area API data with --route api: viirs-jpss2 (NOAA-21) 2024-2025, and all four instruments for 2026
+   # Area API data with --route api: viirs-jpss2 (NOAA-21) in 2024-2025, and all four source families in 2026.
+   # Those families cover MODIS on Terra and Aqua, and VIIRS on S-NPP, NOAA-20 and NOAA-21.
    python pipeline/clean.py --source modis --year 2005 --bbox -67 -13.75 -59.75 -7.75 --check
    python pipeline/aggregate.py --check
    python pipeline/harmonize.py --check
@@ -55,7 +56,7 @@ Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logo
    then open http://localhost:8000 (opening `index.html` via `file://` will not load data).
 
 ## AI use
-Tools: Claude and Claude Code (Anthropic), used for code, comparison of options for the method decisions, analyses and documentation. Every AI-assisted step is logged in [AI_USE.md](AI_USE.md), and AI-assisted code carries a header comment; the data files record it in `docs/data/metadata.json` (`ai_use`). No AI-generated images, video or audio, and no NASA logos.
+Claude and Claude Code (Anthropic) assisted with code, comparisons of method options, analysis and documentation. Codex (OpenAI) reviewed the app and helped revise the app, tests and submission materials. [AI_USE.md](AI_USE.md) records the work. The `ai_use` field in `docs/data/metadata.json` describes the assistance used when producing the data. The deck uses real app screenshots and pipeline figures.
 The team chose the challenge and the goal; the target scale (VIIRS-equivalent) was proposed by Rafael and agreed by the team; the demo area (Rondônia) was chosen by the team. For the method decisions an AI assistant drafted options with pros and cons, the team chose among them, and the harmonization method was selected by a validation test fixed before the results were seen. Who chose each decision: [method/DECISIONS.md](method/DECISIONS.md).
 
 ## License

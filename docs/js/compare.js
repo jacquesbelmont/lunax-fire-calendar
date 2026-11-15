@@ -12,7 +12,8 @@
   function render(el, textEl, rows, monthNo, unit) {
     const mm = String(monthNo).padStart(2, "0");
     const mine = rows.filter((r) => r.ym.slice(5, 7) === mm && r.inRange);
-    const last = [...mine].reverse().find((r) => !Number.isNaN(r.value));
+    const idx = LunaxCalc.comparedMonthIndex(rows, monthNo);
+    const last = idx >= 0 && !Number.isNaN(rows[idx].value) ? rows[idx] : undefined;
     const f = LunaxCalc.fmt;
     if (!last) {
       textEl.textContent = "No data for " + MONTH_NAMES[monthNo - 1] + " in this area and period.";
