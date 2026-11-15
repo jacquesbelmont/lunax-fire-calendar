@@ -44,7 +44,7 @@ A satellite-month absent from this file has no data.
 Path: `docs/data/area.geojson`. This is the IBGE boundary of Rondônia (DE-1), a GeoJSON FeatureCollection with one Polygon. The source URL and retrieval date are in the feature `properties`. The app draws it and marks everything outside it as "outside the area".
 
 ### (b) Hotspot list per year (CSV export)
-Paths: `docs/data/hotspots/<instrument>_<year>.csv.gz` and `docs/data/hotspots/index.json`. Written by `pipeline/export_hotspots.py` (DE-17, R9). `<instrument>` is the FIRMS country-file instrument: `modis`, `viirs-snpp`, `viirs-jpss1` (NOAA-20). 48 files, 2,043,625 rows (`index.json`).
+Paths: `docs/data/hotspots/<instrument>_<year>.csv.gz` and `docs/data/hotspots/index.json`. Written by `pipeline/export_hotspots.py` (DE-17, R9). `<instrument>` is the FIRMS country-file instrument: `modis`, `viirs-snpp`, `viirs-jpss1` (NOAA-20), plus `viirs-jpss2` (NOAA-21, from the area API, 2024-2025). 50 files, 2,139,752 rows (`index.json`).
 Content: the detections kept by `clean.py` (standard data, `type` 0, inside the area boundary, no confidence filter). Each file is gzip text. It starts with `#` comment lines (FIRMS acknowledgment, disclaimer link, data cut-off date), then the column header, then one row per hotspot, sorted by date and time.
 `index.json`: `columns` and `files` (`source`, `year`, `file`, `rows`, `bytes`); the app reads it to choose the files of a period and to show the size.
 
@@ -54,7 +54,7 @@ Content: the detections kept by `clean.py` (standard data, `type` 0, inside the 
 | `latitude`, `longitude` | float | degrees | Pixel centre (WGS84), as in the FIRMS file |
 | `acq_date` | text | YYYY-MM-DD | UTC acquisition date |
 | `acq_time` | text | HHMM | UTC acquisition time, leading zeros kept |
-| `sat` | text | - | `Terra`, `Aqua`, `SNPP` or `NOAA20` |
+| `sat` | text | - | `Terra`, `Aqua`, `SNPP`, `NOAA20` or `NOAA21` |
 | `sensor` | text | - | `MODIS` or `VIIRS` |
 | `confidence` | text | - | MODIS 0-100; VIIRS `l`, `n` or `h` (both seen in the real files). Not filtered |
 | `daynight` | text | - | `D` or `N` |
@@ -97,12 +97,25 @@ Delivery of new Suomi NPP data ended on 2026-11-02 (historical data stays availa
 https://www.earthdata.nasa.gov/news/blog/transitioning-from-s-npp-viirs-omps-what-nasa-firms-users-need-know
 
 ## SP / NRT date ranges per sensor
-TODO(verify): fill from `data_availability` output in JA-2.
+Output of `pipeline/check_availability.py` (FIRMS `data_availability`, `ALL`), 2026-11-15:
+
+| data_id | min_date | max_date |
+|---------|----------|----------|
+| MODIS_NRT | 2026-09-01 | 2026-11-15 |
+| MODIS_SP | 2000-11-01 | 2026-08-31 |
+| VIIRS_NOAA20_NRT | 2026-08-01 | 2026-11-15 |
+| VIIRS_NOAA20_SP | 2018-04-01 | 2026-07-31 |
+| VIIRS_NOAA21_NRT | 2024-01-17 | 2026-11-15 |
+| VIIRS_NOAA21_SP | 2023-03-01 | 2026-07-31 |
+| VIIRS_SNPP_NRT | 2026-08-01 | 2026-11-02 |
+| VIIRS_SNPP_SP | 2012-01-20 | 2026-07-31 |
+
+The answer also lists LANDSAT_NRT, GOES_NRT, BA_MODIS and BA_VIIRS (out of scope). Area API answers have the country-file columns of VIIRS (below), but `acq_time` comes without leading zeros (e.g. `541`); `clean.py` pads it to HHMM.
 
 ## Real column headers per source
 DRAFT from real Brazil country files (method/FIRMS_REFERENCE.md section 4); to be reviewed by Jacques and Rafael (JA-3).
 - MODIS: `latitude,longitude,brightness,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_t31,frp,daynight,type`
-- VIIRS (S-NPP, NOAA-20): `latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_ti5,frp,daynight,type`
+- VIIRS (S-NPP, NOAA-20; NOAA-21 from the area API `VIIRS_NOAA21_SP`, same columns, `satellite` = `N21`, `version` = `2`): `latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,bright_ti5,frp,daynight,type`
 - `acq_time` is HHMM in UTC with leading zeros: read as text. `confidence`: MODIS 0-100, VIIRS `l`/`n`/`h` (values seen in the real files, 2026-11-15).
 - VIIRS units: brightness temperatures in Kelvin, `frp` in MW (FIRMS attribute page). VIIRS `type` codes are the MODIS ones: 0 presumed vegetation fire, 1 active volcano, 2 other static land source, 3 offshore (VIIRS C2 375 m User Guide 1.2, section 3.2.2; FIRMS_REFERENCE.md section 13).
 

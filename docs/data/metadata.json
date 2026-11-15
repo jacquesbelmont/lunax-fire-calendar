@@ -19,8 +19,8 @@
   "source": {
     "name": "NASA FIRMS (Fire Information for Resource Management System)",
     "url": "https://www.earthdata.nasa.gov/data/tools/firms",
-    "product": "FIRMS country yearly summary CSVs, standard processing (SP)",
-    "files": "https://firms.modaps.eosdis.nasa.gov/data/country/",
+    "product": "FIRMS country yearly summary CSVs, standard processing (SP); NOAA-21 from the FIRMS area API (no NOAA-21 country files)",
+    "files": "https://firms.modaps.eosdis.nasa.gov/data/country/ ; https://firms.modaps.eosdis.nasa.gov/api/area/",
     "satellites": {
       "MODIS 1 km": [
         "Terra",
@@ -28,7 +28,8 @@
       ],
       "VIIRS 375 m": [
         "S-NPP",
-        "NOAA-20"
+        "NOAA-20",
+        "NOAA-21"
       ]
     },
     "versions_by_satellite": {
@@ -38,6 +39,9 @@
         "61.03"
       ],
       "NOAA20": [
+        "2"
+      ],
+      "NOAA21": [
         "2"
       ],
       "SNPP": [
@@ -67,7 +71,7 @@
   },
   "method": {
     "target_scale": "VIIRS-equivalent: monthly count of VIIRS 375 m hotspots per cell (DE-2)",
-    "native_months": "from 2012-02: S-NPP to 2018-03, NOAA-20 from 2018-04 (DE-11)",
+    "native_months": "from 2012-02: S-NPP to 2018-03, NOAA-20 from 2018-04 (DE-11); NOAA-21 is a check (raw counts only, not used for viirs_eq)",
     "estimated_months": "2000-11 to 2012-01: viirs_eq = k(month of year) x MODIS count, with MODIS = Terra + Aqua when both are valid, else Terra (DE-6 option 2, selected by the DE-15 backcast; method/results/validation_metrics.json)",
     "train_years": [
       2015,

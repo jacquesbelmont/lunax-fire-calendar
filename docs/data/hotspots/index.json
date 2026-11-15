@@ -254,6 +254,20 @@
    "bytes": 155465
   },
   {
+   "source": "viirs-jpss2",
+   "year": 2024,
+   "file": "viirs-jpss2_2024.csv.gz",
+   "rows": 83750,
+   "bytes": 907922
+  },
+  {
+   "source": "viirs-jpss2",
+   "year": 2025,
+   "file": "viirs-jpss2_2025.csv.gz",
+   "rows": 12377,
+   "bytes": 147860
+  },
+  {
    "source": "viirs-snpp",
    "year": 2012,
    "file": "viirs-snpp_2012.csv.gz",

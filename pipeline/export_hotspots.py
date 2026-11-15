@@ -7,7 +7,7 @@ Reads data/interim/clean/<source>_<year>.csv.gz (clean.py output: SP data, type 
 no confidence filter) and writes, for each one:
     docs/data/hotspots/<source>_<year>.csv.gz   comment header (acknowledgment, cut-off date) + one row per hotspot
     docs/data/hotspots/index.json               source, year, rows and bytes of every file (the app reads it)
-`<source>` is the FIRMS country-file instrument: modis, viirs-snpp, viirs-jpss1.
+`<source>` is the FIRMS instrument folder: modis, viirs-snpp, viirs-jpss1 (country files), viirs-jpss2 (NOAA-21, area API).
 Rows keep the cell_id of aggregate.py, so the app selects them with the same cells as monthly_cells.csv.
 Like export.py, this is code that writes into docs/data/ (AGENTS.md rule 7).
 
@@ -32,7 +32,7 @@ META_PATH = ROOT / "docs" / "data" / "metadata.json"
 
 COLUMNS = ["cell_id", "latitude", "longitude", "acq_date", "acq_time", "sat", "sensor", "confidence",
            "daynight", "frp", "type", "version"]
-CLEAN_NAME = re.compile(r"^(modis|viirs-snpp|viirs-jpss1)_(\d{4})\.csv\.gz$")
+CLEAN_NAME = re.compile(r"^(modis|viirs-snpp|viirs-jpss1|viirs-jpss2)_(\d{4})\.csv\.gz$")
 
 
 def build_header(meta, source, year):
@@ -90,7 +90,7 @@ def export_one(source, year, meta, clean_dir=CLEAN_DIR, out_dir=OUT_DIR):
 
 def main(argv=None):
     p = argparse.ArgumentParser(description="Write docs/data/hotspots/ from the cleaned files.")
-    p.add_argument("--source", choices=["modis", "viirs-snpp", "viirs-jpss1"])
+    p.add_argument("--source", choices=["modis", "viirs-snpp", "viirs-jpss1", "viirs-jpss2"])
     p.add_argument("--year", type=int)
     a = p.parse_args(argv)
     meta = json.loads(META_PATH.read_text())

@@ -20,6 +20,7 @@
 - LANCE disclaimer: https://www.earthdata.nasa.gov/data/projects/lance#ed-lance-disclaimer
 - FIRMS country files index: https://firms.modaps.eosdis.nasa.gov/data/country/yearly_summary_files.txt
 - FIRMS missing data (used for the month flags, DE-14): https://firms.modaps.eosdis.nasa.gov/api/missing_data/?action=fetch_data
+- FIRMS area API (NOAA-21, `VIIRS_NOAA21_SP`, 2024-01-17 to 2025-12-31; needs a free MAP_KEY): https://firms.modaps.eosdis.nasa.gov/api/area/ ; date ranges: https://firms.modaps.eosdis.nasa.gov/api/data_availability/
 
 ## Other sources used in the method (method/DECISIONS.md, method/METHOD.md)
 - IBGE state boundary of Rondônia (demo area, DE-1; copy in config/area_boundary.geojson): https://servicodados.ibge.gov.br/api/v3/malhas/estados/11?formato=application/vnd.geo+json&qualidade=maxima
@@ -41,10 +42,10 @@
 | Library / resource | Version | License | Where used |
 |--------------------|---------|---------|------------|
 | leaflet | 1.9.4 | BSD-2-Clause | docs/lib/leaflet/ |
-| leaflet-draw | 1.0.4 | MIT (package.json; TODO(verify): license text) | docs/lib/leaflet-draw/ |
+| leaflet-draw | 1.0.4 | MIT (text in docs/lib/leaflet-draw/LICENSE, from https://github.com/Leaflet/Leaflet.draw/blob/v1.0.4/MIT-LICENSE.md) | docs/lib/leaflet-draw/ |
 | plotly.js-dist-min | 4.3.0 | MIT | docs/lib/plotly/ |
-| IBGE malhas (Rondônia boundary) | API v3, retrieved 2026-11-14 | TODO(verify): IBGE data license - https://www.ibge.gov.br | config/area_boundary.geojson, docs/data/area.geojson |
-| Python: pandas, numpy, scipy, statsmodels, matplotlib | pipeline/requirements.lock.txt | BSD-3-Clause (pandas, numpy, scipy, statsmodels); matplotlib license (PSF-based) - TODO(verify): exact license texts | pipeline/ |
+| IBGE malhas (Rondônia boundary) | API v3, retrieved 2026-11-14 | Public data of the Brazilian statistics institute; source cited in the app and in the file properties. TODO(verify): IBGE terms of use - the API documentation (https://servicodados.ibge.gov.br/api/docs/malhas?versao=3) states none, and https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais/15774-malhas.html refuses automated access (HTTP 403): open it in a browser | config/area_boundary.geojson, docs/data/area.geojson |
+| Python, direct dependencies (pipeline/requirements.txt) | pipeline/requirements.lock.txt | From the installed package metadata (2026-11-15): pandas BSD-3-Clause; numpy BSD-3-Clause (LICENSE.txt); scipy BSD-3-Clause (LICENSE.txt); statsmodels BSD-3-Clause; matplotlib PSF-based matplotlib license; requests Apache-2.0; python-dotenv BSD-3-Clause. Indirect dependencies: MIT, BSD, Apache-2.0, PSF-2.0, MIT-CMU (pillow) and MPL-2.0 (certifi), as in their metadata | pipeline/ |
 | NASA FIRMS (data) | MODIS Collection 6/6.1 (`6.2`, `6.03`, `61.03`), VIIRS Collection 2 (`2`), standard processing (`docs/data/metadata.json`; method/METHOD.md) | Open: "NASA promotes full and open sharing of data" (FIRMS FAQ, "Are there any restrictions on using data or imagery from FIRMS?", https://www.earthdata.nasa.gov/data/tools/firms/faq); acknowledgment text in `docs/data/metadata.json` (`attribution`) | pipeline/, docs/data/ |
 
 ## Map tiles (web app)

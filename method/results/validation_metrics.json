@@ -91,7 +91,13 @@
     "monthly_ratio_median": 1.0008118295158017,
     "monthly_ratio_q25": 0.9503996720639475,
     "monthly_ratio_q75": 1.0499605648238228,
-    "noaa21": "not in the FIRMS country CSVs; needs API data from 2024-01 (DE-8)"
+    "noaa21": {
+      "months_both_valid": 21,
+      "total_ratio_noaa21_to_noaa20": 0.9556842766417755,
+      "monthly_ratio_median": 0.9576612903225806,
+      "monthly_ratio_q25": 0.8228941684665226,
+      "monthly_ratio_q75": 1.020054922193559
+    }
   },
   "uncertainty": {
     "estimated_months": 129,
@@ -127,10 +133,13 @@
       "loyo_bias_vs_year_spearman": -0.3494505494505495,
       "loyo_bias_vs_year_p": 0.22068999774644735
     },
-    "viirs_low_confidence": {
+    "low_confidence": {
       "low_confidence_share_by_satellite": {
         "NOAA20": 0.06584703617776724,
-        "SNPP": 0.06157084564765128
+        "NOAA21": 0.05799619253695632,
+        "SNPP": 0.06157084564765128,
+        "Aqua": 0.04288600131032977,
+        "Terra": 0.06590757744867237
       },
       "backcast_area_ref": {
         "relative_bias_total": 0.00623946066631853,
@@ -139,6 +148,14 @@
       "backcast_area_ref_no_low": {
         "relative_bias_total": 0.011779797095560651,
         "mdape_monthly_area": 0.12937842332220395
+      },
+      "backcast_area_modis_no_low": {
+        "relative_bias_total": 0.011288827915340693,
+        "mdape_monthly_area": 0.11552273268515308
+      },
+      "backcast_area_both_no_low": {
+        "relative_bias_total": 0.01686551451355789,
+        "mdape_monthly_area": 0.11020662815871532
       }
     },
     "grid_size": "not run: the ratio per month of year is fitted on area sums, so k and every area total are the same for any cell size; only the split between cells changes"

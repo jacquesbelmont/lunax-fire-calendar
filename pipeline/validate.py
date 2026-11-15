@@ -15,12 +15,13 @@ AI-assisted code (Claude Code); logged in AI_USE.md.
   monthly area totals; coverage of the 90 % prediction interval (cell level: NB2 quantiles; area level:
   normal approximation with summed variances, which assumes independent cells).
 - Jump check: raw VIIRS/MODIS ratio in the overlap, and a before/after figure.
-- VIIRS continuity: monthly area totals of NOAA-20 vs S-NPP where both are valid.
+- VIIRS continuity: monthly area totals of NOAA-20 vs S-NPP, and of NOAA-21 vs NOAA-20, where both are valid.
+- Sensitivity: training window; low-confidence detections (VIIRS class `l`, MODIS C < 30 %); grid size.
 
 Usage:
     python pipeline/validate.py
 Reads data/interim/monthly_counts.csv.gz, data/interim/month_flags.csv and data/interim/harmonized.csv.gz.
-Writes method/results/validation_metrics.json, loyo.csv, continuity.csv and
+Writes method/results/validation_metrics.json, loyo.csv, continuity.csv, continuity_noaa21.csv and
 method/figures/before_after.png, backcast.png, continuity.png.
 """
 
@@ -50,7 +51,8 @@ LOYO_YEARS = range(2012, 2026)  # DE-15
 CALIB_YEARS = range(2015, 2026)  # DE-16: lambda fitted on these LOYO years, tested on the backcast years
 CLEAN_DIR = ROOT / "data" / "interim" / "clean"
 Z90 = stats.norm.ppf(0.95)
-SOURCE_NOTE = "Data: NASA FIRMS country CSVs (standard processing), Brazil + Bolivia. Area: Rondônia bbox (DE-1)."
+SOURCE_NOTE = ("Data: NASA FIRMS country CSVs (standard processing), Brazil + Bolivia; NOAA-21: FIRMS area API (SP). "
+               "Area: IBGE boundary of Rondônia (DE-1).")
 FORMULAS = {  # DE-6 option 3, as registered
     "TA": "ref ~ np.log1p(Terra) + np.log1p(Aqua) + C(month) + np.log1p(clim)",
     "T": "ref ~ np.log1p(Terra) + C(month) + np.log1p(clim)",
@@ -206,50 +208,68 @@ def sensitivity_training_window(panel, loyo):
     return out
 
 
-def sensitivity_viirs_low_confidence(panel):
-    """DE-10 sensitivity at area level: share of low-confidence VIIRS detections, and the backcast of the ratio
-    method with them removed from the reference. MODIS is not filtered: its class cut-offs are not verified."""
-    files = sorted(CLEAN_DIR.glob("viirs-*.csv.gz"))
-    v = pd.concat([pd.read_csv(f, usecols=["acq_date", "sat", "confidence"], dtype=str) for f in files],
-                  ignore_index=True)
-    v["year_month"] = v["acq_date"].str[:7]
-    share = v.groupby("sat")["confidence"].apply(lambda s: float((s == "l").mean())).to_dict()
-    low = v[v["confidence"].eq("l")].groupby(["year_month", "sat"]).size()
+def _low_confidence(pattern, is_low):
+    """Share of low-confidence detections per satellite, and their monthly counts, in the cleaned files."""
+    d = pd.concat([pd.read_csv(f, usecols=["acq_date", "sat", "confidence"], dtype=str)
+                   for f in sorted(CLEAN_DIR.glob(pattern))], ignore_index=True)
+    d["year_month"] = d["acq_date"].str[:7]
+    d["low"] = is_low(d["confidence"])
+    return d.groupby("sat")["low"].mean().astype(float).to_dict(), d[d["low"]].groupby(["year_month", "sat"]).size()
+
+
+def sensitivity_low_confidence(panel):
+    """DE-10 sensitivity at area level: share of low-confidence detections, and the backcast of the ratio method with
+    them removed. VIIRS low = class `l`, removed from the reference; MODIS low = confidence C < 30 % (MODIS C6/C6.1
+    Active Fire Product User's Guide 1.0, Table 11), removed from the predictor."""
+    share, low = _low_confidence("viirs-*.csv.gz", lambda c: c.eq("l"))
+    share_m, low_m = _low_confidence("modis_*.csv.gz", lambda c: pd.to_numeric(c) < 30)
     p = panel[panel["ref"].notna()]
     area = p.groupby("year_month").agg(ref=("ref", "sum"), ref_sat=("ref_sat", "first"), month=("month", "first"),
                                        Terra=("Terra", lambda s: s.sum(min_count=1)),
                                        Aqua=("Aqua", lambda s: s.sum(min_count=1)))
     area["ref_no_low"] = area["ref"] - [low.get((ym, s), 0) for ym, s in zip(area.index, area["ref_sat"])]
     area["modis"] = area["Terra"] + area["Aqua"]
+    area["modis_no_low"] = area["modis"] - [low_m.get((ym, "Terra"), 0) + low_m.get((ym, "Aqua"), 0)
+                                            for ym in area.index]
     area["year"] = area.index.str[:4].astype(int)
-    out = {"low_confidence_share_by_satellite": share}
-    for col in ("ref", "ref_no_low"):
+    out = {"low_confidence_share_by_satellite": {**share, **share_m}}
+    for col, modis, key in (("ref", "modis", "backcast_area_ref"),
+                            ("ref_no_low", "modis", "backcast_area_ref_no_low"),
+                            ("ref", "modis_no_low", "backcast_area_modis_no_low"),
+                            ("ref_no_low", "modis_no_low", "backcast_area_both_no_low")):
         tr = area[area["year"].isin(list(BACKCAST_TRAIN)) & area["modis"].notna()]
         te = area[area["year"].isin(list(BACKCAST_TEST)) & area["modis"].notna()]
-        g = tr.groupby("month")[[col, "modis"]].sum()
-        pred = te["month"].map(g[col] / g["modis"]) * te["modis"]
+        g = tr.groupby("month")[[col, modis]].sum()
+        pred = te["month"].map(g[col] / g[modis]) * te[modis]
         pos = te[col] > 0
-        out[f"backcast_area_{col}"] = {
+        out[key] = {
             "relative_bias_total": float(pred.sum() / te[col].sum() - 1),
             "mdape_monthly_area": float(np.median((pred[pos] - te.loc[pos, col]).abs() / te.loc[pos, col]))}
     return out
 
 
-def check_continuity_across_viirs_satellites(panel):
-    """Monthly area totals of NOAA-20 vs S-NPP where both are valid. NOAA-21 needs API data (DE-8)."""
-    both = panel[panel["SNPP"].notna() & panel["NOAA20"].notna()]
-    area = both.groupby("year_month")[["SNPP", "NOAA20"]].sum()
-    pos = area[area["SNPP"] > 0]
-    ratio = pos["NOAA20"] / pos["SNPP"]
-    summary = {
+def _continuity_pair(panel, a, b):
+    """Monthly area totals of satellites a and b where both are valid, and the ratio b/a."""
+    both = panel[panel[a].notna() & panel[b].notna()]
+    area = both.groupby("year_month")[[a, b]].sum()
+    if area.empty:
+        return {"months_both_valid": 0}, area
+    pos = area[area[a] > 0]
+    ratio = pos[b] / pos[a]
+    return {
         "months_both_valid": int(len(area)),
-        "total_ratio_noaa20_to_snpp": float(area["NOAA20"].sum() / area["SNPP"].sum()),
+        f"total_ratio_{b.lower()}_to_{a.lower()}": float(area[b].sum() / area[a].sum()),
         "monthly_ratio_median": float(ratio.median()),
         "monthly_ratio_q25": float(ratio.quantile(0.25)),
         "monthly_ratio_q75": float(ratio.quantile(0.75)),
-        "noaa21": "not in the FIRMS country CSVs; needs API data from 2024-01 (DE-8)",
-    }
-    return summary, area
+    }, area
+
+
+def check_continuity_across_viirs_satellites(panel):
+    """Monthly area totals of NOAA-20 vs S-NPP, and of NOAA-21 vs NOAA-20 (area API data), where both are valid."""
+    summary, area = _continuity_pair(panel, "SNPP", "NOAA20")
+    summary["noaa21"], area21 = _continuity_pair(panel, "NOAA20", "NOAA21")
+    return summary, area, area21
 
 
 def ratio_stability(panel):
@@ -315,14 +335,18 @@ def backcast_figure(test):
     return _save(fig, "backcast.png")
 
 
-def continuity_figure(area):
-    x = pd.to_datetime(area.index)
-    fig, ax = plt.subplots(figsize=(9, 3.5))
-    ax.plot(x, area["SNPP"], "C0", lw=1.2, label="S-NPP")
-    ax.plot(x, area["NOAA20"], "C1", lw=1.2, label="NOAA-20")
-    ax.set_ylabel("Hotspots per month (area total)")
-    ax.set_title("VIIRS continuity: S-NPP vs NOAA-20 (months where both are valid)")
-    ax.legend(fontsize=8)
+def continuity_figure(area, area21):
+    pairs = [(area, "SNPP", "NOAA20")] + ([(area21, "NOAA20", "NOAA21")] if not area21.empty else [])
+    fig, axes = plt.subplots(len(pairs), 1, figsize=(9, 3.5 * len(pairs)), squeeze=False)
+    fig.subplots_adjust(hspace=0.35)
+    names = {"SNPP": "S-NPP", "NOAA20": "NOAA-20", "NOAA21": "NOAA-21"}
+    for ax, (df, a, b) in zip(axes[:, 0], pairs):
+        x = pd.to_datetime(df.index)
+        ax.plot(x, df[a], "C0", lw=1.2, label=names[a])
+        ax.plot(x, df[b], "C1", lw=1.2, label=names[b])
+        ax.set_ylabel("Hotspots per month (area total)")
+        ax.set_title(f"VIIRS continuity: {names[a]} vs {names[b]} (months where both are valid)")
+        ax.legend(fontsize=8)
     return _save(fig, "continuity.png")
 
 
@@ -343,12 +367,14 @@ def main():
          "details": "method/results/validation_metrics.json -> uncertainty_calibration"}, indent=2) + "\n")
     sensitivity = {
         "training_window": sensitivity_training_window(panel, loyo),
-        "viirs_low_confidence": sensitivity_viirs_low_confidence(panel),
+        "low_confidence": sensitivity_low_confidence(panel),
         "grid_size": "not run: the ratio per month of year is fitted on area sums, so k and every area total are "
                      "the same for any cell size; only the split between cells changes",
     }
-    continuity, area = check_continuity_across_viirs_satellites(panel)
+    continuity, area, area21 = check_continuity_across_viirs_satellites(panel)
     area.to_csv(RESULTS / "continuity.csv")
+    if not area21.empty:
+        area21.to_csv(RESULTS / "continuity_noaa21.csv")
     stability, annual = ratio_stability(panel)
     annual.to_csv(RESULTS / "annual_ratio.csv")
     est = harmonized[harmonized["estimated"].eq(1)]
@@ -378,7 +404,7 @@ def main():
         "sensitivity": sensitivity,
     }
     (RESULTS / "validation_metrics.json").write_text(json.dumps(result, indent=2) + "\n")
-    for p in (before_after_figure(harmonized, calibration["lambda"]), backcast_figure(test), continuity_figure(area)):
+    for p in (before_after_figure(harmonized, calibration["lambda"]), backcast_figure(test), continuity_figure(area, area21)):
         print("wrote", p.relative_to(ROOT))
     print("wrote method/results/validation_metrics.json, loyo.csv, continuity.csv")
 

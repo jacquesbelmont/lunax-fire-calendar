@@ -2,7 +2,7 @@
 
 Owner issue: RA-5 (Rafael). Input for Tiara (TI-5, TI-6).
 Only decided method steps (see DECISIONS.md) go here; every number has a source file path.
-Status: every decision cited here is DECIDED in method/DECISIONS.md, except DE-1b (Bolivia), which is OPEN.
+Status: every decision cited here is DECIDED in method/DECISIONS.md.
 
 ## Method
 
@@ -12,15 +12,17 @@ Status: every decision cited here is DECIDED in method/DECISIONS.md, except DE-1
 - **Product:** FIRMS country yearly summary CSVs, standard processing (https://firms.modaps.eosdis.nasa.gov/data/country/), for Brazil and Bolivia (DE-8).
   - Bolivia's files are read because FIRMS assigns some detections near the border to Bolivia while they lie inside the IBGE boundary of Rondônia.
 - **Satellites:**
-  - MODIS 1 km on Terra (from 2000-11) and Aqua (from 2002-07);
-  - VIIRS 375 m on S-NPP (from 2012-01-20) and NOAA-20 (from 2018-04-01).
+  - MODIS 1 km on Terra (from 2000-11-01) and Aqua (from 2002-07-04, the first Aqua day in the files);
+  - VIIRS 375 m on S-NPP (from 2012-01-20) and NOAA-20 (from 2018-04-01);
+  - VIIRS 375 m on NOAA-21 (from 2024-01-17), as a check of NOAA-20 only (DE-11).
   - Source: method/FIRMS_REFERENCE.md section 2.
 - **Versions seen** in the files (`docs/data/metadata.json`): MODIS `6.2` (2000-2017), `6.03` (2018-2022) and `61.03` (2023-2025); VIIRS `2` (Collection 2). By the MCD14ML naming (collection, then product version; MODIS user guide section 5.5.1), they read as Collection 6 version 2 (most likely), Collection 6 version 03 and Collection 6.1 version 03. All are standard processing. Details: method/FIRMS_REFERENCE.md section 13, item 1.
 - **Period:** 2000-11 to 2025-12. Data cut-off 2025-12-31; archived data, not live (`docs/data/metadata.json`).
 - **Area (DE-1):** Rondônia, Brazil, as given by the IBGE state boundary (`config/area_boundary.geojson`; source URL in its properties).
   - The processing box (`config/area.json`) is the boundary's bbox aligned outwards to 0.25° cells: west -67, south -13.75, east -59.75, north -7.75.
 - **Download:** 96 files (48 instrument-years × 2 countries), each with its size checked against the FIRMS index (https://firms.modaps.eosdis.nasa.gov/data/country/yearly_summary_files.txt). 91 are listed in `data/raw/download_manifest.csv` (local); the first 5 were downloaded earlier with the same check.
-- **Not included yet:** 2026 and NOAA-21. They are not in these files and need the FIRMS API (DE-8).
+- **NOAA-21** has no FIRMS country files. It was downloaded from the FIRMS area API (`VIIRS_NOAA21_SP`, standard processing, bbox of `config/area.json`, 2024-01-17 to 2025-12-31; `pipeline/download.py --api-source`, 2026-11-15): 298,812 rows (`method/results/cleaning_log.csv`). The API listed `VIIRS_NOAA21_SP` from 2023-03-01 to 2026-07-31 (`pipeline/check_availability.py`, 2026-11-15); the period follows DE-15.
+- **Not included yet:** 2026. It is not in the country files and needs the FIRMS area API (DE-8).
 
 ### 2. Cleaning (`pipeline/clean.py`; DE-1, DE-4, DE-5, DE-9, DE-10)
 
@@ -34,18 +36,18 @@ Status: every decision cited here is DECIDED in method/DECISIONS.md, except DE-1
 7. Drop exact duplicates.
 8. Use standard data before NRT data.
 
-**Result** (`method/results/cleaning_log.csv`): 48,648,899 rows read from the two countries' files. Removed: 44,276,831 outside the box, 2,318,649 outside the boundary, 9,794 with `type` ≠ 0 and 0 duplicates. **2,043,625 detections were kept.**
+**Result** (`method/results/cleaning_log.csv`): 48,648,899 rows read from the two countries' files. Removed: 44,276,831 outside the box, 2,318,649 outside the boundary, 9,794 with `type` ≠ 0 and 0 duplicates. **2,043,625 detections were kept.** NOAA-21 (area API): 298,812 rows read; removed 1 outside the box, 202,493 outside the boundary and 191 with `type` ≠ 0; **96,127 kept**. The API writes `acq_time` without leading zeros; `clean.py` pads it to HHMM.
 
 ### 3. Aggregation (`pipeline/aggregate.py`; DE-12, DE-14)
 
 - **Grid:** detections are counted per 0.25° cell, month and satellite. Satellites are never summed at this step. A cell that crosses the boundary counts only its detections inside Rondônia.
-- **Missing data:** a satellite-month is flagged when at least one day is missing. Missing days are the FIRMS `missing_data` list plus the days outside the satellite's operating window. 24 of 845 satellite-months are flagged (`docs/data/months.csv`).
+- **Missing data:** a satellite-month is flagged when at least one day is missing. Missing days are the FIRMS `missing_data` list plus the days outside the satellite's operating window. 27 of 869 satellite-months are flagged (`docs/data/months.csv`).
 - **Flagged months have no value, never zero** (AGENTS.md rule 6).
 
 ### 4. Harmonization (`pipeline/harmonize.py`; DE-2, DE-6, DE-11)
 
 - **Target scale:** monthly count of VIIRS 375 m hotspots per cell.
-- **Native months (2012-02 onwards):** the value is the observed count of one reference VIIRS satellite: S-NPP until 2018-03, NOAA-20 from 2018-04. One satellite per month avoids double counting.
+- **Native months (2012-02 onwards):** the value is the observed count of one reference VIIRS satellite: S-NPP until 2018-03, NOAA-20 from 2018-04. One satellite per month avoids double counting. NOAA-21 is exported as raw counts (per-sensor view) and is not used for the harmonized value.
 - **MODIS-only months** (2000-11 to 2012-01; January 2012 because S-NPP starts on 2012-01-20) are converted with a **ratio per month of year**: `VIIRS_eq = k(month) × MODIS`.
   - k = sum(reference VIIRS) / sum(MODIS) over 2015-2025, the years where both sensors observe.
   - MODIS is Terra + Aqua when both are valid. It is Terra alone before Aqua (2000-11 to 2002-06) and in months with Aqua flagged.
@@ -67,7 +69,7 @@ Summary of `method/VALIDATION.md`; all numbers from `method/results/validation_m
 - **Backcast** (fit on 2015-2025, predict 2012-2014 from MODIS, compare with real VIIRS): bias of the total +0.6 %; median absolute error of monthly totals 13.3 %; r = 0.998.
 - **Leave-one-year-out 2012-2025:** yearly bias from -9.7 % to +7.9 % (`method/results/loyo.csv`).
 - **Without harmonization** the series would jump by a factor of 3.82 when VIIRS enters (2012-2014 raw VIIRS/MODIS).
-- **VIIRS continuity:** NOAA-20/S-NPP = 0.992 over 83 months.
+- **VIIRS continuity:** NOAA-20/S-NPP = 0.992 over 83 months; NOAA-21/NOAA-20 = 0.956 over 21 months (2024-04 to 2025-12).
 - **Method choice:** the negative binomial regression first proposed in DE-6 failed this pre-registered test (bias +143 %), so the ratio method was selected by the DE-15 rule.
 
 ## Target scale and justification
@@ -90,9 +92,10 @@ Summary of `method/VALIDATION.md`; all numbers from `method/results/validation_m
 5. **Small fires in converted months.** MODIS misses small fires, and a cell where MODIS counts 0 gets 0. Area totals are unbiased in the backcast (+0.6 %), but cells with only small fires are under-estimated in converted months.
 6. **Uncertainty is approximate.** After calibration, the 90 % intervals cover 85 % of monthly area totals and 85 % of cell-months in the backcast, still a little below 90 %.
 7. **Months without data.** 10 months have no value because a needed satellite is flagged. In 2003-12 and 2008-12 Terra is flagged but Aqua is valid; an Aqua-only conversion is not implemented.
-8. **Data end on 2025-12-31.** 2026 and NOAA-21 need the FIRMS API (DE-8).
+8. **Data end on 2025-12-31.** 2026 needs the FIRMS area API (DE-8); the route exists (`pipeline/download.py --api-source`) but 2026 is not processed yet.
 9. **Hotspots are not fires.** A detection is the centre of a pixel with one or more fires; it is not a fire's position, size or burned area. Clouds, smoke and canopy can hide fires, and a month without detections is not proof of no fire (FIRMS FAQ; FIRMS_REFERENCE sections 5 and 7). FIRMS data must not be used for the preservation of life or property (FIRMS_REFERENCE section 10).
 10. **Static sources are dropped.** `type` ≠ 0 detections are removed: 0.48 % of the detections inside the boundary, from 0.28 % (MODIS) to 0.64 % (S-NPP) (`method/results/cleaning_log.csv`).
-11. **No confidence filter.** Low-confidence detections are 6.2 % (S-NPP) and 6.6 % (NOAA-20) of the VIIRS detections. Removing them changes the backcast bias from +0.6 % to +1.2 % (`validation_metrics.json` → `sensitivity`).
+11. **No confidence filter.** Low-confidence detections are 6.2 % (S-NPP) and 6.6 % (NOAA-20) of the VIIRS detections, and 6.6 % (Terra) and 4.3 % (Aqua) of the MODIS detections (C < 30 %). Removing them changes the backcast bias from +0.6 % to +1.2 % (VIIRS), +1.1 % (MODIS) or +1.7 % (both) (`validation_metrics.json` → `sensitivity.low_confidence`).
 12. **Border detections.** 6,216 of the kept detections (0.30 %) come from FIRMS's Bolivia file but lie inside the IBGE boundary. FIRMS's country assignment and the IBGE boundary differ slightly at the border. They count as Rondônia (DE-1).
 13. **The ratios are specific to this area.** They are fitted on Rondônia and must be refitted for any other area.
+14. **NOAA-21 counts fewer hotspots than NOAA-20.** Over 21 months the total ratio NOAA-21/NOAA-20 is 0.956 (monthly median 0.958, interquartile range 0.82-1.02; `validation_metrics.json` → `continuity.noaa21`). NOAA-21 is only a check, so the series does not change. A correction factor must be decided before NOAA-21 replaces NOAA-20 as the reference.

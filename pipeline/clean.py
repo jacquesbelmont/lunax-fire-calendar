@@ -4,9 +4,10 @@ Owner issue: RA-1. SCOPE: R2.
 Do not add rules here that are not recorded in DECISIONS.md.
 AI-assisted code (Claude Code); logged in AI_USE.md.
 
-Usage (one instrument-year at a time; reads every CSV or CSV.GZ under data/raw/country/<source>/<year>/):
-    python pipeline/clean.py --source modis --year 2013 --bbox WEST SOUTH EAST NORTH
-    python pipeline/clean.py --source modis --year 2013 --bbox WEST SOUTH EAST NORTH --check
+Usage (one instrument-year at a time; reads every CSV or CSV.GZ under data/raw/<route>/<source>/<year>/;
+the bbox defaults to config/area.json):
+    python pipeline/clean.py --source modis --year 2013 --check
+    python pipeline/clean.py --source viirs-jpss2 --route api --year 2024 --check   (NOAA-21, FIRMS area API)
 Options: --boundary GEOJSON (default config/area_boundary.geojson, the IBGE boundary of Rondonia, DE-1);
 --extra-countries Bolivia keeps that country file's detections inside the bbox too (DE-1b option B; off by default).
 
@@ -53,28 +54,29 @@ OUT_COLUMNS = ["latitude", "longitude", "acq_date", "acq_time", "sat", "sensor",
                "daynight", "frp", "scan", "track", "type", "version", "bright_mir", "bright_tir", "route", "country"]
 # Exact-duplicate key (DE-5 rule 6).
 KEY = ["sat", "latitude", "longitude", "acq_date", "acq_time"]
+# data/raw/<folder> -> value of the `route` column (DE-5 rule 1, DE-8).
+ROUTES = {"country": "country_csv", "api": "api"}
 RULES = ["outside_bbox", "outside_boundary", "before_start_date", "sp_type_not_0", "exact_duplicate",
          "nrt_covered_by_sp"]
 
 
-def load_raw(source, year, raw_dir=RAW_DIR):
-    """Read the cached country CSVs of one instrument-year from data/raw/ and normalize them (DE-5 rule 1).
+def load_raw(source, year, raw_dir=RAW_DIR, route="country"):
+    """Read the cached CSVs of one instrument-year from data/raw/<route>/ and normalize them (DE-5 rule 1).
 
-    source: instrument folder of the FIRMS country files (modis, viirs-snpp, viirs-jpss1).
+    source: instrument folder (country: modis, viirs-snpp, viirs-jpss1; api: viirs-jpss2), as written by download.py.
     """
-    # ponytail: only the country-CSV route; the API layout comes with download.py (JA-2/JA-4).
     # ponytail: one year in memory (Brazil VIIRS 2013 = 866,922 rows); read in chunks if a multi-country year gets too big.
-    folder = Path(raw_dir) / "country" / source / str(year)
+    folder = Path(raw_dir) / route / source / str(year)
     plain = sorted(folder.glob("*.csv"))
     # A compressed copy is read only when the plain CSV is absent, so no file is read twice.
     gz = [f for f in sorted(folder.glob("*.csv.gz")) if f.with_suffix("") not in plain]
     files = plain + gz
     if not files:
         raise FileNotFoundError(f"no CSV under {folder}")
-    # Country from the FIRMS file name <instrument>_<year>_<Country>.csv (used by DE-1b option B).
+    # Country from the file name <instrument>_<year>_<Country>.csv (used by DE-1b option B); "api" for the API route.
     df = pd.concat([pd.read_csv(f, dtype=READ_DTYPES).assign(
         country=f.name.split("_", 2)[2].removesuffix(".gz").removesuffix(".csv")) for f in files], ignore_index=True)
-    return normalize(df, route="country_csv")
+    return normalize(df, route=ROUTES[route])
 
 
 def load_boundary(path=BOUNDARY):
@@ -111,6 +113,8 @@ def normalize(df, route):
     if unknown:
         raise ValueError(f"unknown satellite codes {sorted(unknown)}: add them to SATELLITES with a source")
     df = df.rename(columns=RENAME)
+    # Country CSVs write HHMM ("0541"); the area API drops the leading zeros ("541", seen 2026-11-15).
+    df["acq_time"] = df["acq_time"].str.zfill(4)
     df["sat"] = df["satellite"].map({k: v[0] for k, v in SATELLITES.items()})
     df["sensor"] = df["satellite"].map({k: v[1] for k, v in SATELLITES.items()})
     if "instrument" in df and not (df["instrument"] == df["sensor"]).all():
@@ -186,21 +190,26 @@ def write_log(source, year, bbox, rows_read, removed, rows_kept, extra_countries
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(description="Clean one instrument-year of FIRMS country CSVs.")
-    p.add_argument("--source", required=True, help="country CSV instrument folder: modis, viirs-snpp, viirs-jpss1")
+    p = argparse.ArgumentParser(description="Clean one instrument-year of FIRMS data (country CSVs or area API).")
+    p.add_argument("--source", required=True,
+                   help="instrument folder: modis, viirs-snpp, viirs-jpss1 (country); viirs-jpss2 (api)")
     p.add_argument("--year", required=True, type=int)
-    # TODO(JA-2): default to config.load_area() once config.py is merged.
-    p.add_argument("--bbox", required=True, nargs=4, type=float, metavar=("WEST", "SOUTH", "EAST", "NORTH"))
+    p.add_argument("--route", choices=list(ROUTES), default="country", help="data/raw/<route>/ (download.py)")
+    p.add_argument("--bbox", nargs=4, type=float, metavar=("WEST", "SOUTH", "EAST", "NORTH"),
+                   help="default: config/area.json (DE-1)")
     p.add_argument("--boundary", type=Path, default=BOUNDARY, help="GeoJSON of the area (DE-1)")
-    p.add_argument("--extra-countries", nargs="*", default=[], help="DE-1b option B, e.g. Bolivia (off by default)")
+    p.add_argument("--extra-countries", nargs="*", default=[], help="DE-1b option B (not chosen; off by default)")
     p.add_argument("--check", action="store_true", help="assert invariants on the cleaned output")
     a = p.parse_args(argv)
+    if a.bbox is None:
+        from config import load_area
+        a.bbox = list(load_area()["bbox"])
     west, south, east, north = a.bbox
     if not (-180 <= west < east <= 180 and -90 <= south < north <= 90):
         p.error("bbox must be WEST SOUTH EAST NORTH with west < east and south < north")
 
     rings = load_boundary(a.boundary)
-    raw = load_raw(a.source, a.year)
+    raw = load_raw(a.source, a.year, route=a.route)
     clean, removed = apply_cleaning_rules(raw, a.bbox, rings, a.extra_countries)
     if a.check:
         check(raw, clean, removed, a.bbox, rings, a.extra_countries)

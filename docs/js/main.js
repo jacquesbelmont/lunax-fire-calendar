@@ -11,6 +11,7 @@
     ["viirs_eq", "Harmonized (VIIRS-equivalent), all years"],
     ["terra", "Terra only (MODIS, raw counts)"], ["aqua", "Aqua only (MODIS, raw counts)"],
     ["snpp", "Suomi NPP only (VIIRS, raw counts)"], ["noaa20", "NOAA-20 only (VIIRS, raw counts)"],
+    ["noaa21", "NOAA-21 only (VIIRS, raw counts)"],
   ];
   const state = {};
 

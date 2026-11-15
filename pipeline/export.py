@@ -74,20 +74,15 @@ def export_months(flags):
     return path
 
 
-def export_hotspots_per_year(hotspots):
-    """(b) hotspot list per year, for the CSV download (R9)."""
-    # TODO(JA-3): format and size to agree with Jacques on issue #5 before exporting (hundreds of MB raw).
-    raise NotImplementedError
-
-
 def export_metadata(harmonized):
     """(c) metadata.json."""
     area = json.loads(AREA.read_text())
     if not area.get("name") or not area.get("bbox_west_south_east_north"):
         raise ValueError(f"{AREA.relative_to(ROOT)} is not filled (DE-1)")
     model = json.loads(MODEL.read_text())
-    clean = pd.concat([pd.read_csv(f, usecols=["acq_date", "sat", "version", "country"], dtype=str)
+    clean = pd.concat([pd.read_csv(f, usecols=["acq_date", "sat", "version", "country", "route"], dtype=str)
                        for f in sorted(CLEAN_DIR.glob("*.csv.gz"))])
+    api = clean["route"].eq("api")
     boundary_props = json.loads(BOUNDARY.read_text())["features"][0]["properties"]
     meta = {
         "title": "LUNAX Fire Calendar - harmonized monthly hotspot counts",
@@ -95,13 +90,16 @@ def export_metadata(harmonized):
                  "boundary_file": "area.geojson", "boundary_source": boundary_props.get("url"),
                  "rule": "only detections inside the boundary are counted; outside the boundary is outside the "
                          "area, not zero fire (DE-1)",
-                 "countries_in_data": sorted(clean["country"].unique())},
+                 "countries_in_data": sorted(clean.loc[~api, "country"].unique())},
         "source": {
             "name": "NASA FIRMS (Fire Information for Resource Management System)",
             "url": "https://www.earthdata.nasa.gov/data/tools/firms",
-            "product": "FIRMS country yearly summary CSVs, standard processing (SP)",
-            "files": "https://firms.modaps.eosdis.nasa.gov/data/country/",
-            "satellites": {"MODIS 1 km": ["Terra", "Aqua"], "VIIRS 375 m": ["S-NPP", "NOAA-20"]},
+            "product": "FIRMS country yearly summary CSVs, standard processing (SP)"
+                       + ("; NOAA-21 from the FIRMS area API (no NOAA-21 country files)" if api.any() else ""),
+            "files": "https://firms.modaps.eosdis.nasa.gov/data/country/"
+                     + (" ; https://firms.modaps.eosdis.nasa.gov/api/area/" if api.any() else ""),
+            "satellites": {"MODIS 1 km": ["Terra", "Aqua"],
+                           "VIIRS 375 m": ["S-NPP", "NOAA-20"] + (["NOAA-21"] if clean["sat"].eq("NOAA21").any() else [])},
             "versions_by_satellite": {s: sorted(g.unique()) for s, g in clean.groupby("sat")["version"]},
         },
         "period": {"first_month": harmonized["year_month"].min(), "last_month": harmonized["year_month"].max()},
@@ -112,7 +110,8 @@ def export_metadata(harmonized):
                  "area_rule": "a cell belongs to a selected area if its centre is inside the rectangle"},
         "method": {
             "target_scale": "VIIRS-equivalent: monthly count of VIIRS 375 m hotspots per cell (DE-2)",
-            "native_months": "from 2012-02: S-NPP to 2018-03, NOAA-20 from 2018-04 (DE-11)",
+            "native_months": "from 2012-02: S-NPP to 2018-03, NOAA-20 from 2018-04 (DE-11); NOAA-21 is a check "
+                             "(raw counts only, not used for viirs_eq)",
             "estimated_months": "2000-11 to 2012-01: viirs_eq = k(month of year) x MODIS count, with MODIS = "
                                 "Terra + Aqua when both are valid, else Terra (DE-6 option 2, selected by the "
                                 "DE-15 backcast; method/results/validation_metrics.json)",

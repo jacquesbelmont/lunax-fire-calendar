@@ -313,7 +313,7 @@ runnable in Google Colab:
 - **Item 5:** the attribute page gives the satellite code `N21` for NOAA-21. The archive file naming is still open.
 - **Additional fact, VIIRS confidence:** the attribute page says low-confidence night pixels occur only in the South Atlantic Magnetic Anomaly area (11°E to 110°W, 7°N to 55°S) and "have been removed from the NRT data distributed by FIRMS". The SP files viirs-snpp_2013_Brazil.csv and viirs-jpss1_2025_Brazil.csv have 0 such rows.
 
-**Progress on 2026-11-15** (Rafael). Sources: the MODIS and VIIRS user guides linked from the FIRMS FAQ ("Where can I find the MODIS and VIIRS Active Fire User guides?", https://www.earthdata.nasa.gov/data/tools/firms/faq), the FIRMS public NRT files, and the country files in `data/raw/country/`. Items 1-5 and 8 are answered; 6 and 7 stay open (7 needs a MAP_KEY).
+**Progress on 2026-11-15** (Rafael). Sources: the MODIS and VIIRS user guides linked from the FIRMS FAQ ("Where can I find the MODIS and VIIRS Active Fire User guides?", https://www.earthdata.nasa.gov/data/tools/firms/faq), the FIRMS public NRT files, the country files in `data/raw/country/`, and the FIRMS API with a MAP_KEY (`data_availability`, `area`). All items are answered except the archive file naming in item 5 (not needed: NOAA-21 comes from the area API).
 - **Item 1, MODIS `version`:** the Brazil and Bolivia country files carry `6.2` for 2000-2017, `6.03` for 2018-2022 and `61.03` for 2023-2025.
   - The MCD14ML files are named `MCD14ML.YYYYMM.CCC.VV`, where CCC is the collection and VV "the product version (currently "03") within a Collection" (MODIS C6/C6.1 Active Fire Product User's Guide 1.0, section 5.5.1, https://www.earthdata.nasa.gov/s3fs-public/2023-09/MODIS_C6_C6.1_Fire_User_Guide_1.0.pdf).
   - Our reading: `6.03` = Collection 6, version 03; `61.03` = Collection 6.1, version 03; `6.2` most likely Collection 6, version 2. FIRMS does not document the field this way for the country files.
@@ -325,9 +325,12 @@ runnable in Google Colab:
   - https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-21-viirs-c2/csv/J2_VIIRS_C2_South_America_24h.csv
   - The API output itself was not checked (MAP_KEY).
 - **Item 4:** S-NPP too: viirs-snpp_2025_Brazil.csv covers 2025-01-01 to 2025-12-31 with 365 distinct days.
-- **Item 5:** `N21` confirmed in the NOAA-21 NRT file. The archive file naming is not checked (NOAA-21 is not used in v1).
+- **Item 5:** `N21` confirmed in the NOAA-21 NRT file and in the area API answers (`VIIRS_NOAA21_SP`, version `2`). The archive file naming is not checked; NOAA-21 is downloaded from the area API.
+- **Item 7:** `data_availability` (`ALL`, 2026-11-15) lists `VIIRS_NOAA21_SP` from 2023-03-01 to 2026-07-31 and `VIIRS_NOAA21_NRT` from 2024-01-17 to 2026-11-15; the full table is in DATA_CONTRACT.md. The area API answers carry the VIIRS country-file columns (including `instrument` and `type`), but `acq_time` without leading zeros (e.g. `541`); `pipeline/clean.py` pads it.
 - **Item 8, MODIS gaps of 2007 and 2009:** daily counts of modis_2007_Brazil.csv and modis_2009_Brazil.csv show no day with zero Terra or Aqua detections. On 2009-04-21 and 2009-04-22 they are Terra 87 and 88, Aqua 65 and 94, in the range of the days around them (Terra 10-115, Aqua 43-222 from 2009-04-14 to 2009-04-28). The gaps are not visible as whole missing days, so no month is flagged for them; gaps of part of a day cannot be seen this way.
 - **MODIS confidence classes:** low 0 % ≤ C < 30 %, nominal 30 % ≤ C < 80 %, high 80 % ≤ C ≤ 100 % (MODIS guide, Table 11).
+- **Item 6:** the FIRMS page (https://www.earthdata.nasa.gov/data/tools/firms, 2026-11-15) now links the "Suomi NPP data announcement" at https://www.earthdata.nasa.gov/data/alerts-outages/reminder-new-suomi-npp-observations-cease-november-2-2026, which agrees with November 2 (`SAT_END` in `pipeline/aggregate.py` counts that partial day as missing).
+- **Aqua start:** the first Aqua `acq_date` in the 2002 country files (Brazil + Bolivia) is 2002-07-04, with 1,141 detections that day, while Terra has 498-580 detections per day on 2002-07-01..03. `SAT_START` in `pipeline/aggregate.py` uses 2002-07-04; July 2002 was already flagged for Aqua.
 
 ## 14. Decisions this reference does not make (record them in method/DECISIONS.md)
 

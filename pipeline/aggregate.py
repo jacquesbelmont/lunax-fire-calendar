@@ -31,11 +31,12 @@ FLAGS_OUT = ROOT / "data" / "interim" / "month_flags.csv"
 
 CELL_SIZE = 0.25  # degrees (DE-12)
 
-# Satellites in each country-CSV source (method/FIRMS_REFERENCE.md section 3.1).
-SOURCE_SATS = {"modis": ["Terra", "Aqua"], "viirs-snpp": ["SNPP"], "viirs-jpss1": ["NOAA20"]}
+# Satellites in each source: country CSVs (method/FIRMS_REFERENCE.md section 3.1) and the area API (viirs-jpss2).
+SOURCE_SATS = {"modis": ["Terra", "Aqua"], "viirs-snpp": ["SNPP"], "viirs-jpss1": ["NOAA20"], "viirs-jpss2": ["NOAA21"]}
 # Operating window in FIRMS (method/FIRMS_REFERENCE.md section 2). Days outside it count as missing (DE-14).
-# TODO(verify): exact first day of Terra (Nov 2000) and Aqua (Jul 2002) - first acq_date in the 2000 and 2002 files.
-SAT_START = {"Terra": "2000-11-01", "Aqua": "2002-07-01", "SNPP": "2012-01-20",
+# Terra and Aqua: first acq_date in the 2000 and 2002 country files (Brazil + Bolivia, checked 2026-11-15). Aqua starts
+# on 2002-07-04 with 1,141 detections, while Terra has 498-580 per day on 2002-07-01..03.
+SAT_START = {"Terra": "2000-11-01", "Aqua": "2002-07-04", "SNPP": "2012-01-20",
              "NOAA20": "2018-04-01", "NOAA21": "2024-01-17"}
 # New S-NPP data ended 2026-11-02 13:00 UTC (FIRMS blog); that partial day counts as missing.
 SAT_END = {"SNPP": "2026-11-01"}
