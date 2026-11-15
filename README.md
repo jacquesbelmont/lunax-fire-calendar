@@ -3,8 +3,20 @@
 NASA Space Apps Challenge 2026 — "Harmonization of MODIS and VIIRS Hot Spots" — team LUNAX.
 A web app showing a monthly burning-activity calendar built on a harmonized NASA FIRMS MODIS + VIIRS hotspot series.
 
-Status: project skeleton. Method, area and numbers are not decided yet; see [method/DECISIONS.md](method/DECISIONS.md).
 Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logos are used; no endorsement implied.
+
+## Status (2026-11-14)
+- **Decisions:** [method/DECISIONS.md](method/DECISIONS.md), PR #27.
+  - Demo area: **Rondônia, Brazil** (IBGE boundary).
+  - Target scale: **VIIRS 375 m equivalent**, built from both sensors.
+  - Monthly calendar.
+  - Data from the FIRMS country CSVs (2000-2025); the FIRMS API only for 2026 and NOAA-21.
+- **Pipeline:** implemented and run on real FIRMS data, 2000-11 to 2025-12. Under review in PRs #28-#34, to merge in order.
+  - MODIS-only months (2000-11 to 2012-01) are converted to the VIIRS scale with a ratio per month of year, learned where both sensors overlap. It was selected by a pre-registered backcast: bias of the total +0.6 % on 2012-2014; see [method/VALIDATION.md](method/VALIDATION.md).
+  - Method and limitations: [method/METHOD.md](method/METHOD.md).
+- **App data:** `docs/data/` (format in [DATA_CONTRACT.md](DATA_CONTRACT.md)), written by `pipeline/export.py` (PR #31).
+- **App:** the page in `docs/` is still a skeleton (JA-5 to JA-7).
+- **Not yet:** 2026 and NOAA-21 (need the FIRMS API), the hotspot CSV download (R9).
 
 ## Structure
 - `pipeline/` — Python pipeline (runs offline, writes to `docs/data/`). See [pipeline/README.md](pipeline/README.md).
@@ -12,7 +24,7 @@ Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logo
 - `data/` — raw data (`data/raw/`, git-ignored) and [data/PROVENANCE.md](data/PROVENANCE.md).
 - `method/` — decisions, method, validation, plain-English text, reference tests.
 - `submission/` — Space Apps project page drafts, slides outline, fact check, checklist.
-- `config/area.json` — demo area (decided in DE-1).
+- `config/area.json` — processing box of the demo area; `config/area_boundary.geojson` — IBGE boundary of Rondônia (DE-1).
 
 ## Documents
 [SCOPE.md](SCOPE.md) · [WORKFLOW.md](WORKFLOW.md) · [DATA_CONTRACT.md](DATA_CONTRACT.md) · [SOURCES.md](SOURCES.md) · [AI_USE.md](AI_USE.md) · [AGENTS.md](AGENTS.md) · [method/DECISIONS.md](method/DECISIONS.md)
@@ -26,7 +38,19 @@ Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logo
    ```
    Exact versions used at setup: `pipeline/requirements.lock.txt`.
 2. Create `.env` yourself (see `.env.example`): `FIRMS_MAP_KEY=<your key>`. Never commit it.
-3. Pipeline order: `check_availability.py` → `download.py` → `clean.py` → `aggregate.py` → `harmonize.py` → `validate.py` → `export.py` (details in [pipeline/README.md](pipeline/README.md)). Steps are stubs for now.
+3. Pipeline order: `check_availability.py` → `download.py` → `clean.py` → `aggregate.py` → `harmonize.py` → `validate.py` → `export.py` (details in [pipeline/README.md](pipeline/README.md)).
+   - `check_availability.py` and `download.py` are JA-2/JA-4. `download.py` writes `data/raw/country/<instrument>/<year>/*.csv` and `data/raw/missing_days.csv`.
+   - The rest, after the download:
+   ```
+   # one instrument-year at a time (MODIS 2000-2025, VIIRS S-NPP 2012-2025, NOAA-20 2018-2025)
+   python pipeline/clean.py --source modis --year 2005 --bbox -67 -13.75 -59.75 -7.75 --check
+   python pipeline/aggregate.py --check
+   python pipeline/harmonize.py --check
+   python pipeline/validate.py           # writes method/results/ and method/figures/ (about 1.5 min)
+   python pipeline/export.py --check     # writes docs/data/ (needs validate.py's calibration)
+   python method/tests/make_expected.py  # writes method/tests/expected.json for the app tests (JA-8)
+   ```
+   - Disk: the raw FIRMS files of Brazil and Bolivia for 2000-2025 are about 3.9 GB (`clean.py` also reads them gzip-compressed, about 0.8 GB); the cleaned files are about 40 MB.
 4. Local preview of the app:
    ```
    python3 -m http.server 8000 --directory docs
