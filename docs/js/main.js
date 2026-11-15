@@ -54,7 +54,7 @@
     const cap = LunaxCalc.colorCap(values);
     const status = row.estimated ? "Estimated from MODIS" : row.provisional ? "Provisional (near real-time data)" :
       column === "viirs_eq" ? "Observed (VIIRS)" : "Raw counts of one sensor";
-    return { values: values, cap: cap, legend: { title: "Hotspots per cell, " + row.ym, status: status, cap: cap, unit: "hotspots" } };
+    return { values: values, cap: cap, ym: row.ym, legend: { title: "Hotspots per cell, " + row.ym, status: status, cap: cap, unit: "hotspots" } };
   }
 
   /** DE-21: both map layers for the same month. */
@@ -76,10 +76,12 @@
       if (req !== state.pointsReq) return; // a newer selection or month replaced this request
       const pts = res.lines.length ? LunaxCalc.hotspotPoints(res.header, res.lines) : [];
       state.map.showPoints(pts);
-      const n = (s) => pts.filter((p) => p.sensor === s).length.toLocaleString("en-US");
+      const source = $("series-select").value === "viirs_eq" ? "The harmonized calendar value of this month " + LunaxCalc.harmonizedSource(ym) +
+        " (DE-11)." : "The calendar shows the raw counts of the series chosen above.";
       note.textContent = "Points: detections of " + ym + (state.data.provisional.has(ym) ? " (provisional: near real-time data)" : "") +
-        " in the selected cells: MODIS " + n("MODIS") + ", VIIRS " + n("VIIRS") + ". One fire can be detected by several satellites, " +
-        "so the points are not a count of fires. Click a month in the calendar to show it on the map.";
+        " in the selected cells, per satellite: " + (pts.length ? LunaxCalc.satelliteCountsText(LunaxCalc.countBySatellite(res.header, res.lines)) : "none") +
+        ". " + source + " One fire can be detected by several satellites, so the points are not a count of fires. " +
+        "Hover a cell for its value, click a point for its details, or click a month in the calendar to show it on the map.";
     } catch (err) {
       if (req === state.pointsReq) note.textContent = String(err.message || err);
     }
@@ -142,7 +144,7 @@
     const unit = "hotspots";
     LunaxCalendar.render($("calendar"), state.rows, unit, function (ym) {
       const m = state.data.months.indexOf(ym);
-      if (m >= 0) { state.mapMonth = m; refreshMap(); }
+      if (m >= 0 && state.rows[m].inRange) { state.mapMonth = m; refreshMap(); } // months outside the period are ignored
     });
     LunaxCompare.render($("compare"), $("compare-text"), state.rows, Number($("compare-month").value), unit);
   }

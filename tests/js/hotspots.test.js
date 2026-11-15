@@ -136,3 +136,14 @@ test("DE-21 map points: one point per row of the month, inside the study area, s
   assert.deepStrictEqual([...new Set(pts.map((p) => p.sensor))].sort(), ["MODIS", "VIIRS"]);
   assert.ok(pts.every((p) => p.lon >= w && p.lon <= e && p.lat >= s && p.lat <= n));
 });
+
+test("DE-21 map point details use the hotspot file fields (first rows of real 2025 files)", { skip }, () => {
+  const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+  for (const source of ["modis", "viirs-jpss1"]) {
+    const out = parseAll(index.files.find((e) => e.source === source && e.year === 2025));
+    const p = calc.hotspotPoints(out.header, out.lines.slice(0, 1))[0], text = calc.hotspotPointText(p);
+    assert.ok(text.startsWith(p.date + " " + p.time.slice(0, 2) + ":" + p.time.slice(2) + " UTC, "), text);
+    assert.ok(text.includes("FRP " + p.frp + " MW"), text);
+    assert.match(text, source === "modis" ? /\((MODIS)\), confidence \d+ %/ : /\(VIIRS\), confidence (low|nominal|high)/);
+  }
+});

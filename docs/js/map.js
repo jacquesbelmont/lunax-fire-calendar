@@ -2,6 +2,7 @@
  * Purpose: map with the study-area boundary, rectangle drawing, the selected grid cells colored by the value of one
  *          month (same numbers and color ramp as the calendar; no data = grey, never zero), and the detections of that
  *          month as points, grouped per sensor until zoomed in (DE-21; Leaflet.markercluster, docs/lib/README.md).
+ *          Hover a cell for its value; click a detection for its date, time, satellite, confidence and FRP.
  * SCOPE: R4, R5, O1, O2
  * Owner issue: JA-5
  * AI-assisted code (Claude Code); logged in AI_USE.md.
@@ -81,11 +82,36 @@
       onRectangle([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
     });
 
+    // DE-21 interaction. Cells: the canvas of the points lies above them, so the cell under the mouse is found from the
+    // position (cell_id formula of DATA_CONTRACT.md (a)) and its value is shown in one tooltip. Points: click for details.
+    let shown = { byId: new Map(), paint: null }, drawing = false;
+    const tip = L.tooltip({ direction: "top", offset: [0, -6] });
+    map.on(L.Draw.Event.DRAWSTART, () => { drawing = true; map.closeTooltip(tip); });
+    map.on(L.Draw.Event.DRAWSTOP, () => { drawing = false; });
+    map.on("mouseout", () => map.closeTooltip(tip));
+    map.on("mousemove", function (e) {
+      const id = Math.floor((e.latlng.lat + 90) / cellSize) + "_" + Math.floor((e.latlng.lng + 180) / cellSize);
+      const j = shown.byId.get(id), p = shown.paint;
+      if (drawing || j === undefined || !p || !map.hasLayer(cellsLayer)) { map.closeTooltip(tip); return; }
+      const v = p.values[j];
+      tip.setLatLng(e.latlng).setContent(Number.isNaN(v) ? p.ym + ": no data (not zero)" :
+        p.ym + ": " + LunaxCalc.fmt(v, 0) + " hotspots in this cell (" + p.legend.status + ")");
+      map.openTooltip(tip);
+    });
+    Object.keys(groups).forEach(function (s) {
+      groups[s].on("click", function (e) {
+        const box = document.createElement("div");
+        box.textContent = LunaxCalc.hotspotPointText(e.layer.options.hotspot);
+        L.popup().setLatLng(e.layer.getLatLng()).setContent(box).openOn(map);
+      });
+    });
+
     return {
       /**
-       * cells: selected cells; paint: null (empty selection) or {values: [number per cell, NaN = no data], cap, legend}.
+       * cells: selected cells; paint: null (empty selection) or {values: [number per cell, NaN = no data], cap, legend, ym}.
        */
       showSelection: function (box, cells, paint) {
+        shown = { byId: new Map(cells.map((c, j) => [c.id, j])), paint: paint };
         cellsLayer.clearLayers();
         const half = cellSize / 2;
         cells.forEach(function (c, j) {
@@ -105,7 +131,8 @@
           groups[s].clearLayers();
           // white outline: the points stay visible on any cell color
           groups[s].addLayers(points.filter((p) => p.sensor === s).map((p) => L.circleMarker([p.lat, p.lon], { renderer: canvas,
-            radius: s === "MODIS" ? 3 : 2, color: "#fff", weight: 0.5, fillColor: SENSOR_COLORS[s], fillOpacity: 1, interactive: false })));
+            radius: s === "MODIS" ? 3 : 2, color: "#fff", weight: 0.5, fillColor: SENSOR_COLORS[s], fillOpacity: 1,
+            bubblingMouseEvents: false, hotspot: p })));
         });
       },
     };

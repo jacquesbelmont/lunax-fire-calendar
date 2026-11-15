@@ -147,3 +147,14 @@ test("map color scale: 95th percentile cap, no data ignored, reversed Viridis en
   assert.strictEqual(calc.viridisReversed(10, 10), "#440154");
   assert.strictEqual(calc.viridisReversed(50, 10), "#440154");
 });
+
+test("DE-21 map note: the harmonized value counts NOAA-20 from 2018-04, Suomi NPP before, and is estimated before 2012-02 (checked on the data)", () => {
+  const all = data.cells.map((_, i) => i), at = (ym) => data.months.indexOf(ym);
+  const eq = calc.areaSeries(data, all, "viirs_eq"), n20 = calc.areaSeries(data, all, "noaa20"), snpp = calc.areaSeries(data, all, "snpp");
+  assert.match(calc.harmonizedSource("2026-10"), /NOAA-20/);
+  assert.strictEqual(eq[at("2026-10")], n20[at("2026-10")]);
+  assert.match(calc.harmonizedSource("2015-08"), /Suomi NPP/);
+  assert.strictEqual(eq[at("2015-08")], snpp[at("2015-08")]);
+  assert.match(calc.harmonizedSource("2005-09"), /estimated from MODIS/);
+  assert.ok(calc.estimatedMonths(data, all)[at("2005-09")]);
+});
