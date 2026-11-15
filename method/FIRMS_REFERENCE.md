@@ -323,7 +323,7 @@ runnable in Google Colab:
   - https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_South_America_24h.csv
   - https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_South_America_24h.csv
   - https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-21-viirs-c2/csv/J2_VIIRS_C2_South_America_24h.csv
-  - The API output itself was not checked (MAP_KEY).
+  - Area API answers (checked 2026-11-15 with a MAP_KEY) write MODIS `satellite` as `Terra`/`Aqua` in both SP and NRT, VIIRS as `N`, `N20`, `N21`; NRT answers keep `instrument` but have no `type`.
 - **Item 4:** S-NPP too: viirs-snpp_2025_Brazil.csv covers 2025-01-01 to 2025-12-31 with 365 distinct days.
 - **Item 5:** `N21` confirmed in the NOAA-21 NRT file and in the area API answers (`VIIRS_NOAA21_SP`, version `2`). The archive file naming is not checked; NOAA-21 is downloaded from the area API.
 - **Item 7:** `data_availability` (`ALL`, 2026-11-15) lists `VIIRS_NOAA21_SP` from 2023-03-01 to 2026-07-31 and `VIIRS_NOAA21_NRT` from 2024-01-17 to 2026-11-15; the full table is in DATA_CONTRACT.md. The area API answers carry the VIIRS country-file columns (including `instrument` and `type`), but `acq_time` without leading zeros (e.g. `541`); `pipeline/clean.py` pads it.

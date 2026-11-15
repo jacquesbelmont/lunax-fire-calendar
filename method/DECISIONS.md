@@ -107,7 +107,7 @@ Order in `pipeline/clean.py`. Nothing else is filtered.
    - `satellite` → Terra, Aqua, SNPP, NOAA20, NOAA21.
      - Observed in the country CSVs downloaded 2026-11-14: `Terra` and `Aqua` (modis_2013_Brazil.csv, modis_2025_Brazil.csv), `N` (viirs-snpp_2013_Brazil.csv), `N20` (viirs-jpss1_2025_Brazil.csv).
      - The FIRMS attribute page uses `T`/`A` for MODIS and `N`/`N20`/`N21` for VIIRS (https://www.earthdata.nasa.gov/data/tools/firms/active-fire-data-attributes-modis-viirs). Both forms are accepted.
-     - FIRMS public NRT files (2026-11-15): `T`/`A` for MODIS, `N20`/`N21` for VIIRS (FIRMS_REFERENCE section 13, item 3). The API output was not checked (MAP_KEY; not used in v1).
+     - FIRMS public NRT files (2026-11-15): `T`/`A` for MODIS, `N20`/`N21` for VIIRS (FIRMS_REFERENCE section 13, item 3). The area API (checked 2026-11-15) writes `Terra`/`Aqua` for MODIS in SP and NRT, and `N`/`N20`/`N21` for VIIRS.
    - `acq_time` read as text HHMM.
    - `processing` (SP/NRT) from the `version` suffix. Standard processing carries the collection only; NRT, RT and URT add a suffix (FIRMS attribute page).
      - Observed SP values: MODIS `6.2` (2000-2017), `6.03` (2018-2022) and `61.03` (2023-2025) in the Brazil and Bolivia files; VIIRS `2`.

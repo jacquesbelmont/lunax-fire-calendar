@@ -110,7 +110,7 @@ Output of `pipeline/check_availability.py` (FIRMS `data_availability`, `ALL`), 2
 | VIIRS_SNPP_NRT | 2026-08-01 | 2026-11-02 |
 | VIIRS_SNPP_SP | 2012-01-20 | 2026-07-31 |
 
-The answer also lists LANDSAT_NRT, GOES_NRT, BA_MODIS and BA_VIIRS (out of scope). Area API answers have the country-file columns (below), but `acq_time` comes without leading zeros (e.g. `541`); `clean.py` pads it to HHMM. NRT answers have no `instrument` and no `type` column (seen 2026-11-15).
+The answer also lists LANDSAT_NRT, GOES_NRT, BA_MODIS and BA_VIIRS (out of scope). Area API answers have the country-file columns (below), but `acq_time` comes without leading zeros (e.g. `541`); `clean.py` pads it to HHMM. NRT answers have no `type` column; they do have `instrument`. MODIS `satellite` is `Terra`/`Aqua` in both SP and NRT API answers (seen 2026-11-15; only the public 24 h NRT files write `T`/`A`).
 
 ## Real column headers per source
 DRAFT from real Brazil country files (method/FIRMS_REFERENCE.md section 4); to be reviewed by Jacques and Rafael (JA-3).
