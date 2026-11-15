@@ -40,6 +40,15 @@
   .case-note { font-size: 25px; line-height: 1.4; margin: 0 0 24px; }
   .team { font-size: 30px; margin-top: 18px; line-height: 1.5; }
   .ack { font-size: 17px; color: #444; line-height: 1.4; }
+  .fm-case { display: flex; align-items: center; gap: 48px; margin: 0 0 18px; }
+  .fm-stats { margin: 0; gap: 48px; }
+  .fm-stats b { font-size: 54px; }
+  .fm-stats span { font-size: 21px; }
+  .fm-note { flex: 1; margin: 0; font-size: 23px; }
+  .fm-row { display: flex; gap: 28px; flex: 1; min-height: 0; align-items: flex-start; }
+  .fm-row figure { flex: 1; min-width: 0; margin: 0; }
+  .fm-row img { display: block; width: auto; max-width: 100%; height: auto; max-height: 360px; margin: 0 auto; }
+  .fm-row figcaption { font-size: 20px; line-height: 1.38; margin-top: 10px; color: #222; }
 </style>
 </head>
 <body>
@@ -85,22 +94,29 @@
 </section>
 
 <section class="slide">
-  <h2>September 2025 near Porto Velho</h2>
-  <div class="case-stats">
-    <div><b>309</b><span>observed hotspots in September 2025</span></div>
-    <div><b>5,545</b><span>median across 23 earlier Septembers</span></div>
-  </div>
-  <div class="row">
-    <div class="case-chart">
-      <img src="../screenshots/porto_velho_september_2025.png" alt="LUNAX chart for the Porto Velho area. A dashed line shows the historical median. The September 2025 bar is below it.">
-      <p class="small">Light blue bars show MODIS-based estimates. Dark blue bars show observed VIIRS counts. The dashed line marks the historical median.</p>
+  <h2>What a fire manager sees</h2>
+  <div class="fm-case">
+    <div class="case-stats fm-stats">
+      <div><b>309</b><span>observed hotspots in September 2025</span></div>
+      <div><b>5,545</b><span>median across 23 earlier Septembers</span></div>
     </div>
-    <div class="col">
-      <p class="case-note">An environmental analyst selects a rectangle and compares September with earlier years. The difference identifies a month to check in satellite imagery and field reports.</p>
-      <p class="small">The example selects 33 grid cells. Use west -64.50, south -9.75, east -63.00 and north -8.25. Set the end date to 2025-09 and choose September.</p>
-    </div>
+    <p class="case-note fm-note">September 2025 near Porto Velho (a rectangle of 33 grid cells): far below the usual, a month to check in satellite imagery and field reports.</p>
   </div>
-  <div class="foot"><span>4 / 7</span><span>Published app capture. NASA FIRMS data archived through 2026-10-31.</span></div>
+  <div class="fm-row">
+    <figure>
+      <img src="../screenshots/app_porto_velho_map_2026-10.png" alt="Map of the municipality of Porto Velho with grid cells colored by October 2026 hotspots and the detections as points">
+      <figcaption><b>Where:</b> a municipality as the area (IBGE boundary). Porto Velho, October 2026: 1,352 hotspots against a usual 2,076 (provisional).</figcaption>
+    </figure>
+    <figure>
+      <img src="../screenshots/app_porto_velho_fire_season.png" alt="Fire season of Porto Velho per year, start, peak and end month">
+      <figcaption><b>When:</b> the fire season per year. In Porto Velho it typically runs from August to October, with the peak in August (median of 23 years).</figcaption>
+    </figure>
+    <figure>
+      <img src="../screenshots/app_map_recurrence_2012-2025.png" alt="Map of Rondônia with 1 km cells colored by the number of years with a VIIRS detection, 2012 to 2025">
+      <figcaption><b>Where it burned before</b> (VIIRS, about 1 km). History, not a forecast: in our pre-registered test, last year's fires were the better guide (28.0% against 11.8%).</figcaption>
+    </figure>
+  </div>
+  <div class="foot"><span>4 / 7</span><span>Published app captures. NASA FIRMS data archived through 2026-10-31.</span></div>
 </section>
 
 <section class="slide">
