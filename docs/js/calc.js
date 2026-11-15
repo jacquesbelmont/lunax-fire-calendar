@@ -120,6 +120,24 @@
     });
   }
 
+  /**
+   * First observed month: the month after the last estimated month (null when no month is estimated or the
+   * estimates reach the end). Months with no data are not estimated, so "the first month that is not estimated" would
+   * wrongly pick one of them (2001-06). rows: [{ym, estimated}] in order.
+   */
+  function firstObservedMonth(rows) {
+    var last = -1;
+    rows.forEach(function (r, i) { if (r.estimated) last = i; });
+    return last >= 0 && last + 1 < rows.length ? rows[last + 1].ym : null;
+  }
+
+  /** SVG-like path (calendar axes: x = month 0-11, y = year row) that outlines the estimated months above/left of `ym`. */
+  function estimatedBoundaryPath(years, ym) {
+    var r = years.indexOf(Number(ym.slice(0, 4))), c = Number(ym.slice(5, 7)) - 1;
+    if (r < 0) return null;
+    return "M -0.5 " + (r + 0.5) + " L " + (c - 0.5) + " " + (r + 0.5) + " L " + (c - 0.5) + " " + (r - 0.5) + " L 11.5 " + (r - 0.5);
+  }
+
   /** 90 % interval half-width from a summed variance. */
   function halfWidth90(variance) {
     return Number.isNaN(variance) ? NaN : Z90 * Math.sqrt(variance);
@@ -175,6 +193,7 @@
   }
 
   return { parseCellsCsv: parseCellsCsv, filterHotspots: filterHotspots, hotspotsCsv: hotspotsCsv, selectCells: selectCells, areaSeries: areaSeries,
-           estimatedMonths: estimatedMonths, provisionalMonths: provisionalMonths, medianAnomaly: medianAnomaly, halfWidth90: halfWidth90,
+           estimatedMonths: estimatedMonths, provisionalMonths: provisionalMonths, firstObservedMonth: firstObservedMonth,
+           estimatedBoundaryPath: estimatedBoundaryPath, medianAnomaly: medianAnomaly, halfWidth90: halfWidth90,
            seriesCsv: seriesCsv, fmt: fmt, SENSOR_COLUMNS: SENSOR_COLUMNS };
 });

@@ -111,7 +111,7 @@ def export_metadata(harmonized):
         },
         "period": {"first_month": harmonized["year_month"].min(), "last_month": harmonized["year_month"].max()},
         "data_cutoff_date": clean["acq_date"].max(),
-        "archived": "Archived FIRMS data, not live; see data_cutoff_date.",
+        "archived": "Archived FIRMS data, not live.",
         "grid": {"cell_size_deg": 0.25, "origin_lon_lat": [-180, -90],
                  "cell_id": "<row>_<col>, row = floor((lat+90)/0.25), col = floor((lon+180)/0.25)",
                  "area_rule": "a cell belongs to a selected area if its centre is inside the rectangle"},
