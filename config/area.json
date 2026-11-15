@@ -1,5 +1,10 @@
 {
-  "name": null,
-  "bbox_west_south_east_north": null,
+  "name": "Rondônia, Brazil (IBGE boundary in config/area_boundary.geojson; this bbox is the processing box)",
+  "bbox_west_south_east_north": [
+    -67.0,
+    -13.75,
+    -59.75,
+    -7.75
+  ],
   "decided_in": "method/DECISIONS.md (DE-1)"
 }
