@@ -26,7 +26,7 @@ Screenshots in submission/screenshots/: desktop light, desktop dark, 375 px. Fou
 
 ## Automated checks (2026-11-15, Claude Code, main at 95be928)
 - [x] Unit tests: `node --test tests/js/calc.test.js tests/js/hotspots.test.js` 18 passed; `.venv/bin/python -m unittest discover -s tests` 33 passed.
-- [x] Browser test on the published site: `node tests/e2e/app_smoke.mjs` (Node 22+, or `node --experimental-websocket` on Node 20; set `CHROME` on Linux) 13 passed, 0 failed (page loads, archived-data label, calendar drawn, provisional sentence, area typed as coordinates gives 46 cells, period 2025, hotspot count shown before the download, hotspot / series / per-cell CSV with the FIRMS acknowledgment and the cut-off date, both PNG downloads start, no JavaScript errors).
+- [x] Browser test on the published site: `node tests/e2e/app_smoke.mjs` (Node 22+, or `node --experimental-websocket` on Node 20; set `CHROME` on Linux) 13 passed, 0 failed (page loads, archived-data label, calendar drawn, provisional sentence, area typed as coordinates gives 46 cells, period 2025, hotspot row count per sensor shown before the download, hotspot / series / per-cell CSV with the FIRMS acknowledgment and the cut-off date, both PNG downloads start, no JavaScript errors).
 - [x] Links: 42 public links in the project page, slides, README, SOURCES, HOW_IT_WORKS and the app answer 200 without login, except https://www.ibge.gov.br (403 to a script; it is only a credit link).
 - [x] Deck PDF public: https://jacquesbelmont.github.io/lunax-fire-calendar/demo/LUNAX_Fire_Calendar_slides.pdf (200, application/pdf, 7 pages).
 

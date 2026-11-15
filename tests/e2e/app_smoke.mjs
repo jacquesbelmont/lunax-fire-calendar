@@ -86,9 +86,9 @@ try {
 
   // Hotspot count then download (R9).
   await evaluate(`document.querySelector('#hotspots-count').click(); true`);
-  await waitFor(`/hotspots in the selected cells/.test(document.querySelector('#hotspots-status').textContent)`);
+  await waitFor(`/rows in the hotspot list/.test(document.querySelector('#hotspots-status').textContent)`);
   const st = await evaluate(`document.querySelector('#hotspots-status').textContent`);
-  check("hotspot count shown before the download", /^[\d,]+ hotspots in the selected cells, 2025-01 to 2025-12/.test(st), st.slice(0, 80));
+  check("hotspot row count per sensor shown before the download", /^[\d,]+ rows in the hotspot list for the selected cells, 2025-01 to 2025-12: Terra/.test(st) && /not a harmonized count/.test(st), st.slice(0, 160));
   check("download button enabled after the count", await evaluate(`!document.querySelector('#hotspots-download').disabled`));
 
   for (const [btn, name] of [["#hotspots-download", "hotspot CSV"], ["#csv-series", "monthly series CSV"], ["#csv-cells", "values per cell CSV"]]) {

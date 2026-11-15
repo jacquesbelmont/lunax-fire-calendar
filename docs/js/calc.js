@@ -202,6 +202,25 @@
     return added;
   }
 
+  /**
+   * Rows of the hotspot list per satellite, in a fixed order, and the sentence shown before the download.
+   * The list mixes MODIS and VIIRS detections; the total is a number of rows, never a harmonized count (AGENTS.md rule 6).
+   */
+  var SAT_LABELS = [["Terra", "Terra (MODIS)"], ["Aqua", "Aqua (MODIS)"], ["SNPP", "Suomi NPP (VIIRS)"],
+                    ["NOAA20", "NOAA-20 (VIIRS)"], ["NOAA21", "NOAA-21 (VIIRS)"]];
+  function countBySatellite(header, lines) {
+    var i = header.split(",").indexOf("sat"), counts = {};
+    if (i < 0) throw new Error("hotspot files: missing column sat");
+    lines.forEach(function (l) { var s = l.split(",", i + 1)[i]; counts[s] = (counts[s] || 0) + 1; });
+    return counts;
+  }
+  function hotspotCountText(counts, total, fromYm, toYm) {
+    var n = function (v) { return v.toLocaleString("en-US"); };
+    var parts = SAT_LABELS.filter(function (p) { return counts[p[0]]; }).map(function (p) { return p[1] + " " + n(counts[p[0]]); });
+    return n(total) + " rows in the hotspot list for the selected cells, " + fromYm + " to " + toYm + ": " + parts.join(", ") +
+      ". These are individual detections of each sensor, not a harmonized count; MODIS and VIIRS are never added together.";
+  }
+
   /** CSV text of the selected hotspots with the attribution header (R9). */
   function hotspotsCsv(meta, header, lines, label, fromYm, toYm) {
     var head = ["# " + meta.title + " - hotspots", "# Area: " + label, "# Period: " + fromYm + " to " + toYm,
@@ -212,7 +231,7 @@
     return head.concat(lines).join("\n") + "\n";
   }
 
-  return { parseCellsCsv: parseCellsCsv, filterHotspots: filterHotspots, hotspotsCsv: hotspotsCsv, selectCells: selectCells, areaSeries: areaSeries,
+  return { parseCellsCsv: parseCellsCsv, filterHotspots: filterHotspots, countBySatellite: countBySatellite, hotspotCountText: hotspotCountText, hotspotsCsv: hotspotsCsv, selectCells: selectCells, areaSeries: areaSeries,
            estimatedMonths: estimatedMonths, provisionalMonths: provisionalMonths, firstObservedMonth: firstObservedMonth, monthComparisonText: monthComparisonText,
            estimatedBoundaryPath: estimatedBoundaryPath, medianAnomaly: medianAnomaly, halfWidth90: halfWidth90,
            seriesCsv: seriesCsv, fmt: fmt, SENSOR_COLUMNS: SENSOR_COLUMNS };
