@@ -5,6 +5,7 @@
   "RO": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 52 municipalities",
     "test_years": [
      2013,
      2025
@@ -55,6 +56,7 @@
   "AC": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 22 municipalities",
     "test_years": [
      2013,
      2025
@@ -100,11 +102,176 @@
      "chosen": "R",
      "replaces_climatology": true
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 135095,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.564354,
+        "L": 0.593061,
+        "G": 0.608074
+       },
+       "log_loss": {
+        "B0": 0.33631,
+        "L": 0.20358,
+        "G": 0.20092
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.52606,
+        "L": 0.603055,
+        "G": 0.607232
+       },
+       "log_loss": {
+        "B0": 0.25113,
+        "L": 0.16258,
+        "G": 0.16073
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 761001,
+        "mean_p": 0.0171,
+        "observed": 0.0118
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 105865,
+        "mean_p": 0.1378,
+        "observed": 0.1268
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 45688,
+        "mean_p": 0.2479,
+        "observed": 0.2537
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 47652,
+        "mean_p": 0.3504,
+        "observed": 0.3522
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 47020,
+        "mean_p": 0.4496,
+        "observed": 0.4423
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 40434,
+        "mean_p": 0.5479,
+        "observed": 0.5327
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 25243,
+        "mean_p": 0.6436,
+        "observed": 0.6019
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 7573,
+        "mean_p": 0.7343,
+        "observed": 0.5843
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 284,
+        "mean_p": 0.8165,
+        "observed": 0.4754
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 5388,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.4618,
+        "L": 0.454555,
+        "G": 0.416386
+       },
+       "log_loss": {
+        "B0": 0.68891,
+        "L": 0.20459,
+        "G": 0.20592
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.435743,
+        "L": 0.436119,
+        "G": 0.416588
+       },
+       "log_loss": {
+        "B0": 0.6755,
+        "L": 0.25307,
+        "G": 0.24981
+       }
+      },
+      "best_model": "L",
+      "shown": "P",
+      "calibration": null
+     }
+    },
+    "seconds": 112.8
    }
   },
   "AM": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 62 municipalities",
     "test_years": [
      2013,
      2025
@@ -150,11 +317,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 1271516,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.858666,
+        "L": 0.933905,
+        "G": 0.933712
+       },
+       "log_loss": {
+        "B0": 0.08612,
+        "L": 0.04718,
+        "G": 0.04491
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.581853,
+        "L": 0.917157,
+        "G": 0.915944
+       },
+       "log_loss": {
+        "B0": 0.08269,
+        "L": 0.04899,
+        "G": 0.04746
+       }
+      },
+      "best_model": "G",
+      "shown": "G",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 9610331,
+        "mean_p": 0.0046,
+        "observed": 0.0034
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 249597,
+        "mean_p": 0.145,
+        "observed": 0.1214
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 113521,
+        "mean_p": 0.2433,
+        "observed": 0.2216
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 70258,
+        "mean_p": 0.3477,
+        "observed": 0.3129
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 49250,
+        "mean_p": 0.4477,
+        "observed": 0.4171
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 39715,
+        "mean_p": 0.5497,
+        "observed": 0.5031
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 29359,
+        "mean_p": 0.6454,
+        "observed": 0.5595
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 9568,
+        "mean_p": 0.7349,
+        "observed": 0.5875
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 529,
+        "mean_p": 0.8225,
+        "observed": 0.7769
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 50879,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.882074,
+        "L": 0.906262,
+        "G": 0.888781
+       },
+       "log_loss": {
+        "B0": 0.33918,
+        "L": 0.14035,
+        "G": 0.13895
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.823337,
+        "L": 0.879047,
+        "G": 0.869097
+       },
+       "log_loss": {
+        "B0": 0.33681,
+        "L": 0.14583,
+        "G": 0.14246
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 332354,
+        "mean_p": 0.017,
+        "observed": 0.0112
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 14353,
+        "mean_p": 0.1412,
+        "observed": 0.1363
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 7436,
+        "mean_p": 0.2471,
+        "observed": 0.2556
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 5653,
+        "mean_p": 0.3486,
+        "observed": 0.3377
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 5123,
+        "mean_p": 0.4495,
+        "observed": 0.4029
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 5049,
+        "mean_p": 0.5491,
+        "observed": 0.4914
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 5512,
+        "mean_p": 0.6513,
+        "observed": 0.5753
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 6827,
+        "mean_p": 0.7525,
+        "observed": 0.677
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 12310,
+        "mean_p": 0.8559,
+        "observed": 0.8227
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 12415,
+        "mean_p": 0.9381,
+        "observed": 0.914
+       }
+      ]
+     }
+    },
+    "seconds": 877.6
    }
   },
   "RR": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 15 municipalities",
     "test_years": [
      2013,
      2025
@@ -200,11 +603,105 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 181828,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.343685,
+        "L": 0.39199,
+        "G": 0.332584
+       },
+       "log_loss": {
+        "B0": 0.19497,
+        "L": 0.16412,
+        "G": 0.16796
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.419708,
+        "L": 0.405238,
+        "G": 0.367333
+       },
+       "log_loss": {
+        "B0": 0.1852,
+        "L": 0.14187,
+        "G": 0.14288
+       }
+      },
+      "best_model": "L",
+      "shown": "P",
+      "calibration": null
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 7276,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.338302,
+        "L": 0.301158,
+        "G": 0.281183
+       },
+       "log_loss": {
+        "B0": 0.59671,
+        "L": 0.32927,
+        "G": 0.32108
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.390113,
+        "L": 0.335273,
+        "G": 0.358079
+       },
+       "log_loss": {
+        "B0": 0.5983,
+        "L": 0.27066,
+        "G": 0.26089
+       }
+      },
+      "best_model": "G",
+      "shown": "P",
+      "calibration": null
+     }
+    },
+    "seconds": 111.9
    }
   },
   "PA": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 144 municipalities",
     "test_years": [
      2013,
      2025
@@ -250,11 +747,176 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 1016001,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.479758,
+        "L": 0.53582,
+        "G": 0.550684
+       },
+       "log_loss": {
+        "B0": 0.2175,
+        "L": 0.16289,
+        "G": 0.16148
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.325501,
+        "L": 0.435618,
+        "G": 0.44673
+       },
+       "log_loss": {
+        "B0": 0.18176,
+        "L": 0.14566,
+        "G": 0.14367
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 6427169,
+        "mean_p": 0.0217,
+        "observed": 0.0183
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 860811,
+        "mean_p": 0.1429,
+        "observed": 0.1424
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 495645,
+        "mean_p": 0.2463,
+        "observed": 0.2379
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 262460,
+        "mean_p": 0.3425,
+        "observed": 0.2901
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 75006,
+        "mean_p": 0.4357,
+        "observed": 0.2933
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 6823,
+        "mean_p": 0.5258,
+        "observed": 0.3113
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 94,
+        "mean_p": 0.6141,
+        "observed": 0.2447
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 40647,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.476486,
+        "L": 0.455946,
+        "G": 0.411918
+       },
+       "log_loss": {
+        "B0": 0.61996,
+        "L": 0.32593,
+        "G": 0.31979
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.326141,
+        "L": 0.337513,
+        "G": 0.356817
+       },
+       "log_loss": {
+        "B0": 0.58778,
+        "L": 0.36725,
+        "G": 0.35874
+       }
+      },
+      "best_model": "L",
+      "shown": "P",
+      "calibration": null
+     }
+    },
+    "seconds": 728.8
    }
   },
   "AP": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 16 municipalities",
     "test_years": [
      2013,
      2025
@@ -300,11 +962,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 115817,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.605167,
+        "L": 0.745558,
+        "G": 0.748886
+       },
+       "log_loss": {
+        "B0": 0.0982,
+        "L": 0.06706,
+        "G": 0.06638
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.404648,
+        "L": 0.647951,
+        "G": 0.668135
+       },
+       "log_loss": {
+        "B0": 0.14521,
+        "L": 0.10684,
+        "G": 0.10399
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 858122,
+        "mean_p": 0.0108,
+        "observed": 0.0081
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 40879,
+        "mean_p": 0.1408,
+        "observed": 0.1336
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 19056,
+        "mean_p": 0.2444,
+        "observed": 0.202
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 7073,
+        "mean_p": 0.3392,
+        "observed": 0.2517
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 1339,
+        "mean_p": 0.4334,
+        "observed": 0.3645
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 67,
+        "mean_p": 0.519,
+        "observed": 0.4328
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 4627,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.626711,
+        "L": 0.678313,
+        "G": 0.659974
+       },
+       "log_loss": {
+        "B0": 0.43675,
+        "L": 0.20792,
+        "G": 0.21193
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.503325,
+        "L": 0.605049,
+        "G": 0.599261
+       },
+       "log_loss": {
+        "B0": 0.47705,
+        "L": 0.24361,
+        "G": 0.23953
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 24943,
+        "mean_p": 0.0164,
+        "observed": 0.0104
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 2407,
+        "mean_p": 0.1419,
+        "observed": 0.108
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 1360,
+        "mean_p": 0.2457,
+        "observed": 0.1985
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 1033,
+        "mean_p": 0.3496,
+        "observed": 0.3204
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 989,
+        "mean_p": 0.4499,
+        "observed": 0.3761
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 1067,
+        "mean_p": 0.5489,
+        "observed": 0.4714
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 1169,
+        "mean_p": 0.651,
+        "observed": 0.5825
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 1487,
+        "mean_p": 0.7534,
+        "observed": 0.692
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 2396,
+        "mean_p": 0.85,
+        "observed": 0.8301
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 165,
+        "mean_p": 0.91,
+        "observed": 0.903
+       }
+      ]
+     }
+    },
+    "seconds": 85.1
    }
   },
   "TO": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 139 municipalities",
     "test_years": [
      2013,
      2025
@@ -350,11 +1248,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 229103,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.123612,
+        "L": 0.221953,
+        "G": 0.223008
+       },
+       "log_loss": {
+        "B0": 0.45638,
+        "L": 0.42286,
+        "G": 0.42161
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.124777,
+        "L": 0.2837,
+        "G": 0.281997
+       },
+       "log_loss": {
+        "B0": 0.36408,
+        "L": 0.32566,
+        "G": 0.32517
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 349375,
+        "mean_p": 0.0671,
+        "observed": 0.0507
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 688184,
+        "mean_p": 0.1491,
+        "observed": 0.1198
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 519002,
+        "mean_p": 0.2472,
+        "observed": 0.225
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 242571,
+        "mean_p": 0.3392,
+        "observed": 0.327
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 33492,
+        "mean_p": 0.4256,
+        "observed": 0.4359
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 200,
+        "mean_p": 0.5129,
+        "observed": 0.46
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 9159,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.133842,
+        "L": 0.191063,
+        "G": 0.176293
+       },
+       "log_loss": {
+        "B0": 0.61209,
+        "L": 0.52396,
+        "G": 0.52344
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.130172,
+        "L": 0.211464,
+        "G": 0.218744
+       },
+       "log_loss": {
+        "B0": 0.7586,
+        "L": 0.62402,
+        "G": 0.62623
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 36,
+        "mean_p": 0.0741,
+        "observed": 0.0833
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 415,
+        "mean_p": 0.1668,
+        "observed": 0.1759
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 1897,
+        "mean_p": 0.2581,
+        "observed": 0.2341
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 3025,
+        "mean_p": 0.3522,
+        "observed": 0.3332
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 3971,
+        "mean_p": 0.452,
+        "observed": 0.3981
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 5144,
+        "mean_p": 0.5525,
+        "observed": 0.4874
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 7844,
+        "mean_p": 0.6539,
+        "observed": 0.594
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 14833,
+        "mean_p": 0.7566,
+        "observed": 0.708
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 32485,
+        "mean_p": 0.8566,
+        "observed": 0.8469
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 3622,
+        "mean_p": 0.9081,
+        "observed": 0.9321
+       }
+      ]
+     }
+    },
+    "seconds": 95.7
    }
   },
   "MA": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 217 municipalities",
     "test_years": [
      2013,
      2025
@@ -400,11 +1534,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 268775,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.205587,
+        "L": 0.287855,
+        "G": 0.298932
+       },
+       "log_loss": {
+        "B0": 0.43432,
+        "L": 0.38648,
+        "G": 0.38449
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.189861,
+        "L": 0.269407,
+        "G": 0.280705
+       },
+       "log_loss": {
+        "B0": 0.32759,
+        "L": 0.30046,
+        "G": 0.29911
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 748372,
+        "mean_p": 0.058,
+        "observed": 0.0499
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 644187,
+        "mean_p": 0.1453,
+        "observed": 0.1276
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 404445,
+        "mean_p": 0.2468,
+        "observed": 0.2255
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 244707,
+        "mean_p": 0.3443,
+        "observed": 0.3203
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 92402,
+        "mean_p": 0.4384,
+        "observed": 0.4109
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 15267,
+        "mean_p": 0.5336,
+        "observed": 0.5092
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 820,
+        "mean_p": 0.6177,
+        "observed": 0.5671
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 10749,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.245431,
+        "L": 0.288743,
+        "G": 0.252457
+       },
+       "log_loss": {
+        "B0": 0.5881,
+        "L": 0.46302,
+        "G": 0.46134
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.203011,
+        "L": 0.233641,
+        "G": 0.240138
+       },
+       "log_loss": {
+        "B0": 0.71023,
+        "L": 0.62868,
+        "G": 0.62595
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 1102,
+        "mean_p": 0.0684,
+        "observed": 0.0254
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 1374,
+        "mean_p": 0.1596,
+        "observed": 0.0844
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 2683,
+        "mean_p": 0.2525,
+        "observed": 0.2311
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 3309,
+        "mean_p": 0.3523,
+        "observed": 0.3578
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 4300,
+        "mean_p": 0.4525,
+        "observed": 0.4388
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 5826,
+        "mean_p": 0.5528,
+        "observed": 0.5292
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 8226,
+        "mean_p": 0.6536,
+        "observed": 0.6307
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 13229,
+        "mean_p": 0.7548,
+        "observed": 0.7245
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 27078,
+        "mean_p": 0.8576,
+        "observed": 0.8528
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 18865,
+        "mean_p": 0.9213,
+        "observed": 0.9405
+       }
+      ]
+     }
+    },
+    "seconds": 119.4
    }
   },
   "PI": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 224 municipalities",
     "test_years": [
      2013,
      2025
@@ -450,11 +1820,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 206304,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.156892,
+        "L": 0.28884,
+        "G": 0.28853
+       },
+       "log_loss": {
+        "B0": 0.36529,
+        "L": 0.32053,
+        "G": 0.32071
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.166492,
+        "L": 0.338505,
+        "G": 0.34011
+       },
+       "log_loss": {
+        "B0": 0.27391,
+        "L": 0.24408,
+        "G": 0.24278
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 924532,
+        "mean_p": 0.0482,
+        "observed": 0.0502
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 409595,
+        "mean_p": 0.1433,
+        "observed": 0.1391
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 198962,
+        "mean_p": 0.245,
+        "observed": 0.2444
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 92210,
+        "mean_p": 0.3413,
+        "observed": 0.3578
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 23571,
+        "mean_p": 0.4343,
+        "observed": 0.451
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 1562,
+        "mean_p": 0.5227,
+        "observed": 0.5346
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 8254,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.184032,
+        "L": 0.271006,
+        "G": 0.261559
+       },
+       "log_loss": {
+        "B0": 0.69009,
+        "L": 0.56888,
+        "G": 0.56704
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.211433,
+        "L": 0.322114,
+        "G": 0.3102
+       },
+       "log_loss": {
+        "B0": 0.70958,
+        "L": 0.60771,
+        "G": 0.60032
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 1178,
+        "mean_p": 0.073,
+        "observed": 0.0467
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 5197,
+        "mean_p": 0.156,
+        "observed": 0.1526
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 7705,
+        "mean_p": 0.2514,
+        "observed": 0.2835
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 8002,
+        "mean_p": 0.35,
+        "observed": 0.3778
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 7921,
+        "mean_p": 0.4495,
+        "observed": 0.4643
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 8207,
+        "mean_p": 0.5508,
+        "observed": 0.5581
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 8751,
+        "mean_p": 0.6512,
+        "observed": 0.6507
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 10308,
+        "mean_p": 0.7518,
+        "observed": 0.7672
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 8763,
+        "mean_p": 0.8321,
+        "observed": 0.9027
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     }
+    },
+    "seconds": 93.3
    }
   },
   "CE": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 184 municipalities",
     "test_years": [
      2013,
      2025
@@ -500,11 +2106,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 121464,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.263934,
+        "L": 0.317637,
+        "G": 0.308509
+       },
+       "log_loss": {
+        "B0": 0.19974,
+        "L": 0.1861,
+        "G": 0.18629
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.304635,
+        "L": 0.344187,
+        "G": 0.351082
+       },
+       "log_loss": {
+        "B0": 0.19471,
+        "L": 0.18197,
+        "G": 0.18249
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 880280,
+        "mean_p": 0.0428,
+        "observed": 0.0396
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 82054,
+        "mean_p": 0.1332,
+        "observed": 0.1369
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 8526,
+        "mean_p": 0.232,
+        "observed": 0.2681
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 772,
+        "mean_p": 0.331,
+        "observed": 0.4508
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 76,
+        "mean_p": 0.4255,
+        "observed": 0.3947
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 4,
+        "mean_p": 0.522,
+        "observed": 0.25
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 4859,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.262476,
+        "L": 0.289633,
+        "G": 0.260286
+       },
+       "log_loss": {
+        "B0": 0.69544,
+        "L": 0.6154,
+        "G": 0.62379
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.284005,
+        "L": 0.321532,
+        "G": 0.313814
+       },
+       "log_loss": {
+        "B0": 0.69389,
+        "L": 0.61614,
+        "G": 0.62117
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 1094,
+        "mean_p": 0.18,
+        "observed": 0.1636
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 4797,
+        "mean_p": 0.2542,
+        "observed": 0.2489
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 6459,
+        "mean_p": 0.3514,
+        "observed": 0.3422
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 6752,
+        "mean_p": 0.4501,
+        "observed": 0.4372
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 6427,
+        "mean_p": 0.5498,
+        "observed": 0.5365
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 5930,
+        "mean_p": 0.6498,
+        "observed": 0.6503
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 4690,
+        "mean_p": 0.7477,
+        "observed": 0.7582
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 2526,
+        "mean_p": 0.8407,
+        "observed": 0.8436
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 197,
+        "mean_p": 0.9185,
+        "observed": 0.9036
+       }
+      ]
+     }
+    },
+    "seconds": 91.0
    }
   },
   "RN": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 167 municipalities",
     "test_years": [
      2013,
      2025
@@ -550,11 +2392,176 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 43099,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.30228,
+        "L": 0.349887,
+        "G": 0.3334
+       },
+       "log_loss": {
+        "B0": 0.14852,
+        "L": 0.1359,
+        "G": 0.13695
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.384348,
+        "L": 0.422899,
+        "G": 0.418658
+       },
+       "log_loss": {
+        "B0": 0.15195,
+        "L": 0.13718,
+        "G": 0.13693
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 326537,
+        "mean_p": 0.0263,
+        "observed": 0.0283
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 16339,
+        "mean_p": 0.1349,
+        "observed": 0.1271
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 1822,
+        "mean_p": 0.2302,
+        "observed": 0.2025
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 94,
+        "mean_p": 0.3248,
+        "observed": 0.1809
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 1722,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.290052,
+        "L": 0.313817,
+        "G": 0.304778
+       },
+       "log_loss": {
+        "B0": 0.66785,
+        "L": 0.5637,
+        "G": 0.57518
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.351888,
+        "L": 0.311794,
+        "G": 0.279875
+       },
+       "log_loss": {
+        "B0": 0.67602,
+        "L": 0.56003,
+        "G": 0.56743
+       }
+      },
+      "best_model": "L",
+      "shown": "P",
+      "calibration": null
+     }
+    },
+    "seconds": 39.6
    }
   },
   "PB": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 223 municipalities",
     "test_years": [
      2013,
      2025
@@ -600,11 +2607,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 46225,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.235096,
+        "L": 0.27054,
+        "G": 0.232103
+       },
+       "log_loss": {
+        "B0": 0.17879,
+        "L": 0.16628,
+        "G": 0.16816
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.256762,
+        "L": 0.303018,
+        "G": 0.286162
+       },
+       "log_loss": {
+        "B0": 0.16045,
+        "L": 0.15246,
+        "G": 0.15278
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 345537,
+        "mean_p": 0.0383,
+        "observed": 0.038
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 23931,
+        "mean_p": 0.1241,
+        "observed": 0.1168
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 329,
+        "mean_p": 0.2224,
+        "observed": 0.2766
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 3,
+        "mean_p": 0.3344,
+        "observed": 0.6667
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 1849,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.236993,
+        "L": 0.265317,
+        "G": 0.223433
+       },
+       "log_loss": {
+        "B0": 0.69148,
+        "L": 0.56913,
+        "G": 0.58026
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.253577,
+        "L": 0.266693,
+        "G": 0.253577
+       },
+       "log_loss": {
+        "B0": 0.69193,
+        "L": 0.61557,
+        "G": 0.63102
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 85,
+        "mean_p": 0.0958,
+        "observed": 0.1765
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 2666,
+        "mean_p": 0.1487,
+        "observed": 0.1208
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 2055,
+        "mean_p": 0.2463,
+        "observed": 0.2268
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 1546,
+        "mean_p": 0.3501,
+        "observed": 0.3415
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 1523,
+        "mean_p": 0.4481,
+        "observed": 0.4852
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 1810,
+        "mean_p": 0.5507,
+        "observed": 0.574
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 2047,
+        "mean_p": 0.651,
+        "observed": 0.66
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 1931,
+        "mean_p": 0.7483,
+        "observed": 0.7374
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 1030,
+        "mean_p": 0.8393,
+        "observed": 0.7874
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 99,
+        "mean_p": 0.917,
+        "observed": 0.8081
+       }
+      ]
+     }
+    },
+    "seconds": 42.7
    }
   },
   "PE": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 185 municipalities",
     "test_years": [
      2013,
      2025
@@ -650,11 +2893,176 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 80514,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.247707,
+        "L": 0.266657,
+        "G": 0.270854
+       },
+       "log_loss": {
+        "B0": 0.17529,
+        "L": 0.16556,
+        "G": 0.16513
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.23744,
+        "L": 0.252326,
+        "G": 0.242092
+       },
+       "log_loss": {
+        "B0": 0.18907,
+        "L": 0.18095,
+        "G": 0.1817
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 612044,
+        "mean_p": 0.0376,
+        "observed": 0.0381
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 31958,
+        "mean_p": 0.1217,
+        "observed": 0.1214
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 110,
+        "mean_p": 0.2166,
+        "observed": 0.1909
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 3217,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.243137,
+        "L": 0.26615,
+        "G": 0.250731
+       },
+       "log_loss": {
+        "B0": 0.69407,
+        "L": 0.59233,
+        "G": 0.60339
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.200983,
+        "L": 0.200227,
+        "G": 0.184534
+       },
+       "log_loss": {
+        "B0": 0.69633,
+        "L": 0.63155,
+        "G": 0.6432
+       }
+      },
+      "best_model": "L",
+      "shown": "P",
+      "calibration": null
+     }
+    },
+    "seconds": 65.6
    }
   },
   "AL": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 102 municipalities",
     "test_years": [
      2013,
      2025
@@ -700,11 +3108,176 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 22940,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.227194,
+        "L": 0.250871,
+        "G": 0.228381
+       },
+       "log_loss": {
+        "B0": 0.18805,
+        "L": 0.17901,
+        "G": 0.18087
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.201644,
+        "L": 0.199452,
+        "G": 0.185753
+       },
+       "log_loss": {
+        "B0": 0.2021,
+        "L": 0.19816,
+        "G": 0.20035
+       }
+      },
+      "best_model": "L",
+      "shown": "P",
+      "calibration": null
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 918,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.224175,
+        "L": 0.239497,
+        "G": 0.2045
+       },
+       "log_loss": {
+        "B0": 0.69973,
+        "L": 0.61851,
+        "G": 0.64105
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.16388,
+        "L": 0.19175,
+        "G": 0.178372
+       },
+       "log_loss": {
+        "B0": 0.6829,
+        "L": 0.64229,
+        "G": 0.67272
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 1,
+        "mean_p": 0.0959,
+        "observed": 0.0
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 391,
+        "mean_p": 0.1703,
+        "observed": 0.2072
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 852,
+        "mean_p": 0.2515,
+        "observed": 0.2441
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 1050,
+        "mean_p": 0.3512,
+        "observed": 0.3686
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 1053,
+        "mean_p": 0.4494,
+        "observed": 0.4283
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 937,
+        "mean_p": 0.5496,
+        "observed": 0.4963
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 1022,
+        "mean_p": 0.6513,
+        "observed": 0.6311
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 1201,
+        "mean_p": 0.7501,
+        "observed": 0.7227
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 787,
+        "mean_p": 0.84,
+        "observed": 0.7942
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 50,
+        "mean_p": 0.9125,
+        "observed": 0.9
+       }
+      ]
+     }
+    },
+    "seconds": 14.3
    }
   },
   "SE": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 75 municipalities",
     "test_years": [
      2013,
      2025
@@ -750,11 +3323,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 18154,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.230188,
+        "L": 0.276598,
+        "G": 0.241353
+       },
+       "log_loss": {
+        "B0": 0.17989,
+        "L": 0.17279,
+        "G": 0.17683
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.212121,
+        "L": 0.252228,
+        "G": 0.221034
+       },
+       "log_loss": {
+        "B0": 0.17407,
+        "L": 0.16987,
+        "G": 0.17236
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 136597,
+        "mean_p": 0.0413,
+        "observed": 0.0388
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 8548,
+        "mean_p": 0.1263,
+        "observed": 0.1187
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 87,
+        "mean_p": 0.2134,
+        "observed": 0.2299
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 729,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.226138,
+        "L": 0.252872,
+        "G": 0.214538
+       },
+       "log_loss": {
+        "B0": 0.69422,
+        "L": 0.64967,
+        "G": 0.67973
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.218297,
+        "L": 0.23279,
+        "G": 0.208333
+       },
+       "log_loss": {
+        "B0": 0.68974,
+        "L": 0.64372,
+        "G": 0.67199
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 42,
+        "mean_p": 0.1749,
+        "observed": 0.3333
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 506,
+        "mean_p": 0.264,
+        "observed": 0.3162
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 1252,
+        "mean_p": 0.3521,
+        "observed": 0.3914
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 1421,
+        "mean_p": 0.4486,
+        "observed": 0.4806
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 1158,
+        "mean_p": 0.5482,
+        "observed": 0.5743
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 816,
+        "mean_p": 0.649,
+        "observed": 0.6544
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 492,
+        "mean_p": 0.7444,
+        "observed": 0.8069
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 142,
+        "mean_p": 0.8328,
+        "observed": 0.8451
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 3,
+        "mean_p": 0.907,
+        "observed": 1.0
+       }
+      ]
+     }
+    },
+    "seconds": 14.6
    }
   },
   "BA": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 417 municipalities",
     "test_years": [
      2013,
      2025
@@ -800,11 +3609,176 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 469795,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.218121,
+        "L": 0.307394,
+        "G": 0.28915
+       },
+       "log_loss": {
+        "B0": 0.20366,
+        "L": 0.18883,
+        "G": 0.18936
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.240877,
+        "L": 0.314994,
+        "G": 0.348402
+       },
+       "log_loss": {
+        "B0": 0.19933,
+        "L": 0.18453,
+        "G": 0.1836
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 3371112,
+        "mean_p": 0.0409,
+        "observed": 0.0415
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 369401,
+        "mean_p": 0.1316,
+        "observed": 0.1375
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 17734,
+        "mean_p": 0.222,
+        "observed": 0.1786
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 113,
+        "mean_p": 0.31,
+        "observed": 0.4425
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 18781,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.236074,
+        "L": 0.234474,
+        "G": 0.204924
+       },
+       "log_loss": {
+        "B0": 0.68776,
+        "L": 0.59542,
+        "G": 0.5926
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.261794,
+        "L": 0.24279,
+        "G": 0.222071
+       },
+       "log_loss": {
+        "B0": 0.68721,
+        "L": 0.59307,
+        "G": 0.58586
+       }
+      },
+      "best_model": "L",
+      "shown": "P",
+      "calibration": null
+     }
+    },
+    "seconds": 234.0
    }
   },
   "MG": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 853 municipalities",
     "test_years": [
      2013,
      2025
@@ -850,11 +3824,176 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 501986,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.21,
+        "L": 0.270785,
+        "G": 0.27724
+       },
+       "log_loss": {
+        "B0": 0.20978,
+        "L": 0.19868,
+        "G": 0.19826
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.307608,
+        "L": 0.334862,
+        "G": 0.340101
+       },
+       "log_loss": {
+        "B0": 0.13703,
+        "L": 0.12827,
+        "G": 0.128
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 3617201,
+        "mean_p": 0.0459,
+        "observed": 0.0442
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 384919,
+        "mean_p": 0.1282,
+        "observed": 0.1358
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 13619,
+        "mean_p": 0.2254,
+        "observed": 0.2924
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 149,
+        "mean_p": 0.3157,
+        "observed": 0.4497
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 20078,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.206,
+        "L": 0.246786,
+        "G": 0.238826
+       },
+       "log_loss": {
+        "B0": 0.69329,
+        "L": 0.63275,
+        "G": 0.63415
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.309571,
+        "L": 0.304351,
+        "G": 0.290298
+       },
+       "log_loss": {
+        "B0": 0.68348,
+        "L": 0.62791,
+        "G": 0.62498
+       }
+      },
+      "best_model": "L",
+      "shown": "P",
+      "calibration": null
+     }
+    },
+    "seconds": 254.6
    }
   },
   "ES": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 78 municipalities",
     "test_years": [
      2013,
      2025
@@ -900,11 +4039,176 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 39629,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.247064,
+        "L": 0.287955,
+        "G": 0.267981
+       },
+       "log_loss": {
+        "B0": 0.17643,
+        "L": 0.16883,
+        "G": 0.17182
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.450292,
+        "L": 0.449196,
+        "G": 0.459795
+       },
+       "log_loss": {
+        "B0": 0.15063,
+        "L": 0.14216,
+        "G": 0.14248
+       }
+      },
+      "best_model": "L",
+      "shown": "P",
+      "calibration": null
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 1588,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.255047,
+        "L": 0.295165,
+        "G": 0.244433
+       },
+       "log_loss": {
+        "B0": 0.69479,
+        "L": 0.63163,
+        "G": 0.64989
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.42895,
+        "L": 0.450171,
+        "G": 0.441076
+       },
+       "log_loss": {
+        "B0": 0.68967,
+        "L": 0.60128,
+        "G": 0.60765
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 163,
+        "mean_p": 0.1882,
+        "observed": 0.2393
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 1805,
+        "mean_p": 0.2549,
+        "observed": 0.2532
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 2585,
+        "mean_p": 0.3495,
+        "observed": 0.3319
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 2270,
+        "mean_p": 0.4484,
+        "observed": 0.4524
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 2177,
+        "mean_p": 0.5488,
+        "observed": 0.5136
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 1795,
+        "mean_p": 0.6478,
+        "observed": 0.6524
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 1374,
+        "mean_p": 0.7475,
+        "observed": 0.7394
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 484,
+        "mean_p": 0.8351,
+        "observed": 0.8347
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 51,
+        "mean_p": 0.9271,
+        "observed": 0.7255
+       }
+      ]
+     }
+    },
+    "seconds": 31.5
    }
   },
   "RJ": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 92 municipalities",
     "test_years": [
      2013,
      2025
@@ -950,11 +4254,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 38150,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.327898,
+        "L": 0.377092,
+        "G": 0.347643
+       },
+       "log_loss": {
+        "B0": 0.23896,
+        "L": 0.2142,
+        "G": 0.2194
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.495098,
+        "L": 0.549911,
+        "G": 0.536988
+       },
+       "log_loss": {
+        "B0": 0.15596,
+        "L": 0.13432,
+        "G": 0.13369
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 244141,
+        "mean_p": 0.0481,
+        "observed": 0.0387
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 46664,
+        "mean_p": 0.1375,
+        "observed": 0.1287
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 11219,
+        "mean_p": 0.2387,
+        "observed": 0.2527
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 2690,
+        "mean_p": 0.3366,
+        "observed": 0.39
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 455,
+        "mean_p": 0.4345,
+        "observed": 0.5033
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 31,
+        "mean_p": 0.5302,
+        "observed": 0.7419
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 1529,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.306229,
+        "L": 0.33245,
+        "G": 0.293602
+       },
+       "log_loss": {
+        "B0": 0.69311,
+        "L": 0.58781,
+        "G": 0.61464
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.460885,
+        "L": 0.486813,
+        "G": 0.492624
+       },
+       "log_loss": {
+        "B0": 0.72347,
+        "L": 0.60065,
+        "G": 0.60214
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 232,
+        "mean_p": 0.1679,
+        "observed": 0.0647
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 1003,
+        "mean_p": 0.2624,
+        "observed": 0.2183
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 1874,
+        "mean_p": 0.3516,
+        "observed": 0.3218
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 1946,
+        "mean_p": 0.4513,
+        "observed": 0.4188
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 1991,
+        "mean_p": 0.5496,
+        "observed": 0.5053
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 1887,
+        "mean_p": 0.649,
+        "observed": 0.6047
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 1939,
+        "mean_p": 0.7501,
+        "observed": 0.7849
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 1347,
+        "mean_p": 0.8375,
+        "observed": 0.9117
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 13,
+        "mean_p": 0.9049,
+        "observed": 0.9231
+       }
+      ]
+     }
+    },
+    "seconds": 28.5
    }
   },
   "SP": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 645 municipalities",
     "test_years": [
      2013,
      2025
@@ -1000,11 +4540,176 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 217523,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.245842,
+        "L": 0.277102,
+        "G": 0.279251
+       },
+       "log_loss": {
+        "B0": 0.20248,
+        "L": 0.18803,
+        "G": 0.18779
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.352258,
+        "L": 0.352258,
+        "G": 0.375867
+       },
+       "log_loss": {
+        "B0": 0.09351,
+        "L": 0.08392,
+        "G": 0.08365
+       }
+      },
+      "best_model": "L",
+      "shown": "P",
+      "calibration": null
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 8696,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.226265,
+        "L": 0.254756,
+        "G": 0.240768
+       },
+       "log_loss": {
+        "B0": 0.68886,
+        "L": 0.59061,
+        "G": 0.59197
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.290195,
+        "L": 0.305973,
+        "G": 0.306724
+       },
+       "log_loss": {
+        "B0": 0.64286,
+        "L": 0.54848,
+        "G": 0.55398
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 774,
+        "mean_p": 0.0856,
+        "observed": 0.0401
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 7871,
+        "mean_p": 0.1565,
+        "observed": 0.1484
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 11420,
+        "mean_p": 0.251,
+        "observed": 0.2454
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 10949,
+        "mean_p": 0.3488,
+        "observed": 0.3463
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 9500,
+        "mean_p": 0.449,
+        "observed": 0.4281
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 8859,
+        "mean_p": 0.55,
+        "observed": 0.5302
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 8810,
+        "mean_p": 0.6503,
+        "observed": 0.6488
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 8738,
+        "mean_p": 0.7494,
+        "observed": 0.7726
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 2645,
+        "mean_p": 0.8248,
+        "observed": 0.7992
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 2,
+        "mean_p": 0.9051,
+        "observed": 0.5
+       }
+      ]
+     }
+    },
+    "seconds": 56.4
    }
   },
   "PR": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 399 municipalities",
     "test_years": [
      2013,
      2025
@@ -1050,11 +4755,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 177763,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.326233,
+        "L": 0.361788,
+        "G": 0.360355
+       },
+       "log_loss": {
+        "B0": 0.18459,
+        "L": 0.16716,
+        "G": 0.16752
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.320403,
+        "L": 0.385549,
+        "G": 0.373408
+       },
+       "log_loss": {
+        "B0": 0.0848,
+        "L": 0.07328,
+        "G": 0.07318
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 1276268,
+        "mean_p": 0.0346,
+        "observed": 0.0333
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 118289,
+        "mean_p": 0.1363,
+        "observed": 0.1275
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 22305,
+        "mean_p": 0.2374,
+        "observed": 0.2158
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 4635,
+        "mean_p": 0.3364,
+        "observed": 0.3448
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 590,
+        "mean_p": 0.4281,
+        "observed": 0.5102
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 17,
+        "mean_p": 0.5154,
+        "observed": 0.4706
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 7129,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.30988,
+        "L": 0.331344,
+        "G": 0.310963
+       },
+       "log_loss": {
+        "B0": 0.69369,
+        "L": 0.58169,
+        "G": 0.58961
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.325111,
+        "L": 0.358395,
+        "G": 0.325409
+       },
+       "log_loss": {
+        "B0": 0.65143,
+        "L": 0.53808,
+        "G": 0.55065
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 2282,
+        "mean_p": 0.0799,
+        "observed": 0.06
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 6196,
+        "mean_p": 0.1501,
+        "observed": 0.1533
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 6697,
+        "mean_p": 0.2516,
+        "observed": 0.2749
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 7456,
+        "mean_p": 0.3508,
+        "observed": 0.358
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 7600,
+        "mean_p": 0.4507,
+        "observed": 0.4384
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 7551,
+        "mean_p": 0.5495,
+        "observed": 0.5203
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 7447,
+        "mean_p": 0.6495,
+        "observed": 0.6298
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 6723,
+        "mean_p": 0.7483,
+        "observed": 0.7329
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 4331,
+        "mean_p": 0.8416,
+        "observed": 0.8435
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 749,
+        "mean_p": 0.9231,
+        "observed": 0.9399
+       }
+      ]
+     }
+    },
+    "seconds": 125.4
    }
   },
   "SC": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 295 municipalities",
     "test_years": [
      2013,
      2025
@@ -1100,11 +5041,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 87188,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.286763,
+        "L": 0.337851,
+        "G": 0.342467
+       },
+       "log_loss": {
+        "B0": 0.22885,
+        "L": 0.21017,
+        "G": 0.21095
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.314465,
+        "L": 0.335994,
+        "G": 0.341074
+       },
+       "log_loss": {
+        "B0": 0.14898,
+        "L": 0.13467,
+        "G": 0.1362
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 596061,
+        "mean_p": 0.0406,
+        "observed": 0.0436
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 80860,
+        "mean_p": 0.1371,
+        "observed": 0.1367
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 17529,
+        "mean_p": 0.2389,
+        "observed": 0.2349
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 3009,
+        "mean_p": 0.3282,
+        "observed": 0.3011
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 45,
+        "mean_p": 0.4106,
+        "observed": 0.3111
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 3475,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.289995,
+        "L": 0.32036,
+        "G": 0.303965
+       },
+       "log_loss": {
+        "B0": 0.68296,
+        "L": 0.58515,
+        "G": 0.59705
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.307899,
+        "L": 0.309856,
+        "G": 0.294449
+       },
+       "log_loss": {
+        "B0": 0.72537,
+        "L": 0.61174,
+        "G": 0.6233
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 53,
+        "mean_p": 0.0811,
+        "observed": 0.3019
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 1599,
+        "mean_p": 0.1632,
+        "observed": 0.1395
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 2201,
+        "mean_p": 0.25,
+        "observed": 0.2849
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 2765,
+        "mean_p": 0.3529,
+        "observed": 0.3996
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 3811,
+        "mean_p": 0.4519,
+        "observed": 0.4846
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 4478,
+        "mean_p": 0.5506,
+        "observed": 0.5793
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 4571,
+        "mean_p": 0.6496,
+        "observed": 0.6522
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 4055,
+        "mean_p": 0.7489,
+        "observed": 0.7443
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 3193,
+        "mean_p": 0.8464,
+        "observed": 0.8628
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 1074,
+        "mean_p": 0.9253,
+        "observed": 0.9609
+       }
+      ]
+     }
+    },
+    "seconds": 59.4
    }
   },
   "RS": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 497 municipalities",
     "test_years": [
      2013,
      2025
@@ -1150,11 +5327,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 250414,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.383057,
+        "L": 0.469918,
+        "G": 0.472304
+       },
+       "log_loss": {
+        "B0": 0.14267,
+        "L": 0.12261,
+        "G": 0.12299
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.497483,
+        "L": 0.582424,
+        "G": 0.597315
+       },
+       "log_loss": {
+        "B0": 0.07655,
+        "L": 0.06256,
+        "G": 0.06333
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 1889173,
+        "mean_p": 0.021,
+        "observed": 0.0225
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 71839,
+        "mean_p": 0.1388,
+        "observed": 0.1385
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 27115,
+        "mean_p": 0.2451,
+        "observed": 0.2499
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 12844,
+        "mean_p": 0.3412,
+        "observed": 0.3181
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 2288,
+        "mean_p": 0.4302,
+        "observed": 0.3715
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 53,
+        "mean_p": 0.5121,
+        "observed": 0.4528
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 10012,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.423571,
+        "L": 0.457657,
+        "G": 0.45124
+       },
+       "log_loss": {
+        "B0": 0.64921,
+        "L": 0.53101,
+        "G": 0.53725
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.559705,
+        "L": 0.592616,
+        "G": 0.579325
+       },
+       "log_loss": {
+        "B0": 0.51753,
+        "L": 0.40313,
+        "G": 0.40764
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 9318,
+        "mean_p": 0.0723,
+        "observed": 0.076
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 18803,
+        "mean_p": 0.1473,
+        "observed": 0.1606
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 14275,
+        "mean_p": 0.248,
+        "observed": 0.2766
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 11151,
+        "mean_p": 0.3478,
+        "observed": 0.3596
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 8764,
+        "mean_p": 0.4482,
+        "observed": 0.4439
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 6533,
+        "mean_p": 0.5471,
+        "observed": 0.5165
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 4430,
+        "mean_p": 0.6469,
+        "observed": 0.6321
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 3138,
+        "mean_p": 0.7476,
+        "observed": 0.7584
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 2618,
+        "mean_p": 0.8501,
+        "observed": 0.8984
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 1066,
+        "mean_p": 0.9207,
+        "observed": 0.9822
+       }
+      ]
+     }
+    },
+    "seconds": 114.8
    }
   },
   "MS": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 79 municipalities",
     "test_years": [
      2013,
      2025
@@ -1200,11 +5613,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 309046,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.316683,
+        "L": 0.431666,
+        "G": 0.409871
+       },
+       "log_loss": {
+        "B0": 0.18901,
+        "L": 0.16502,
+        "G": 0.16869
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.293445,
+        "L": 0.428002,
+        "G": 0.394761
+       },
+       "log_loss": {
+        "B0": 0.07626,
+        "L": 0.06855,
+        "G": 0.06759
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 2195692,
+        "mean_p": 0.0248,
+        "observed": 0.0304
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 164973,
+        "mean_p": 0.1418,
+        "observed": 0.1515
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 74289,
+        "mean_p": 0.2443,
+        "observed": 0.1873
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 30114,
+        "mean_p": 0.3403,
+        "observed": 0.2032
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 6676,
+        "mean_p": 0.4339,
+        "observed": 0.2358
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 618,
+        "mean_p": 0.524,
+        "observed": 0.2605
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 6,
+        "mean_p": 0.6104,
+        "observed": 0.5
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 12368,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.336053,
+        "L": 0.398145,
+        "G": 0.32035
+       },
+       "log_loss": {
+        "B0": 0.57354,
+        "L": 0.5217,
+        "G": 0.52825
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.313047,
+        "L": 0.370675,
+        "G": 0.415242
+       },
+       "log_loss": {
+        "B0": 0.41683,
+        "L": 0.37952,
+        "G": 0.36889
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 10327,
+        "mean_p": 0.08,
+        "observed": 0.0882
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 33584,
+        "mean_p": 0.1473,
+        "observed": 0.1523
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 22615,
+        "mean_p": 0.2463,
+        "observed": 0.2415
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 13630,
+        "mean_p": 0.3456,
+        "observed": 0.3491
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 8286,
+        "mean_p": 0.4464,
+        "observed": 0.4534
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 5659,
+        "mean_p": 0.5467,
+        "observed": 0.5063
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 3705,
+        "mean_p": 0.6481,
+        "observed": 0.5215
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 1138,
+        "mean_p": 0.7304,
+        "observed": 0.6309
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     }
+    },
+    "seconds": 135.3
    }
   },
   "MT": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 141 municipalities",
     "test_years": [
      2013,
      2025
@@ -1250,11 +5899,247 @@
      "chosen": "R",
      "replaces_climatology": true
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 753115,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.320516,
+        "L": 0.362564,
+        "G": 0.389922
+       },
+       "log_loss": {
+        "B0": 0.26085,
+        "L": 0.22789,
+        "G": 0.22596
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.435942,
+        "L": 0.553952,
+        "G": 0.534118
+       },
+       "log_loss": {
+        "B0": 0.15215,
+        "L": 0.11754,
+        "G": 0.11747
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 4596564,
+        "mean_p": 0.0394,
+        "observed": 0.0378
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 835554,
+        "mean_p": 0.1429,
+        "observed": 0.1304
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 399368,
+        "mean_p": 0.2433,
+        "observed": 0.2091
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 149065,
+        "mean_p": 0.3404,
+        "observed": 0.3321
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 39620,
+        "mean_p": 0.437,
+        "observed": 0.471
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 4724,
+        "mean_p": 0.5259,
+        "observed": 0.5525
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 25,
+        "mean_p": 0.6117,
+        "observed": 0.6
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 30120,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.315001,
+        "L": 0.329429,
+        "G": 0.312628
+       },
+       "log_loss": {
+        "B0": 0.64688,
+        "L": 0.52063,
+        "G": 0.51479
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.436446,
+        "L": 0.487786,
+        "G": 0.497306
+       },
+       "log_loss": {
+        "B0": 0.5432,
+        "L": 0.4199,
+        "G": 0.40536
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 26567,
+        "mean_p": 0.0585,
+        "observed": 0.0515
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 46030,
+        "mean_p": 0.1496,
+        "observed": 0.1372
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 38199,
+        "mean_p": 0.2476,
+        "observed": 0.2196
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 29512,
+        "mean_p": 0.3484,
+        "observed": 0.31
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 25169,
+        "mean_p": 0.4492,
+        "observed": 0.4032
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 23181,
+        "mean_p": 0.55,
+        "observed": 0.4849
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 21623,
+        "mean_p": 0.6499,
+        "observed": 0.5929
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 21724,
+        "mean_p": 0.7497,
+        "observed": 0.7524
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 8955,
+        "mean_p": 0.8279,
+        "observed": 0.8699
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     }
+    },
+    "seconds": 397.1
    }
   },
   "GO": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 246 municipalities",
     "test_years": [
      2013,
      2025
@@ -1300,11 +6185,247 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 287410,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.157444,
+        "L": 0.366212,
+        "G": 0.368896
+       },
+       "log_loss": {
+        "B0": 0.2485,
+        "L": 0.2268,
+        "G": 0.22531
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.206093,
+        "L": 0.372032,
+        "G": 0.380096
+       },
+       "log_loss": {
+        "B0": 0.14491,
+        "L": 0.13187,
+        "G": 0.13247
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 1819444,
+        "mean_p": 0.0442,
+        "observed": 0.0423
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 339328,
+        "mean_p": 0.1394,
+        "observed": 0.1294
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 110821,
+        "mean_p": 0.2412,
+        "observed": 0.2295
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 27249,
+        "mean_p": 0.3339,
+        "observed": 0.3251
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 2418,
+        "mean_p": 0.4291,
+        "observed": 0.409
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 20,
+        "mean_p": 0.501,
+        "observed": 0.65
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 11505,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.166546,
+        "L": 0.298495,
+        "G": 0.302356
+       },
+       "log_loss": {
+        "B0": 0.69071,
+        "L": 0.63173,
+        "G": 0.63047
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.218662,
+        "L": 0.316646,
+        "G": 0.346266
+       },
+       "log_loss": {
+        "B0": 0.66219,
+        "L": 0.59481,
+        "G": 0.58518
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 162,
+        "mean_p": 0.0821,
+        "observed": 0.1358
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 2709,
+        "mean_p": 0.1705,
+        "observed": 0.1894
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 14260,
+        "mean_p": 0.2575,
+        "observed": 0.2613
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 20135,
+        "mean_p": 0.3499,
+        "observed": 0.3416
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 18359,
+        "mean_p": 0.4487,
+        "observed": 0.4348
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 15732,
+        "mean_p": 0.5488,
+        "observed": 0.5474
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 12505,
+        "mean_p": 0.6475,
+        "observed": 0.6587
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 7221,
+        "mean_p": 0.7417,
+        "observed": 0.7751
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 957,
+        "mean_p": 0.8179,
+        "observed": 0.8067
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     }
+    },
+    "seconds": 125.4
    }
   },
   "DF": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 1 municipalities",
     "test_years": [
      2013,
      2025
@@ -1350,11 +6471,176 @@
      "chosen": "C",
      "replaces_climatology": false
     }
+   },
+   "cell_outlook": {
+    "decision": "method/DECISIONS.md DE-33 (DE-29 per state, PROPOSED)",
+    "window": "January-October",
+    "next_year": 2027,
+    "feature_year": 2026,
+    "scales": {
+     "001": {
+      "grid_deg": 0.01,
+      "cells": 4866,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.172992,
+        "L": 0.229828,
+        "G": 0.216439
+       },
+       "log_loss": {
+        "B0": 0.40847,
+        "L": 0.37741,
+        "G": 0.38912
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.255291,
+        "L": 0.314815,
+        "G": 0.310847
+       },
+       "log_loss": {
+        "B0": 0.29799,
+        "L": 0.27806,
+        "G": 0.27147
+       }
+      },
+      "best_model": "L",
+      "shown": "L",
+      "calibration": [
+       {
+        "p_from": 0.0,
+        "p_to": 0.1,
+        "cells": 12874,
+        "mean_p": 0.0668,
+        "observed": 0.0534
+       },
+       {
+        "p_from": 0.1,
+        "p_to": 0.2,
+        "cells": 15304,
+        "mean_p": 0.1456,
+        "observed": 0.1322
+       },
+       {
+        "p_from": 0.2,
+        "p_to": 0.3,
+        "cells": 7925,
+        "mean_p": 0.2459,
+        "observed": 0.2367
+       },
+       {
+        "p_from": 0.3,
+        "p_to": 0.4,
+        "cells": 2553,
+        "mean_p": 0.3342,
+        "observed": 0.3165
+       },
+       {
+        "p_from": 0.4,
+        "p_to": 0.5,
+        "cells": 262,
+        "mean_p": 0.429,
+        "observed": 0.4084
+       },
+       {
+        "p_from": 0.5,
+        "p_to": 0.6,
+        "cells": 10,
+        "mean_p": 0.5097,
+        "observed": 0.3
+       },
+       {
+        "p_from": 0.6,
+        "p_to": 0.7,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.7,
+        "p_to": 0.8,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.8,
+        "p_to": 0.9,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       },
+       {
+        "p_from": 0.9,
+        "p_to": 1.0,
+        "cells": 0,
+        "mean_p": null,
+        "observed": null
+       }
+      ]
+     },
+     "005": {
+      "grid_deg": 0.05,
+      "cells": 194,
+      "test_years": [
+       2016,
+       2017,
+       2018,
+       2019,
+       2020,
+       2021,
+       2022,
+       2025
+      ],
+      "fresh_year": 2026,
+      "pooled": {
+       "capture": {
+        "P": 0.178965,
+        "L": 0.198422,
+        "G": 0.147763
+       },
+       "log_loss": {
+        "B0": 0.55512,
+        "L": 0.47169,
+        "G": 0.48331
+       }
+      },
+      "fresh": {
+       "capture": {
+        "P": 0.292715,
+        "L": 0.284768,
+        "G": 0.143046
+       },
+       "log_loss": {
+        "B0": 0.66715,
+        "L": 0.53568,
+        "G": 0.54046
+       }
+      },
+      "best_model": "L",
+      "shown": "P",
+      "calibration": null
+     }
+    },
+    "seconds": 7.0
    }
   },
   "BR": {
    "outlook": {
     "decision": "method/DECISIONS.md DE-33 (DE-28 per area, PROPOSED)",
+    "areas": "the 27 states",
     "test_years": [
      2013,
      2025

@@ -565,3 +565,12 @@ Registered on 2026-11-15 at 09:48 (UTC-4), after the DE-18 result and before any
 - **Rondonia** keeps its published results (DE-28, DE-29).
 - **DE-32** gets the 2026 check that was missing (the same `fresh_2026` share as DE-26).
 - **Results:** `method/results/state_outlook.json` (per state: the DE-28 choice and errors; the DE-29 result per scale).
+- **Result** (19:38; `pipeline/pilot_packs.py --cell-outlook` per state, then `--check`):
+  - **DE-28,** 28 areas (26 states, Rondonia's pilot pack and Brazil):
+    - before the season, the median of earlier years (C) stays in 23. The previous year (P) is chosen in RO (as in the published DE-28) and AC; the median of the 3 previous years (P3) in PA, BA and MT;
+    - the early-season update (R) is adopted in AC and MT.
+  - **DE-29 at about 1 km,** 26 states:
+    - logistic regression (L) in 21, gradient boosting (G) in AM, last year's fire (P) in AL, ES, RR and SP;
+    - where a model is shown, its 2026 capture beats last year's fire by 1.5 to 33.4 percentage points (median 7.7).
+  - **DE-29 at about 5 km:** L in 18; P in AC, BA, DF, MG, PA, PE, RN and RR.
+  - **DE-32, 2026 check:** the places that burn year after year held more of 2026's detections than last year's top cells in 20 of 27 states.

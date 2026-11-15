@@ -65,17 +65,18 @@ Machine: 20 cores, 15 GB RAM, 24 GB free disk, unchanged after the run.
 
 | What | Value |
 |---|---|
-| Wall time | **14 min 16 s** for 26 years. MODIS-only years take 0.5–15 s; VIIRS years 23–95 s (2024 is the largest). |
-| Peak memory (RSS) | **3.2 GB**: one source-year of two countries, the largest being 2024 |
-| Disk | **0.68 GB** in total: hotspot lists 0.48 GB (gzip, all years and satellites); cell series 117 MB; municipal series 53 MB; national summary 0.26 MB |
-| In a state but in no municipality polygon (nearest vertex, DE-24) | 35,572 detections, all years |
-| Largest state, Pará | 7.15 million detections (all satellites); 1,646 cells; cell series 15.6 MB; hotspot lists 86.9 MB (gzip) |
+| Wall time, `pilot_brazil.py` | **16 min** (957.9 s) for 2000-11 to 2026-10. MODIS-only years take 0.5–15 s; VIIRS years up to 103 s (2024); 2026 from the API 32.5 s. |
+| Peak memory, `pilot_brazil.py` | **3.1 GB**: one source-year at a time, the largest being 2024 |
+| Forecasts per state (DE-29, `--cell-outlook`) | 68 min of computing for 26 states; **36 min** with 2 to 3 processes at once (19:02–19:38). Largest: Amazonas 14.6 min, 5.5 GB; Pará 12.1 min, 5.0 GB; the 14 smallest 7 s to 2 min each, at most 1.1 GB |
+| Disk | **0.83 GB** of packs (hotspot lists 0.50 GB, gzip, all years and satellites), plus 0.18 GB of 2026 API files |
+| In a state but in no municipality polygon (nearest vertex, DE-24) | 36,880 detections, all years |
+| Largest state, Pará | 7.51 million detections (all satellites); 1,651 cells; cell series 16.2 MB; hotspot lists 91.1 MB (gzip) |
 
-**Rondônia check:** for each of the 48 source-years, the pilot's state 11 against our Rondônia pipeline (`cleaning_log.csv`).
-- The largest difference is 82 detections (0.16 %, S-NPP 2019); 2 source-years are equal.
+**Rondônia check:** for each of the 51 source-years (with 2026), the pilot's state 11 against our Rondônia pipeline (`cleaning_log.csv`).
+- The largest difference is 82 detections (0.16 %, S-NPP 2019); 2 source-years are equal; in 2026 the differences are 2 to 34 detections.
 - The differences come from the boundary detail: intermediate state polygon against the maximum-quality boundary.
 
-**Browser:**
+**Browser** (measured on the 2000-2025 packs):
 
 | Step | Time | JS memory |
 |---|---|---|
@@ -86,10 +87,11 @@ Machine: 20 cores, 15 GB RAM, 24 GB free disk, unchanged after the run.
 | Reading the largest cell series (Pará, 15.6 MB, 302 months) with the app's parser, in Node | 0.4 s | — |
 
 ## What this means
-- **The pipeline is cheap:** 14 minutes and 3.2 GB for 26 years of Brazil, on this laptop. Memory can go lower by reading only the needed columns, in chunks (not done).
+- **The pipeline is cheap:** 16 minutes and 3.1 GB for 2000-2026 of Brazil, on this laptop. Memory can go lower by reading only the needed columns, in chunks (not done).
+- **The forecasts per state are the slow part:** 36 minutes with 2 to 3 processes at once. Memory (5.5 GB for Amazonas) limits how many run together. They are independent, so more cores or machines make them faster; the GPU would need other models, so a new test.
 - **Series and boundaries are fine** for a state at a time. The largest state's 26-year cell series is 15.6 MB and parses in about 0.4 s; a compact format or a split by period would make it lighter on phones.
 - **Points are the limit:** up to 11 MB per state-year. A national version should split them into small tiles × months and load them only when the user zooms in, drawn as an image or tiles.
-- **Hosting:** 0.68 GB for all of Brazil, close to the GitHub Pages site limit (to check). Object storage behind a CDN is the safer choice (provider and limits to check).
+- **Hosting:** 0.83 GB for all of Brazil, close to the GitHub Pages site limit (to check). Object storage behind a CDN is the safer choice (provider and limits to check).
 
 ## Decisions the team needs for a national version
 1. **Review DE-31 and DE-32** (PROPOSED). For the 6 states that failed DE-31, ratios per biome (IBGE biomes) are the next option to test.
