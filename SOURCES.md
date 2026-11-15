@@ -44,3 +44,6 @@
 | IBGE malhas (Rondônia boundary) | API v3, retrieved 2026-11-14 | TODO(verify): IBGE data license - https://www.ibge.gov.br | config/area_boundary.geojson, docs/data/area.geojson |
 | Python: pandas, numpy, scipy, statsmodels, matplotlib | pipeline/requirements.lock.txt | BSD-3-Clause (pandas, numpy, scipy, statsmodels); matplotlib license (PSF-based) - TODO(verify): exact license texts | pipeline/ |
 | NASA FIRMS (data) | TODO(verify): product versions - data/PROVENANCE.md | TODO(verify): data license/citation - https://www.earthdata.nasa.gov/data/tools/firms | pipeline/, docs/data/ |
+
+## Map tiles (web app)
+- OpenStreetMap tiles, loaded by the browser from https://tile.openstreetmap.org (ODbL data, attribution shown in the app): https://www.openstreetmap.org/copyright
