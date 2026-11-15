@@ -52,6 +52,17 @@ The app uses the same polygons and rule (`municipalityIndex` in docs/js/calc.js)
 ### (f) Municipal boundaries
 Path: `docs/data/municipalities.geojson`, a copy of `config/municipalities.geojson` written by `pipeline/download.py --ibge-municipalities` from the IBGE malhas API v3 (`intrarregiao=municipio`, `qualidade=intermediaria`) and the IBGE localidades API v1 (names). FeatureCollection of 52 Polygons without holes; properties `code`, `name`, `source`, `url`, `names_url`, `retrieved`.
 
+### (g) Places that burn year after year
+Path: `docs/data/recurrence.csv`. Written by `pipeline/export.py` (DE-26), after `pipeline/validate.py --recurrence` (method/results/recurrence_hindcast.json).
+
+| Column | Type | Unit | Description |
+|--------|------|------|-------------|
+| `cell_id` | text | - | `<row>_<col>` of a 0.01° cell: row = floor((lat+90)/0.01), col = floor((lon+180)/0.01) |
+| `years` | int | years | Number of the years in `metadata.json` `recurrence.years` (2012-2025 without 2023) with at least one detection of the DE-11 reference VIIRS satellite |
+| `detections` | int | hotspots | Reference VIIRS detections in the cell in those years |
+
+Only cells with at least one detection are listed; a cell that is not listed had no detection, which is not proof of no fire. The sum of `detections` equals the reference detections of those years (`export.py`). `metadata.json` key `recurrence`: file, grid, years, excluded years, the satellite rule and the hindcast summary of DE-26.
+
 ### (b) Hotspot list per year (CSV export)
 Paths: `docs/data/hotspots/<instrument>_<year>.csv.gz` and `docs/data/hotspots/index.json`. Written by `pipeline/export_hotspots.py` (DE-17, R9). `<instrument>` is the FIRMS country-file instrument: `modis`, `viirs-snpp`, `viirs-jpss1` (NOAA-20), plus `viirs-jpss2` (NOAA-21); the NOAA-21 files and all 2026 files come from the area API. 54 files, 2,168,855 rows (`index.json`).
 Content: the detections kept by `clean.py` (standard data, `type` 0, inside the area boundary, no confidence filter). Each file is gzip text. It starts with `#` comment lines (FIRMS acknowledgment, disclaimer link, data cut-off date), then the column header, then one row per hotspot, sorted by date and time.

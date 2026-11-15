@@ -121,7 +121,64 @@
     "months.csv": "year_month, sat, missing_days, flagged (1 = missing data), provisional (1 = NRT)",
     "area.geojson": "IBGE boundary of the area (DE-1); draw it and mark everything outside as outside the area",
     "municipalities.csv": "same columns as monthly_cells.csv with area_id (IBGE municipality code) instead of cell_id: the series of each municipality from the detections inside its boundary, with the same harmonization (DE-24)",
+    "recurrence.csv": "cell_id (0.01°: row = floor((lat+90)/0.01), col = floor((lon+180)/0.01)), years (number of the years in recurrence.years with at least one reference VIIRS detection), detections; cells without detections are not listed, which is not proof of no fire (DE-26)",
     "municipalities.geojson": "IBGE municipal boundaries (malhas API v3, intermediate quality) with code and name; source URL and retrieval date in each feature (DE-24)"
+  },
+  "recurrence": {
+    "file": "recurrence.csv",
+    "grid_deg": 0.01,
+    "years": [
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2024,
+      2025
+    ],
+    "excluded": {
+      "2023": "the reference satellite misses 4 days in July and 1 in September (months.csv)",
+      "2026": "incomplete year, provisional"
+    },
+    "detections": "reference VIIRS satellite of DE-11: S-NPP 2012-02 to 2018-03, NOAA-20 from 2018-04",
+    "hindcast": {
+      "train_years": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021
+      ],
+      "k": 7434,
+      "area_share": 0.0999,
+      "test_years_pooled": [
+        2022,
+        2024,
+        2025
+      ],
+      "pooled": {
+        "detections": 186071,
+        "recurrence": 0.1183,
+        "persistence": 0.2804
+      },
+      "fresh_2026": {
+        "detections": 9090,
+        "recurrence": 0.1087,
+        "persistence": 0.2469,
+        "note": "January to October 2026, provisional near real-time data from August"
+      }
+    }
   },
   "attribution": "We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Land, Atmosphere Near real-time Capability for Earth observations (LANCE) (https://earthdata.nasa.gov/lance) and NASA's Earth Science Data and Information System (ESDIS).",
   "disclaimer_url": "https://www.earthdata.nasa.gov/data/projects/lance#ed-lance-disclaimer",

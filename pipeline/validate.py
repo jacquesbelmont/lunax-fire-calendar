@@ -353,7 +353,39 @@ def continuity_figure(area, area21):
     return _save(fig, "continuity.png")
 
 
+def recurrence_hindcast():
+    """DE-26 hindcast, fixed before the result: priority cells = the K cells with reference VIIRS detections in at least
+    6 of 2012-2021; share of each test year's detections in them, against persistence (the K cells with the most
+    detections in 2021, ties by cell id) and the area share (K / cells with any detection in 2012-2021)."""
+    import export  # matplotlib/scipy; only needed here
+    ref = export.reference_viirs()
+    train = list(range(2012, 2022))
+    rec = export.recurrence(ref, train)
+    prio = set(rec.loc[rec["years"] >= 6, "cell_id"])
+    k = len(prio)
+    last = export.recurrence(ref, [2021]).sort_values(["detections", "cell_id"], ascending=[False, True]).head(k)
+    pers = set(last["cell_id"])
+
+    def shares(years):
+        t = export.recurrence(ref, years)
+        n = int(t["detections"].sum())
+        return {"detections": n, "recurrence": round(t.loc[t["cell_id"].isin(prio), "detections"].sum() / n, 4),
+                "persistence": round(t.loc[t["cell_id"].isin(pers), "detections"].sum() / n, 4)}
+    tests = [2022, 2024, 2025]
+    out = {"decision": "method/DECISIONS.md DE-26", "train_years": train, "k_rule": "cells with detections in >= 6 of 10 years",
+           "k": k, "cells_with_any_detection_train": len(rec), "area_share": round(k / len(rec), 4),
+           "by_test_year": {str(y): shares([y]) for y in tests}, "test_years_pooled": tests, "pooled": shares(tests),
+           "fresh_2026": {**shares([2026]), "note": "January to October 2026, provisional near real-time data from August"},
+           "excluded": {"2023": "reference satellite misses 4 days in July and 1 in September (docs/data/months.csv)"}}
+    (RESULTS / "recurrence_hindcast.json").write_text(json.dumps(out, indent=2) + "\n")
+    print(json.dumps(out, indent=1))
+
+
 def main():
+    if "--recurrence" in sys.argv:  # DE-26 hindcast only (about 30 s)
+        RESULTS.mkdir(parents=True, exist_ok=True)
+        recurrence_hindcast()
+        return
     RESULTS.mkdir(parents=True, exist_ok=True)
     FIGURES.mkdir(parents=True, exist_ok=True)
     panel = hz.add_reference(hz.build_panel(pd.read_csv(hz.COUNTS), pd.read_csv(hz.FLAGS)))

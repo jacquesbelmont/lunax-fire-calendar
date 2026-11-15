@@ -1,0 +1,55 @@
+{
+  "decision": "method/DECISIONS.md DE-26",
+  "train_years": [
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+  ],
+  "k_rule": "cells with detections in >= 6 of 10 years",
+  "k": 7434,
+  "cells_with_any_detection_train": 74437,
+  "area_share": 0.0999,
+  "by_test_year": {
+    "2022": {
+      "detections": 85450,
+      "recurrence": 0.1607,
+      "persistence": 0.3023
+    },
+    "2024": {
+      "detections": 87445,
+      "recurrence": 0.0743,
+      "persistence": 0.2604
+    },
+    "2025": {
+      "detections": 13176,
+      "recurrence": 0.1355,
+      "persistence": 0.271
+    }
+  },
+  "test_years_pooled": [
+    2022,
+    2024,
+    2025
+  ],
+  "pooled": {
+    "detections": 186071,
+    "recurrence": 0.1183,
+    "persistence": 0.2804
+  },
+  "fresh_2026": {
+    "detections": 9090,
+    "recurrence": 0.1087,
+    "persistence": 0.2469,
+    "note": "January to October 2026, provisional near real-time data from August"
+  },
+  "excluded": {
+    "2023": "reference satellite misses 4 days in July and 1 in September (docs/data/months.csv)"
+  }
+}

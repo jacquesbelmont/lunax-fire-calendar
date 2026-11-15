@@ -192,3 +192,20 @@ test("DE-23 fire season of the whole area per year and the typical season", () =
   const only2025 = calc.seasonByYear(data.months.map((ym, i) => ({ ym: ym, value: v[i], inRange: ym.startsWith("2025") })));
   assert.deepStrictEqual(only2025, [{ year: 2025, start: 7, peak: 8, end: 10 }]);
 });
+
+// DE-26: classes of years with detections, and the canvas rows in the map's projection.
+test("DE-26 recurrence classes and Web Mercator cell placement", () => {
+  const cls = (y) => (calc.recurrenceClass(y) || [null])[0];
+  assert.deepStrictEqual([0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 13].map(cls), [null, 1, 1, 3, 3, 5, 5, 7, 7, 10, 10]);
+  const box = meta.area.bbox_west_south_east_north, W = 1450, H = calc.mercatorHeight(box, W);
+  const lines = fs.readFileSync(path.join(root, "docs/data/recurrence.csv"), "utf8").trim().split("\n").slice(1);
+  let prevTop = -Infinity;
+  for (const id of lines.map((l) => l.split(",")[0]).sort((a, b) => Number(b.split("_")[0]) - Number(a.split("_")[0]))) {
+    const [x, y, w, h] = calc.recurrenceCellRect(id, box, W, H);
+    assert.ok(x >= -1e-6 && x + w <= W + 1e-6 && y >= -1e-6 && y + h <= H + 1e-6 && h > 0, id + " inside the canvas");
+    assert.ok(y >= prevTop - 1e-9, id + " rows go down as latitude goes down"); prevTop = y;
+  }
+  // a cell's top edge on the canvas equals the Web Mercator position of its north edge
+  const [, y] = calc.recurrenceCellRect("7900_11700", box, W, H), m = (lat) => Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
+  assert.ok(Math.abs(y - (m(box[3]) - m(-10.99)) / (m(box[3]) - m(box[1])) * H) < 1e-6);
+});
