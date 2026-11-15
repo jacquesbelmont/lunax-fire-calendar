@@ -33,7 +33,7 @@ Owner issue: TI-6 (Tiara). Every number or claim in the project page, the app te
 | 26 | Near real-time (provisional) months: August to October 2026 (VIIRS), September and October 2026 (MODIS) | page, slide 6, HOW_IT_WORKS | docs/data/months.csv `provisional` | recounted from the CSV | OK |
 
 ## Open items (none may reach the submission as a TODO)
-1. **Tiara's full name** for the title slide and the team line (S2: member names). Also confirm the spelling of the two other names.
+1. **Names:** the slides and the project page now say Jacques Belmont, Rafael Silva de Souza and Tiara Martell (Tiara's surname taken from her chat name and GitHub handle). Each member confirms the spelling of their name.
 2. **IBGE data license** (SOURCES.md): resolved 2026-11-15 (Rafael). No license is stated: the IBGE portal terms (version 1, 2024-03-11) are recorded in SOURCES.md, and the app footer credits IBGE.
 3. **Row 4:** resolved 2026-11-15. method/VALIDATION.md and method/METHOD.md now write 3.81; method/DECISIONS.md does not quote the number.
 4. **AI statement:** resolved 2026-11-15. The project page and the README no longer claim "the team confirms"; they state what happened: the challenge and goal chosen by the team, the target scale proposed by Rafael in the team chat, the area chosen by the team, options drafted by an AI assistant, choices by the team, method selected by a pre-registered test (sources: AI_USE.md, method/DECISIONS.md). Before ticking "Confirm All Work is Original" on the Space Apps form, Jacques and Rafael read this paragraph and correct it if anything is not exactly how it happened.

@@ -32,7 +32,7 @@
       shapes.push({ type: "line", xref: "paper", x0: 0, x1: 1, y0: last.median, y1: last.median, line: { color: "#d62728", dash: "dash", width: 2 } });
     }
     const layout = { margin: { l: 60, r: 10, t: 10, b: 40 }, shapes: shapes, showlegend: false,
-      xaxis: { type: "category", title: { text: "Year" } },
+      xaxis: { type: "category", automargin: true, title: { text: "Year", standoff: 12 } },
       yaxis: { title: { text: unit } }, paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)", height: 320,
       font: { color: LunaxTheme.text() } };
     layout.xaxis.gridcolor = layout.yaxis.gridcolor = LunaxTheme.grid();

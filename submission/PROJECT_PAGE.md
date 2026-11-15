@@ -6,13 +6,13 @@ Written for: the Space Apps judges and reviewers (S1: English). Every number or 
 LUNAX Fire Calendar
 
 ## Team
-Team LUNAX: Jacques Belmont, Rafael Silva de Souza, Tiara (full name: to be written by Tiara; see FACT_CHECK.md, open items).
+Team LUNAX: Jacques Belmont, Rafael Silva de Souza, Tiara Martell.
 
 ## Summary (50-200 words)
 LUNAX Fire Calendar is a web app that shows how much burning happened in Rondônia, Brazil, month by month since November 2000. NASA's FIRMS archive holds fire hotspot detections from two kinds of sensors: MODIS (1 km pixels, since 2000) and VIIRS (375 m pixels, since 2012). MODIS is being retired and the two sensors count differently, so their raw numbers cannot be joined. We harmonized them: from 2012 the series uses observed VIIRS counts, and for 2000 to 2012 we convert MODIS counts to the VIIRS scale with a ratio learned where both sensors overlap. In a backward test on 2012 to 2014, the converted total was within 0.6% of what VIIRS actually observed. Users draw an area on the map, read a year-by-month calendar, compare a month with its historical median, and download monthly series and hotspot lists. Months with missing satellite data are grey, never zero, and estimated months are marked. The data are archived FIRMS data that end on 2026-10-31; the most recent months are provisional.
 
 ## Demo link
-Slides (public, no login): to be added by Tiara when the slides are published (see SLIDES_OUTLINE.md).
+7-slide deck (PDF, public, no login): https://jacquesbelmont.github.io/lunax-fire-calendar/demo/LUNAX_Fire_Calendar_slides.pdf
 
 ## Final project link
 https://jacquesbelmont.github.io/lunax-fire-calendar/ (public, no login). Source code: https://github.com/jacquesbelmont/lunax-fire-calendar
