@@ -75,7 +75,54 @@
   }
 
   function paintCells() {
-    state.map.showSelection(state.muni ? null : state.bbox, state.sel.map((i) => state.data.cells[i]), mapPaint(mapMonthIndex()));
+    const rec = $("map-mode").value === "recurrence"; // DE-26: a statewide layer instead of the selected cells
+    state.map.showSelection(state.muni ? null : state.bbox, rec ? [] : state.sel.map((i) => state.data.cells[i]),
+      rec ? recurrencePaint() : mapPaint(mapMonthIndex()));
+    $("recurrence-note").textContent = "";
+    if (rec) showRecurrence(); else state.map.clearOverlay();
+  }
+
+  function recurrencePaint() {
+    const r = state.meta.recurrence;
+    return { colors: [], tips: [], legend: { title: "Places that burn year after year", classes: LunaxCalc.RECURRENCE_CLASSES,
+      status: "Years with a VIIRS detection, of " + r.years.length + " (" + r.years[0] + "-" + r.years[r.years.length - 1] +
+        ", without 2023); 0.01° cells (about 1.1 km). Not drawn: no detection, which is not proof of no fire." } };
+  }
+
+  /** DE-26: load recurrence.csv once, draw it on a canvas in the map's projection, show it with hover texts. */
+  async function showRecurrence() {
+    const r = state.meta.recurrence, box = state.meta.area.bbox_west_south_east_north;
+    try {
+      if (!state.recurrence) {
+        const resp = await fetch("data/" + r.file);
+        if (!resp.ok) throw new Error("Could not load data/" + r.file + " (" + resp.status + ").");
+        const rows = (await resp.text()).trim().split("\n").slice(1).map((l) => l.split(","));
+        const W = Math.round((box[2] - box[0]) / r.grid_deg) * 2, H = LunaxCalc.mercatorHeight(box, W);
+        const canvas = document.createElement("canvas"), ctx = canvas.getContext("2d");
+        canvas.width = W; canvas.height = H;
+        rows.forEach(function (f) {
+          const cls = LunaxCalc.recurrenceClass(Number(f[1]));
+          if (!cls) return;
+          ctx.fillStyle = cls[1];
+          ctx.fillRect.apply(ctx, LunaxCalc.recurrenceCellRect(f[0], box, W, H));
+        });
+        state.recurrence = { url: canvas.toDataURL(), byId: new Map(rows.map((f) => [f[0], f])) };
+      }
+      if ($("map-mode").value !== "recurrence") return; // the view changed while loading
+      const n = r.years.length, g = r.grid_deg;
+      state.map.showOverlay(state.recurrence.url, [[box[1], box[0]], [box[3], box[2]]], function (ll) {
+        const f = state.recurrence.byId.get(Math.floor((ll.lat + 90) / g) + "_" + Math.floor((ll.lng + 180) / g));
+        return f ? "Detections in " + f[1] + " of " + n + " years (" + Number(f[2]).toLocaleString("en-US") + " VIIRS detections)" : null;
+      });
+      const h = r.hindcast, pct = (x) => (100 * x).toFixed(1) + "%";
+      $("recurrence-note").textContent = "This map describes the past; it is not a forecast. Test (method/DECISIONS.md DE-26): the cells that " +
+        "burned in at least 6 of the years " + h.train_years[0] + "-" + h.train_years[h.train_years.length - 1] + " (" + pct(h.area_share) +
+        " of the cells with any detection) held " + pct(h.pooled.recurrence) + " of the detections of " + h.test_years_pooled.join(", ") +
+        ", little more than any cells of the same number would. The same number of cells that burned most in " +
+        h.train_years[h.train_years.length - 1] + " held " + pct(h.pooled.persistence) + ": for the next season, the previous year's fires were the better guide.";
+    } catch (err) {
+      $("recurrence-note").textContent = String(err.message || err);
+    }
   }
 
   /** DE-21: both map layers for the same month (and the municipal ranking of that month, DE-24). */

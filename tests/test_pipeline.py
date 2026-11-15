@@ -184,3 +184,26 @@ class MunicipalitiesTest(unittest.TestCase):
             m = munis.groupby("year_month")[col].sum(min_count=1).reindex(a.index)
             same = ((a - m).abs() <= 1e-3 * a.abs().clip(lower=1)) | (a.isna() & m.isna())
             self.assertTrue(same.all(), col)
+
+
+class RecurrenceTest(unittest.TestCase):
+    """DE-26: years with a reference VIIRS detection per 0.01° cell; 2023 and 2026 are not counted."""
+
+    def test_recurrence_file(self):
+        import export  # noqa: E402
+        meta = json.loads((DOCS_DATA / "metadata.json").read_text())["recurrence"]
+        self.assertEqual(meta["years"], [2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2024, 2025])
+        rec = pd.read_csv(DOCS_DATA / "recurrence.csv", dtype={"cell_id": str})
+        ref = export.reference_viirs()
+        years = ref["acq_date"].str[:4].astype(int)
+        self.assertEqual(rec["detections"].sum(), years.isin(meta["years"]).sum())
+        self.assertTrue(rec["years"].between(1, 13).all())
+        self.assertFalse(set(ref["sat"]) - {"SNPP", "NOAA20"})  # one reference satellite at a time (DE-11)
+        # one cell recomputed directly: the cell of the first 2025 detection
+        p = ref[years.eq(2025)].iloc[0]
+        cid = f"{int((p.latitude + 90) // 0.01)}_{int((p.longitude + 180) // 0.01)}"
+        cell = ref[((ref.latitude + 90) // 0.01).astype(int).astype(str).str.cat(((ref.longitude + 180) // 0.01).astype(int).astype(str), sep="_").eq(cid)]
+        in_years = cell[cell["acq_date"].str[:4].astype(int).isin(meta["years"])]
+        row = rec[rec["cell_id"].eq(cid)].iloc[0]
+        self.assertEqual(row["years"], in_years["acq_date"].str[:4].nunique())
+        self.assertEqual(row["detections"], len(in_years))

@@ -117,7 +117,14 @@ try {
   check("map view 'Compared with the usual' colors the same 376 cells with the DE-22 classes", /Compared with the usual, 2026-10/.test(legendU) &&
     /2 times usual or more/.test(legendU) && /Near usual/.test(legendU) && await evaluate(`document.querySelectorAll('#map path.map-cell').length`) === 376,
     legendU.slice(0, 90));
+  // DE-26: places that burn year after year, a statewide image with its legend and the hindcast sentence.
+  await evaluate(`(() => { const s = document.querySelector('#map-mode'); s.value = 'recurrence'; s.dispatchEvent(new Event('change')); return true; })()`);
+  await waitFor(`!!document.querySelector('#map img.recurrence-overlay') && /not a forecast/.test(document.querySelector('#recurrence-note').textContent)`);
+  const legendR = await evaluate(`document.querySelector('#map-legend').textContent`);
+  check("map view 'Places that burn year after year' draws the 1 km layer with its legend and test result", /Places that burn year after year/.test(legendR) &&
+    /10-13 years/.test(legendR) && await evaluate(`document.querySelectorAll('#map path.map-cell').length`) === 0, legendR.slice(0, 80));
   await evaluate(`(() => { const s = document.querySelector('#map-mode'); s.value = 'hotspots'; s.dispatchEvent(new Event('change')); return true; })()`);
+  check("back to the hotspots view removes the 1 km layer", await evaluate(`!document.querySelector('#map img.recurrence-overlay') && document.querySelectorAll('#map path.map-cell').length === 376`));
   // DE-23 fire season of the whole area (values in tests/js/calc.test.js).
   const seasonText = await evaluate(`document.querySelector('#season-text').textContent`);
   check("fire season sentence and chart for the whole area", /median of 23 years\): starts in August, peaks in September and ends in October/.test(seasonText) &&

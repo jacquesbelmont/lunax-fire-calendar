@@ -4,7 +4,7 @@
  * SCOPE: R3, R5, R6, R7, R8, R9, O3
  * Owner issue: JA-5, JA-6, JA-8
  * Rules: DE-13 (median/anomaly), DE-16 (uncertainty), DE-21 (map layers), DE-22 (usual), DE-23 (fire season),
- *        DE-24 (municipalities), DE-25 (KML), DATA_CONTRACT.md (a), (e), (f). An empty value is NO DATA, never zero.
+ *        DE-24 (municipalities), DE-25 (KML), DE-26 (places that burn year after year), DATA_CONTRACT.md (a), (e), (f). An empty value is NO DATA, never zero.
  * AI-assisted code (Claude Code); logged in AI_USE.md.
  */
 (function (root, factory) {
@@ -473,7 +473,36 @@
     return best;
   }
 
-  return { parseCellsCsv: parseCellsCsv, hotspotsKml: hotspotsKml, parseMunicipalities: parseMunicipalities, municipalityIndex: municipalityIndex, cellUsual: cellUsual, USUAL_CLASSES: USUAL_CLASSES, usualClass: usualClass,
+  /** DE-26 classes of "Places that burn year after year": [min years, color, label], ColorBrewer YlOrRd 5. */
+  var RECURRENCE_CLASSES = [[10, "#bd0026", "10-13 years (almost every year)"], [7, "#f03b20", "7-9 years (more than half)"],
+    [5, "#fd8d3c", "5-6 years"], [3, "#fecc5c", "3-4 years"], [1, "#ffffb2", "1-2 years"]];
+
+  /** DE-26: class of a cell with detections in `years` years, or null (no detection: not drawn, not proof of no fire). */
+  function recurrenceClass(years) {
+    for (var k = 0; k < RECURRENCE_CLASSES.length; k++) if (years >= RECURRENCE_CLASSES[k][0]) return RECURRENCE_CLASSES[k];
+    return null;
+  }
+
+  function mercatorY(lat) { return Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)); }
+
+  /**
+   * DE-26: [x, y, w, h] of 0.01° cell "row_col" on a canvas of W x H pixels covering bbox [west, south, east, north],
+   * with rows in Web Mercator (the map's projection), so each cell lands where it belongs on the map.
+   */
+  function recurrenceCellRect(id, bbox, W, H) {
+    var rc = id.split("_"), lat0 = Number(rc[0]) * 0.01 - 90, lon0 = Number(rc[1]) * 0.01 - 180;
+    var top = mercatorY(bbox[3]), span = top - mercatorY(bbox[1]), dx = W / (bbox[2] - bbox[0]);
+    var y0 = (top - mercatorY(lat0 + 0.01)) / span * H, y1 = (top - mercatorY(lat0)) / span * H;
+    return [(lon0 - bbox[0]) * dx, y0, 0.01 * dx, y1 - y0];
+  }
+
+  /** Canvas height for width W so that the canvas has the map's (Web Mercator) aspect over bbox. */
+  function mercatorHeight(bbox, W) {
+    return Math.round(W * (mercatorY(bbox[3]) - mercatorY(bbox[1])) / ((bbox[2] - bbox[0]) * Math.PI / 180));
+  }
+
+  return { parseCellsCsv: parseCellsCsv, hotspotsKml: hotspotsKml, RECURRENCE_CLASSES: RECURRENCE_CLASSES, recurrenceClass: recurrenceClass,
+           recurrenceCellRect: recurrenceCellRect, mercatorHeight: mercatorHeight, parseMunicipalities: parseMunicipalities, municipalityIndex: municipalityIndex, cellUsual: cellUsual, USUAL_CLASSES: USUAL_CLASSES, usualClass: usualClass,
            seasonByYear: seasonByYear, typicalSeason: typicalSeason, filterHotspots: filterHotspots, countBySatellite: countBySatellite, hotspotCountText: hotspotCountText, hotspotsCsv: hotspotsCsv, selectCells: selectCells, areaSeries: areaSeries,
            estimatedMonths: estimatedMonths, provisionalMonths: provisionalMonths, firstObservedMonth: firstObservedMonth, monthComparisonText: monthComparisonText,
            estimatedBoundaryPath: estimatedBoundaryPath, medianAnomaly: medianAnomaly, halfWidth90: halfWidth90,

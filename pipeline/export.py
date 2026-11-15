@@ -14,6 +14,8 @@ method/results/harmonize_model.json. Writes:
 - docs/data/months.csv: coverage and flags per satellite and month (DE-14).
 - docs/data/metadata.json: area, source, versions, period, coverage, method, data cut-off date, grid, attribution.
 - docs/data/municipalities.csv and municipalities.geojson: the same series per IBGE municipality (DE-24).
+- docs/data/recurrence.csv: 0.01° cells with the number of years with a reference VIIRS detection (DE-26); needs
+  method/results/recurrence_hindcast.json from `python pipeline/validate.py --recurrence`.
 """
 
 import argparse
@@ -35,6 +37,9 @@ CLEAN_DIR = ROOT / "data" / "interim" / "clean"
 AREA = ROOT / "config" / "area.json"
 BOUNDARY = ROOT / "config" / "area_boundary.geojson"  # IBGE boundary of Rondonia (DE-1)
 MUNICIPALITIES = ROOT / "config" / "municipalities.geojson"  # IBGE municipal boundaries (DE-24)
+HINDCAST = ROOT / "method" / "results" / "recurrence_hindcast.json"  # DE-26, written by validate.py --recurrence
+RECURRENCE_GRID = 0.01  # DE-26: larger than every VIIRS pixel (max 0.80 km)
+RECURRENCE_YEARS = [y for y in range(2012, 2026) if y != 2023]  # DE-26: 2023 misses reference days in July and September
 MODEL = ROOT / "method" / "results" / "harmonize_model.json"
 CALIBRATION = ROOT / "method" / "results" / "uncertainty_calibration.json"
 DOCS_DATA = ROOT / "docs" / "data"
@@ -52,6 +57,14 @@ AI_USE = ("AI tools used: Claude and Claude Code (Anthropic), for code, comparis
           "No AI-generated images, video or audio. Decisions were made by team members and are recorded in "
           "method/DECISIONS.md.")
 SAT_COLUMNS = {"Terra": "terra", "Aqua": "aqua", "SNPP": "snpp", "NOAA20": "noaa20", "NOAA21": "noaa21"}
+
+
+def hindcast_summary():
+    """DE-26 hindcast numbers for the app (validate.py --recurrence writes them)."""
+    if not HINDCAST.exists():
+        raise FileNotFoundError(f"{HINDCAST.relative_to(ROOT)} missing: run pipeline/validate.py --recurrence first (DE-26)")
+    h = json.loads(HINDCAST.read_text())
+    return {k: h[k] for k in ("train_years", "k", "area_share", "test_years_pooled", "pooled", "fresh_2026")}
 
 
 def calibration_lambda():
@@ -120,6 +133,34 @@ def export_municipalities(flags, lam):
     geo_path.write_text(MUNICIPALITIES.read_text(encoding="utf-8"), encoding="utf-8")
     print(f"municipalities: {len(pts)} detections, {n_nearest} placed by the nearest boundary vertex (DE-24)")
     return csv_path, geo_path
+
+
+def reference_viirs():
+    """DE-26: cleaned detections of the DE-11 reference VIIRS satellite (S-NPP 2012-02 to 2018-03, NOAA-20 from 2018-04)."""
+    files = sorted(CLEAN_DIR.glob("viirs-snpp_*.csv.gz")) + sorted(CLEAN_DIR.glob("viirs-jpss1_*.csv.gz"))
+    pts = pd.concat([pd.read_csv(f, usecols=["latitude", "longitude", "acq_date", "sat"], dtype={"acq_date": str, "sat": str})
+                     for f in files], ignore_index=True)
+    snpp = pts["sat"].eq("SNPP") & pts["acq_date"].ge("2012-02-01") & pts["acq_date"].lt("2018-04-01")
+    return pts[snpp | (pts["sat"].eq("NOAA20") & pts["acq_date"].ge("2018-04-01"))].reset_index(drop=True)
+
+
+def recurrence(points, years):
+    """DE-26: per 0.01° cell, the number of the given years with at least one detection, and the number of detections."""
+    p = points[points["acq_date"].str[:4].astype(int).isin(years)]
+    cell = (np.floor((p["latitude"] + 90) / RECURRENCE_GRID).astype(int).astype(str) + "_"
+            + np.floor((p["longitude"] + 180) / RECURRENCE_GRID).astype(int).astype(str))
+    g = p.assign(cell_id=cell, year=p["acq_date"].str[:4]).groupby("cell_id")
+    return pd.DataFrame({"years": g["year"].nunique(), "detections": g.size()}).reset_index()
+
+
+def export_recurrence():
+    """(g) DE-26: recurrence.csv (cell_id at 0.01°, years of RECURRENCE_YEARS with a detection, detections)."""
+    ref = reference_viirs()
+    out = recurrence(ref, RECURRENCE_YEARS)
+    assert out["detections"].sum() == ref["acq_date"].str[:4].astype(int).isin(RECURRENCE_YEARS).sum(), "recurrence total"
+    path = DOCS_DATA / "recurrence.csv"
+    out.to_csv(path, index=False)
+    return path
 
 
 def export_months(flags):
@@ -191,8 +232,18 @@ def export_metadata(harmonized):
             "municipalities.csv": "same columns as monthly_cells.csv with area_id (IBGE municipality code) instead of "
                                   "cell_id: the series of each municipality from the detections inside its boundary, "
                                   "with the same harmonization (DE-24)",
+            "recurrence.csv": "cell_id (0.01°: row = floor((lat+90)/0.01), col = floor((lon+180)/0.01)), years (number "
+                              "of the years in recurrence.years with at least one reference VIIRS detection), detections; "
+                              "cells without detections are not listed, which is not proof of no fire (DE-26)",
             "municipalities.geojson": "IBGE municipal boundaries (malhas API v3, intermediate quality) with code and name; "
                                       "source URL and retrieval date in each feature (DE-24)",
+        },
+        "recurrence": {  # DE-26
+            "file": "recurrence.csv", "grid_deg": RECURRENCE_GRID, "years": RECURRENCE_YEARS,
+            "excluded": {"2023": "the reference satellite misses 4 days in July and 1 in September (months.csv)",
+                         "2026": "incomplete year, provisional"},
+            "detections": "reference VIIRS satellite of DE-11: S-NPP 2012-02 to 2018-03, NOAA-20 from 2018-04",
+            "hindcast": hindcast_summary(),
         },
         "attribution": ATTRIBUTION,
         "disclaimer_url": DISCLAIMER_URL,
@@ -230,7 +281,7 @@ def main(argv=None):
     flags = pd.read_csv(FLAGS, dtype={"year_month": str})
     DOCS_DATA.mkdir(parents=True, exist_ok=True)
     paths = [export_monthly_counts(harmonized, calibration_lambda()), export_months(flags), export_metadata(harmonized),
-             export_area_boundary(), *export_municipalities(flags, calibration_lambda())]
+             export_area_boundary(), *export_municipalities(flags, calibration_lambda()), export_recurrence()]
     if a.check:
         check(harmonized, paths)
     for path in paths:
