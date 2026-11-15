@@ -2,7 +2,7 @@
 
 Method choices are made by the team and recorded here **before** code. AI may implement and test decisions, not make them.
 Status values: OPEN / PROPOSED / DECIDED.
-PROPOSED rows become DECIDED when the team approves them in PR review. Options, trade-offs and sources for each row are in [Decision details](#decision-details).
+PROPOSED rows become DECIDED when the team approves them in PR review. PR #27 was approved and merged by Jacques on 2026-11-15; DE-4 to DE-7 and DE-9 to DE-16 are DECIDED since then. DE-1b (Bolivia) stays OPEN: option A (Rondônia only) is the one implemented. DE-17 stays PROPOSED until Rafael approves it. Options, trade-offs and sources for each row are in [Decision details](#decision-details).
 
 | ID | Date/time (UTC-4) | Decision | Options considered | Chosen by | Justification | Evidence | Status |
 |----|-------------------|----------|--------------------|-----------|---------------|----------|--------|
