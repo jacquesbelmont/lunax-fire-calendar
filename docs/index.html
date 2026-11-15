@@ -12,14 +12,14 @@
 <body>
   <header id="header">
     <h1>LUNAX Fire Calendar</h1>
-    <p id="subtitle">Monthly burning activity from harmonized NASA FIRMS MODIS and VIIRS hotspots. Loading data&hellip;</p>
+    <p id="subtitle">Monthly NASA FIRMS hotspot detections from harmonized MODIS and VIIRS records. Loading data&hellip;</p>
     <p class="notice" id="archive-label" role="note"></p>
   </header>
 
   <main>
     <section id="controls" aria-label="Area and date range">
       <h2>1. Choose an area and a period</h2>
-      <p class="hint">Draw a rectangle on the map, or type its limits in degrees. Only data inside the study area is available.</p>
+      <p class="hint">Draw a rectangle on the map or enter its coordinates. Counts use detections inside the IBGE boundary of Rondônia.</p>
       <form id="bbox-form" class="row">
         <label>West <input id="bbox-w" type="number" step="0.05" required></label>
         <label>South <input id="bbox-s" type="number" step="0.05" required></label>
@@ -44,9 +44,9 @@
 
     <section id="calendar-section" aria-label="Monthly calendar">
       <h2>2. Monthly calendar</h2>
-      <p class="hint">Each cell is one month. Darker colors mean more hotspots. Grey cells have no data: they are never shown as zero fire. The dashed line separates estimated months (above/left) from observed ones. Years marked "prov." contain provisional months (FIRMS near real-time data, replaced later by standard data); the hover text says which.</p>
+      <p class="hint">Each cell is one month. Darker colors mean more hotspots. Grey cells mark months with missing data in the displayed series. The dashed line separates estimated months (above/left) from observed ones. Years marked "prov." contain provisional months from FIRMS near real-time data. Hover for the month status.</p>
       <div id="calendar" class="chart" role="img" aria-label="Calendar of monthly hotspot counts by year and month"></div>
-      <p><button type="button" id="png-calendar">Download calendar (PNG)</button></p>
+      <p><button type="button" id="png-calendar" disabled>Download calendar (PNG)</button></p>
     </section>
 
     <section id="compare-section" aria-label="Month versus historical median">
@@ -56,18 +56,18 @@
       <p id="compare-text" role="status"></p>
       <div id="compare" class="chart" role="img" aria-label="Same calendar month across years with the historical median"></div>
       <p class="hint">Light bars: estimated from MODIS. Dark bars: observed by VIIRS. Dashed line: median of the earlier years. Error bars: 90% interval. "prov.": provisional month (FIRMS near real-time data; the value can still change).</p>
-      <p><button type="button" id="png-compare">Download chart (PNG)</button></p>
+      <p><button type="button" id="png-compare" disabled>Download chart (PNG)</button></p>
     </section>
 
     <section id="downloads-section" aria-label="Downloads">
       <h2>4. Downloads</h2>
-      <p>The files cover the area and period selected above and carry the NASA FIRMS acknowledgment and the data cut-off date.</p>
+      <p>CSV files cover the selected cells and period and include the NASA FIRMS acknowledgment and the data cut-off date.</p>
       <p>
-        <button type="button" id="csv-series">Monthly series of the area (CSV)</button>
-        <button type="button" id="csv-cells">Monthly values per grid cell (CSV)</button>
+        <button type="button" id="csv-series" disabled>Monthly series of the area (CSV)</button>
+        <button type="button" id="csv-cells" disabled>Monthly values per grid cell (CSV)</button>
       </p>
       <p>
-        <button type="button" id="hotspots-count">Count the hotspots of this selection</button>
+        <button type="button" id="hotspots-count" disabled>Count the hotspots of this selection</button>
         <button type="button" id="hotspots-download" disabled>Download hotspots (CSV)</button>
       </p>
       <p id="hotspots-status" role="status" class="hint">The hotspot list holds the individual FIRMS detections in the selected cells and period. Count them first to see how many rows the file will have.</p>
@@ -86,7 +86,7 @@
     <p>Area boundary of Rondônia: IBGE, Malhas territoriais (<a href="https://servicodados.ibge.gov.br/api/docs/malhas?versao=3">API v3</a>), retrieved 2026-11-14; geometry used as published.</p>
     <p>Map tiles &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Libraries: Leaflet, Leaflet.draw, Plotly.js (see <a href="https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/docs/lib/README.md">docs/lib/README.md</a>).</p>
     <p id="archive-footer"></p>
-    <p>AI use: this project, including code, text and the comparison of options for method decisions, was prepared with AI assistants (Claude and Claude Code). The team reviewed the results and chose the methods. Details: <a href="https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/AI_USE.md">AI_USE.md</a>.</p>
+    <p>Claude and Claude Code assisted with code, text and method comparisons. Codex reviewed the app and helped revise the app and submission. The team chose the methods. See the <a href="https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/AI_USE.md">AI use log</a>.</p>
   </footer>
 
   <script src="lib/leaflet/leaflet.js"></script>

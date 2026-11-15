@@ -7,7 +7,7 @@
   Source of the 7-slide demo (S2). Printed to PDF with headless Chrome (see submission/slides/README.md).
   Images: real screenshots of the published app (submission/screenshots/) and pipeline figures (method/figures/).
   No AI-generated images, no NASA logos, no people. Every number is in submission/FACT_CHECK.md.
-  AI-assisted draft (Claude Code), logged in AI_USE.md; owner of the deck: Tiara (TI-7).
+  AI-assisted draft (Claude Code and Codex), logged in AI_USE.md. Owner of the deck: Tiara (TI-7).
 -->
 <style>
   @page { size: 1600px 900px; margin: 0; }
@@ -32,6 +32,12 @@
   .kpi { border: 2px solid #0b5cad; border-radius: 10px; padding: 14px 20px; }
   .kpi b { display: block; font-size: 40px; color: #0b5cad; }
   .kpi span { font-size: 20px; color: #333; }
+  .case-stats { display: flex; gap: 64px; margin: 8px 0 32px; }
+  .case-stats b { display: block; font-size: 64px; color: #0b5cad; line-height: 1; }
+  .case-stats span { display: block; margin-top: 8px; font-size: 25px; }
+  .case-chart { flex: 2.6; min-width: 0; }
+  .case-chart img { display: block; width: 100%; }
+  .case-note { font-size: 25px; line-height: 1.4; margin: 0 0 24px; }
   .team { font-size: 30px; margin-top: 18px; line-height: 1.5; }
   .ack { font-size: 17px; color: #444; line-height: 1.4; }
 </style>
@@ -40,7 +46,7 @@
 
 <section class="slide">
   <h1>LUNAX Fire Calendar</h1>
-  <p class="sub">A harmonized burning-activity calendar from NASA FIRMS MODIS and VIIRS hotspots, for Rondônia, Brazil</p>
+  <p class="sub">A monthly calendar of harmonized NASA FIRMS hotspot detections for Rondônia, Brazil</p>
   <div class="row">
     <div class="col">
       <p class="team"><b>Challenge:</b> Harmonization of MODIS and VIIRS Hot Spots<br>NASA Space Apps Challenge 2026</p>
@@ -58,7 +64,7 @@
     <ul>
       <li><b>MODIS</b> (1 km pixels) has the long history, since 2000, and is being retired.</li>
       <li><b>VIIRS</b> (375 m pixels) continues the record, since 2012.</li>
-      <li>On the same area in 2012-2014, VIIRS counted <b>about 3.8 times more</b> hotspots than MODIS. A calendar built from raw numbers shows a false jump in 2012.</li>
+      <li>Across the same area in 2012-2014, VIIRS counted <b>about 3.8 times as many</b> hotspots as MODIS. Splicing their raw counts would introduce an artificial break.</li>
     </ul>
     <div class="imgbox" style="align-items:center"><img src="../../method/figures/before_after.png" alt="Series without correction and harmonized series" style="max-height:470px"></div>
   </div>
@@ -71,7 +77,7 @@
     <ul>
       <li><b>From 2012-02:</b> observed VIIRS counts (Suomi NPP, then NOAA-20 from 2018-04). NOAA-21 is kept as a check.</li>
       <li><b>2000-11 to 2012-01:</b> MODIS count &times; a ratio for that month of the year, learned in 2015-2025 when both sensors observed the same area.</li>
-      <li>Monthly counts on 376 grid cells of 0.25&deg;, inside the official IBGE boundary of Rondônia, 2000-11 to 2026-10.</li>
+      <li>Monthly counts across 376 active 0.25&deg; cells, 2000-11 to 2026-10. Counts use detections inside the IBGE boundary of Rondônia.</li>
     </ul>
     <div class="imgbox" style="align-items:center"><img src="../../method/figures/backcast.png" alt="Converted MODIS against observed VIIRS in the test years" style="max-height:430px"></div>
   </div>
@@ -79,40 +85,37 @@
 </section>
 
 <section class="slide">
-  <h2>The user experience</h2>
+  <h2>September 2025 near Porto Velho</h2>
+  <div class="case-stats">
+    <div><b>309</b><span>observed hotspots in September 2025</span></div>
+    <div><b>5,545</b><span>median across 23 earlier Septembers</span></div>
+  </div>
   <div class="row">
-    <div class="col" style="flex:0.85">
-      <ul>
-        <li>Draw an area on the map or type its coordinates.</li>
-        <li>Read the year &times; month calendar: darker = more hotspots.</li>
-        <li><b>Grey = no data</b>, never shown as zero fire.</li>
-        <li>Dashed line and "est.": estimated months. "prov.": recent near real-time months.</li>
-        <li>Compare a month with its historical median.</li>
-        <li>Download the monthly series, values per cell, the hotspot list (CSV) and the charts (PNG).</li>
-      </ul>
+    <div class="case-chart">
+      <img src="../screenshots/porto_velho_september_2025.png" alt="LUNAX chart for the Porto Velho area. A dashed line shows the historical median. The September 2025 bar is below it.">
+      <p class="small">Light blue bars show MODIS-based estimates. Dark blue bars show observed VIIRS counts. The dashed line marks the historical median.</p>
     </div>
-    <div class="col" style="flex:1.15; display:flex; flex-direction:column; gap:14px">
-      <img src="../screenshots/app_map_controls.png" alt="Area selection on the map" style="max-height:370px; align-self:flex-start">
-      <img src="../screenshots/app_compare.png" alt="Month compared with the historical median" style="max-height:330px; align-self:flex-start">
+    <div class="col">
+      <p class="case-note">An environmental analyst selects a rectangle and compares September with earlier years. The difference identifies a month to check in satellite imagery and field reports.</p>
+      <p class="small">The example selects 33 grid cells. Use west -64.50, south -9.75, east -63.00 and north -8.25. Set the end date to 2025-09 and choose September.</p>
     </div>
   </div>
-  <div class="foot"><span>4 / 7</span><span>Screenshots of the published app, 2026-11-15</span></div>
+  <div class="foot"><span>4 / 7</span><span>Published app capture. NASA FIRMS data archived through 2026-10-31.</span></div>
 </section>
 
 <section class="slide">
   <h2>How we know it works</h2>
   <div class="row">
     <div class="col">
-      <p class="small" style="font-size:24px; margin:0 0 6px">Test fixed before the results were seen: fit on 2015-2025, predict 2012-2014 from MODIS only, compare with what VIIRS observed.</p>
+      <p class="small" style="font-size:24px; margin:0 0 6px">We fitted the ratios on 2015-2025 and compared Terra and Aqua estimates with observed VIIRS across 34 statewide months in 2012-2014.</p>
       <div class="kpis">
-        <div class="kpi"><b>0.6%</b><span>difference in the total</span></div>
-        <div class="kpi"><b>0.998</b><span>monthly correlation</span></div>
-        <div class="kpi"><b>13.3%</b><span>median monthly error</span></div>
+        <div class="kpi"><b>13.3%</b><span>median absolute percentage error for monthly statewide totals</span></div>
+        <div class="kpi"><b>+0.6%</b><span>bias in the combined statewide total</span></div>
       </div>
       <ul>
-        <li>A more complex model we proposed first failed the same test (+143%) and was not used.</li>
-        <li>Suomi NPP and NOAA-20 agree: ratio of totals 0.992.</li>
-        <li>The 90% interval covered 85% of the monthly totals in the test.</li>
+        <li>The protocol set before the test selected the seasonal ratio. The first regression had a +143% bias.</li>
+        <li>The ratio of NOAA-20 to Suomi NPP totals was 0.992.</li>
+        <li>The nominal 90% intervals covered 85% of monthly statewide totals in the test.</li>
       </ul>
     </div>
     <div class="imgbox tall"><img src="../../method/figures/continuity.png" alt="Continuity between the VIIRS satellites" style="max-height:640px"></div>
@@ -124,19 +127,19 @@
   <h2>How NASA data makes it possible, and the limits</h2>
   <div class="row">
     <div class="col">
-      <p class="big">NASA FIRMS is the only data source</p>
+      <p class="big">NASA FIRMS provides the hotspots</p>
       <ul>
         <li>MODIS (Terra, Aqua) and VIIRS (Suomi NPP, NOAA-20, NOAA-21) active-fire detections.</li>
         <li>FIRMS country files (standard processing, 2000-2025) and the FIRMS area API (2026 and NOAA-21), clipped to Rondônia.</li>
-        <li>The FIRMS missing-data list marks months with gaps.</li>
+        <li>The IBGE boundary limits which detections count. OpenStreetMap provides the map background.</li>
       </ul>
     </div>
     <div class="col">
-      <p class="big">Limits we show, not hide</p>
+      <p class="big">How to read the series</p>
       <ul>
-        <li>2000-11 to 2012-01 are estimates; Terra-only months are less accurate.</li>
-        <li>Data end on 2026-10-31; the most recent months are provisional.</li>
-        <li>Hotspots are not fires; no detections is not proof of no fire.</li>
+        <li>Available values from 2000-11 to 2012-01 are estimates. Terra-only estimates had higher errors.</li>
+        <li>Data end on 2026-10-31. The most recent months are provisional.</li>
+        <li>Grey marks missing data in the displayed series. Counts describe thermal detections, which can repeat for the same fire.</li>
         <li>The ratios are fitted for Rondônia only.</li>
       </ul>
     </div>
@@ -149,8 +152,8 @@
   <div class="row">
     <div class="col">
       <ul>
-        <li><b>AI tools:</b> Claude and Claude Code (Anthropic), for code, comparison of method options, analyses and documentation. Every step is logged in AI_USE.md and in the data metadata.</li>
-        <li>The team chose the challenge, the area and the target scale; the method was selected by a validation test fixed in advance. No AI-generated images, video or audio.</li>
+        <li>Claude and Claude Code (Anthropic) assisted with code, comparisons of method options, analysis and writing. Codex (OpenAI) reviewed and revised the app and submission. AI_USE.md records the work.</li>
+        <li>The team chose the challenge, area and scale and set the validation protocol. The deck uses real screenshots and figures from the pipeline.</li>
         <li><b>References:</b> NASA FIRMS; IBGE state boundary; CAMS (MODIS end of mission); Schroeder et al. 2014; Leaflet, Leaflet.draw, Plotly.js, OpenStreetMap; Python libraries. Licenses: SOURCES.md.</li>
       </ul>
     </div>
