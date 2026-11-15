@@ -100,7 +100,33 @@ try {
     /NOAA-20 \(VIIRS\) [\d,]+/.test(note10) && /counts the NOAA-20 \(VIIRS\) detections only/.test(note10) && groups10 > 0,
     groups10 + " groups; " + note10.slice(0, 100));
 
-  // Area by coordinates (R4, O1): a 2x2 degree square north of the area.
+  // DE-22: "Compared with the usual" view of the same month, then back to the hotspots view.
+  await evaluate(`(() => { const s = document.querySelector('#map-mode'); s.value = 'usual'; s.dispatchEvent(new Event('change')); return true; })()`);
+  const legendU = await evaluate(`document.querySelector('#map-legend').textContent`);
+  check("map view 'Compared with the usual' colors the same 376 cells with the DE-22 classes", /Compared with the usual, 2026-10/.test(legendU) &&
+    /2 times usual or more/.test(legendU) && /Near usual/.test(legendU) && await evaluate(`document.querySelectorAll('#map path.map-cell').length`) === 376,
+    legendU.slice(0, 90));
+  await evaluate(`(() => { const s = document.querySelector('#map-mode'); s.value = 'hotspots'; s.dispatchEvent(new Event('change')); return true; })()`);
+  // DE-23 fire season of the whole area (values in tests/js/calc.test.js).
+  const seasonText = await evaluate(`document.querySelector('#season-text').textContent`);
+  check("fire season sentence and chart for the whole area", /median of 23 years\): starts in August, peaks in September and ends in October/.test(seasonText) &&
+    await evaluate(`!!document.querySelector('#season .main-svg')`), seasonText.slice(0, 120));
+  // DE-25: FIRMS link centred on the selection; print button present.
+  check("FIRMS Fire Map link centred on the selected area", /^https:\/\/firms\.modaps\.eosdis\.nasa\.gov\/map\/#d:24hrs;@-63\.\d+,-10\.\d+,\d+\.0z$/.test(
+    await evaluate(`document.querySelector('#firms-link').href`)), await evaluate(`document.querySelector('#firms-link').href`));
+
+  // DE-24: municipal ranking of the map month, then Porto Velho as the area.
+  check("ranking lists the 52 municipalities of the map month", await evaluate(`document.querySelectorAll('#ranking tr').length`) === 53 &&
+    /Municipalities in 2026-10/.test(await evaluate(`document.querySelector('#ranking-caption').textContent`)));
+  await evaluate(`(() => { const s = document.querySelector('#muni-select'); s.value = '1100205'; s.dispatchEvent(new Event('change')); return true; })()`);
+  const infoM = await evaluate(`document.querySelector('#selection-info').textContent`);
+  check("choosing Porto Velho uses its own series: calendar and season redrawn, per-cell CSV disabled", /^Municipality Porto Velho \(IBGE code 1100205\)/.test(infoM) &&
+    await evaluate(`document.querySelector('#csv-cells').disabled && !!document.querySelector('#calendar .main-svg') && /Typical fire season/.test(document.querySelector('#season-text').textContent)`),
+    infoM.slice(0, 60));
+  await waitFor(`/Points: detections of 2026-10 .*in Porto Velho, per satellite/.test(document.querySelector('#map-note').textContent)`);
+  check("map points are the detections inside Porto Velho", true);
+
+  // Area by coordinates (R4, O1): a 2x2 degree square north of the area (also leaves the municipality).
   await selectArea(-65, -9.75, -63, -7.75);
   const info1 = await evaluate(`document.querySelector('#selection-info').textContent`);
   check("area typed as coordinates selects 46 cells (same as expected.json high_fire_2deg)", /^46 grid cells/.test(info1.trim()), info1.trim().slice(0, 40));
@@ -114,9 +140,9 @@ try {
   await waitFor(`/rows in the hotspot list/.test(document.querySelector('#hotspots-status').textContent)`);
   const st = await evaluate(`document.querySelector('#hotspots-status').textContent`);
   check("hotspot row count per sensor shown before the download", /^[\d,]+ rows in the hotspot list for the selected cells, 2025-01 to 2025-12: Terra/.test(st) && /not a harmonized count/.test(st), st.slice(0, 160));
-  check("download button enabled after the count", await evaluate(`!document.querySelector('#hotspots-download').disabled`));
+  check("download buttons enabled after the count", await evaluate(`!document.querySelector('#hotspots-download').disabled && !document.querySelector('#hotspots-kml').disabled`));
 
-  for (const [btn, name] of [["#hotspots-download", "hotspot CSV"], ["#csv-series", "monthly series CSV"], ["#csv-cells", "values per cell CSV"]]) {
+  for (const [btn, name] of [["#hotspots-download", "hotspot CSV"], ["#hotspots-kml", "hotspot KML"], ["#csv-series", "monthly series CSV"], ["#csv-cells", "values per cell CSV"]]) {
     const before = await evaluate(`window.__downloads.length`);
     await evaluate(`document.querySelector('${btn}').click(); true`);
     await waitFor(`window.__downloads.length > ${before}`, 15000);
@@ -147,9 +173,9 @@ try {
   await selectArea(-59.9, -8, -59.8, -7.9);
 
   const exportIds = ["png-calendar", "png-compare", "csv-series", "csv-cells", "hotspots-count"];
-  const allExportsDisabled = `${JSON.stringify([...exportIds, "hotspots-download"])}.every(id => document.getElementById(id).disabled)`;
-  check("empty selection disables every export and clears both charts", await evaluate(`(
-    ${allExportsDisabled} && !document.querySelector('#calendar .main-svg, #compare .main-svg') &&
+  const allExportsDisabled = `${JSON.stringify([...exportIds, "hotspots-download", "hotspots-kml"])}.every(id => document.getElementById(id).disabled)`;
+  check("empty selection disables every export and clears the charts", await evaluate(`(
+    ${allExportsDisabled} && !document.querySelector('#calendar .main-svg, #compare .main-svg, #season .main-svg') &&
     /No grid cell/.test(document.querySelector('#selection-info').textContent) &&
     document.querySelectorAll('#map path.map-cell').length === 0 && document.querySelector('#map-legend').hidden
   )`));
@@ -162,7 +188,7 @@ try {
   await waitFor(`document.querySelector('#calendar .main-svg') && document.querySelector('#compare .main-svg')`);
   check("valid selection restores exports and requires a fresh hotspot count", await evaluate(`(
     ${JSON.stringify(exportIds)}.every(id => !document.getElementById(id).disabled) &&
-    document.getElementById('hotspots-download').disabled
+    document.getElementById('hotspots-download').disabled && document.getElementById('hotspots-kml').disabled
   )`));
   check("no JavaScript errors", errors.length === 0, errors.join(" | ").slice(0, 200));
 } catch (e) {

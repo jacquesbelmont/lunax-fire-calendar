@@ -158,3 +158,37 @@ test("DE-21 map note: the harmonized value counts NOAA-20 from 2018-04, Suomi NP
   assert.match(calc.harmonizedSource("2005-09"), /estimated from MODIS/);
   assert.ok(calc.estimatedMonths(data, all)[at("2005-09")]);
 });
+
+// DE-22: the usual value of one cell is the DE-13 median of a one-cell area, so the map and section 4 agree.
+test("DE-22 cellUsual equals the DE-13 median of a one-cell selection", () => {
+  for (const ym of ["2005-09", "2015-08", "2026-10"]) {
+    const m = data.months.indexOf(ym);
+    data.cells.forEach((c, i) => {
+      const stats = calc.medianAnomaly(data.months, calc.areaSeries(data, [i], "viirs_eq"));
+      same(calc.cellUsual(data, i, "viirs_eq", m), Number.isNaN(stats[m].median) ? null : stats[m].median, c.id + " " + ym);
+    });
+  }
+});
+
+test("DE-22 class edges: band 2*sqrt(max(median, 1)), ratios 2 and 0.5, no data never zero", () => {
+  const cases = [[NaN, 5, "none"], [5, NaN, "first"], [120, 100, "near"], [121, 100, "above"], [200, 100, "much_above"],
+    [80, 100, "near"], [79, 100, "below"], [50, 100, "much_below"], [2, 0, "near"], [3, 0, "much_above"], [0, 0, "near"]];
+  for (const [v, m, key] of cases) assert.strictEqual(calc.usualClass(v, m), key, v + " vs " + m);
+  assert.deepStrictEqual(calc.USUAL_CLASSES.map((c) => c[0]), ["much_above", "above", "near", "below", "much_below", "first", "none"]);
+});
+
+// DE-23: whole area, start/peak/end month per year. Expected values computed independently in Python from
+// docs/data/monthly_cells.csv on 2026-11-15 (same rule: missing months tried as 0 and as the largest value of that month).
+test("DE-23 fire season of the whole area per year and the typical season", () => {
+  const all = calc.selectCells(data, meta.area.bbox_west_south_east_north);
+  const v = calc.areaSeries(data, all, "viirs_eq");
+  const per = calc.seasonByYear(data.months.map((ym, i) => ({ ym: ym, value: v[i], inRange: true })));
+  const got = per.map((s) => s.year + ":" + (s.reason || [s.start, s.peak, s.end].join("/"))).join(" ");
+  assert.strictEqual(got, "2000:missing data 2001:missing data 2002:8/9/10 2003:8/9/10 2004:8/9/10 2005:8/9/10 2006:8/9/9 " +
+    "2007:8/9/10 2008:8/9/10 2009:8/9/10 2010:8/9/10 2011:8/9/10 2012:8/9/10 2013:8/9/10 2014:8/8/10 2015:8/9/10 2016:7/9/10 " +
+    "2017:7/9/10 2018:8/9/10 2019:8/8/9 2020:8/9/10 2021:8/8/10 2022:8/9/11 2023:missing data 2024:7/8/10 2025:7/8/10 2026:missing data");
+  assert.deepStrictEqual(calc.typicalSeason(per), { n: 23, start: 8, peak: 9, end: 10, earliestStart: 7, nEarliest: 4, latestEnd: 11, nLatest: 1 });
+  // months outside the chosen period are missing, never zero: a period inside one year gives that year only
+  const only2025 = calc.seasonByYear(data.months.map((ym, i) => ({ ym: ym, value: v[i], inRange: ym.startsWith("2025") })));
+  assert.deepStrictEqual(only2025, [{ year: 2025, start: 7, peak: 8, end: 10 }]);
+});

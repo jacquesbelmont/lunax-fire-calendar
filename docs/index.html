@@ -15,12 +15,16 @@
     <h1>LUNAX Fire Calendar</h1>
     <p id="subtitle">Monthly NASA FIRMS hotspot detections from harmonized MODIS and VIIRS records. Loading data&hellip;</p>
     <p class="notice" id="archive-label" role="note"></p>
+    <p class="print-only" id="print-header"></p>
   </header>
 
   <main>
     <section id="controls" aria-label="Area and date range">
       <h2>1. Choose an area and a period</h2>
-      <p class="hint">Draw a rectangle on the map or enter its coordinates. Counts use detections inside the IBGE boundary of Rondônia.</p>
+      <p class="hint">Choose a municipality, draw a rectangle on the map or enter its coordinates. Counts use detections inside the IBGE boundary of Rondônia.</p>
+      <div class="row">
+        <label>Municipality <select autocomplete="off" id="muni-select"><option value="">None: use the rectangle below</option></select></label>
+      </div>
       <form id="bbox-form" class="row">
         <label>West <input id="bbox-w" type="number" step="0.05" required></label>
         <label>South <input id="bbox-s" type="number" step="0.05" required></label>
@@ -40,9 +44,19 @@
 
     <section id="map-section" aria-label="Map">
       <h2>Map</h2>
-      <p class="hint">The map shows one month: the month of section 3, or the month you click in the calendar. The selected cells are colored by that month (same values and colors as the calendar; the color scale tops out at the 95th percentile of the cells). Grey cells have no data, which is not zero fire. <span class="dot modis" aria-hidden="true"></span> MODIS and <span class="dot viirs" aria-hidden="true"></span> VIIRS detections of the same month are points; a number is a group of nearby detections of one sensor, so zoom in to separate them. The layers button (top right) hides cells or points.</p>
+      <p class="hint">The map shows one month: the month of section 4, or the month you click in the calendar. Each grid cell is about 27 x 27 km (0.25°). <strong>Hotspots in the month</strong> colors the cells by their value (same values and colors as the calendar; the scale tops out at the 95th percentile of the cells). <strong>Compared with the usual</strong> colors each cell against the median of the same month in its earlier years, so it shows where the month was unusual. Grey cells have no data, which is not zero fire. <span class="dot modis" aria-hidden="true"></span> MODIS and <span class="dot viirs" aria-hidden="true"></span> VIIRS detections are points at their real position; a number is a group of nearby detections of one sensor, so zoom in to separate them. Click the map before zooming with the mouse wheel. The layers button (top right) hides cells or points.</p>
+      <div class="row no-print">
+        <label>Map view <select autocomplete="off" id="map-mode">
+          <option value="hotspots">Hotspots in the month</option>
+          <option value="usual">Compared with the usual for that month</option>
+        </select></label>
+        <a id="firms-link" href="https://firms.modaps.eosdis.nasa.gov/map/" target="_blank" rel="noopener">Today's fires in this area on the NASA FIRMS Fire Map (near real-time, opens a new tab)</a>
+      </div>
       <div id="map" role="application" aria-label="Map for choosing the area, with the hotspots of one month"></div>
       <p class="hint" id="map-note" role="status"></p>
+      <h3>Municipalities in the map month</h3>
+      <p class="hint" id="ranking-caption"></p>
+      <div class="table-wrap"><table id="ranking"></table></div>
     </section>
 
     <section id="calendar-section" aria-label="Monthly calendar">
@@ -52,8 +66,15 @@
       <p><button type="button" id="png-calendar" disabled>Download calendar (PNG)</button></p>
     </section>
 
+    <section id="season-section" aria-label="Fire season">
+      <h2>3. Fire season</h2>
+      <p class="hint">For each year, the bar runs from the month in which 10% of the year's hotspots had been detected (start) to the month in which 90% had been (end); the diamond is the month with the most hotspots (peak). Harmonized values, so years before and after 2012 are comparable. A year with missing months is drawn only if they cannot change the result. Whole months only: the data are monthly.</p>
+      <p id="season-text" role="status"></p>
+      <div id="season" class="chart" role="img" aria-label="Fire season start, peak and end month for each year"></div>
+    </section>
+
     <section id="compare-section" aria-label="Month versus historical median">
-      <h2>3. The latest month compared with its historical median</h2>
+      <h2>4. The latest month compared with its historical median</h2>
       <p class="hint">The data ends at its cut-off date, so the latest month shown here is not the current calendar month.</p>
       <div class="row"><label>Month <select autocomplete="off" id="compare-month"></select></label></div>
       <p id="compare-text" role="status"></p>
@@ -63,7 +84,7 @@
     </section>
 
     <section id="downloads-section" aria-label="Downloads">
-      <h2>4. Downloads</h2>
+      <h2>5. Downloads and briefing</h2>
       <p>CSV files cover the selected cells and period and include the NASA FIRMS acknowledgment and the data cut-off date.</p>
       <p>
         <button type="button" id="csv-series" disabled>Monthly series of the area (CSV)</button>
@@ -72,7 +93,9 @@
       <p>
         <button type="button" id="hotspots-count" disabled>Count the hotspots of this selection</button>
         <button type="button" id="hotspots-download" disabled>Download hotspots (CSV)</button>
+        <button type="button" id="hotspots-kml" disabled>Download hotspots (KML: Google Earth, Avenza, QGIS)</button>
       </p>
+      <p><button type="button" id="print-briefing">Print a briefing (map, calendar, fire season, comparison)</button></p>
       <p id="hotspots-status" role="status" class="hint">The hotspot list holds the individual FIRMS detections in the selected cells and period. Count them first to see how many rows the file will have.</p>
     </section>
 
@@ -86,7 +109,7 @@
   <footer id="footer">
     <p id="attribution"></p>
     <p><a id="disclaimer-link" href="#">LANCE disclaimer</a>. This tool is not an official NASA product and does not imply NASA endorsement. Do not use it for the preservation of life or property.</p>
-    <p>Area boundary of Rondônia: IBGE, Malhas territoriais (<a href="https://servicodados.ibge.gov.br/api/docs/malhas?versao=3">API v3</a>), retrieved 2026-11-14; geometry used as published.</p>
+    <p>Area boundary of Rondônia and municipal boundaries: IBGE, Malhas territoriais (<a href="https://servicodados.ibge.gov.br/api/docs/malhas?versao=3">API v3</a>), retrieved 2026-11-14 (state) and 2026-11-15 (municipalities); geometry used as published.</p>
     <p>Map tiles &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Libraries: Leaflet, Leaflet.draw, Plotly.js (see <a href="https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/docs/lib/README.md">docs/lib/README.md</a>).</p>
     <p id="archive-footer"></p>
     <p>Claude and Claude Code assisted with code, text and method comparisons. Codex reviewed the app and helped revise the app and submission. The team chose the methods. See the <a href="https://github.com/jacquesbelmont/lunax-fire-calendar/blob/main/AI_USE.md">AI use log</a>.</p>
@@ -101,6 +124,7 @@
   <script src="js/map.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/compare.js"></script>
+  <script src="js/season.js"></script>
   <script src="js/hotspots.js"></script>
   <script src="js/export.js"></script>
   <script src="js/main.js"></script>
