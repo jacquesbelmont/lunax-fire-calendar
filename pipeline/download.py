@@ -14,6 +14,7 @@ Usage:
     python pipeline/download.py --countries Brazil Bolivia [--sources modis viirs-snpp viirs-jpss1] [--years 2000 2025]
     python pipeline/download.py --missing-days-only
     python pipeline/download.py --api-source VIIRS_NOAA21_SP --dates 2024-01-17 2025-12-31
+    python pipeline/download.py --ibge-municipalities   (IBGE municipal boundaries of Rondonia into config/, DE-24)
 Files already in the cache with the size listed in the FIRMS index are skipped.
 """
 import argparse
@@ -188,6 +189,25 @@ def download_area_api(source, start, end, bbox, key, raw_dir=RAW_DIR, session=No
     return written
 
 
+IBGE_MUNICIPALITIES = ("https://servicodados.ibge.gov.br/api/v3/malhas/estados/11?formato=application/vnd.geo+json"
+                       "&intrarregiao=municipio&qualidade=intermediaria")
+IBGE_NAMES = "https://servicodados.ibge.gov.br/api/v1/localidades/estados/11/municipios"
+MUNICIPALITIES = ROOT / "config" / "municipalities.geojson"
+
+
+def download_municipalities(session=None, path=MUNICIPALITIES):
+    """DE-24: IBGE municipal boundaries of Rondonia (intermediate quality) with their names; source and date in properties."""
+    geo = fetch_with_retries(IBGE_MUNICIPALITIES, session).json()
+    names = {str(m["id"]): m["nome"] for m in fetch_with_retries(IBGE_NAMES, session).json()}
+    today = time.strftime("%Y-%m-%d")
+    for f in geo["features"]:
+        code = f["properties"]["codarea"]
+        f["properties"] = {"code": code, "name": names[code], "source": "IBGE malhas API v3 (boundary), localidades API v1 (name)",
+                           "url": IBGE_MUNICIPALITIES, "names_url": IBGE_NAMES, "retrieved": today}
+    path.write_text(json.dumps(geo, ensure_ascii=False) + "\n", encoding="utf-8")
+    return len(geo["features"])
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description="Download FIRMS country yearly CSVs and the missing-days table.")
     p.add_argument("--countries", nargs="+", help="country names as in the FIRMS index, e.g. Brazil Bolivia")
@@ -196,7 +216,11 @@ def main(argv=None):
     p.add_argument("--missing-days-only", action="store_true")
     p.add_argument("--api-source", choices=list(API_FOLDERS), help="FIRMS area API source (needs FIRMS_MAP_KEY)")
     p.add_argument("--dates", nargs=2, metavar=("FIRST", "LAST"), help="YYYY-MM-DD range for --api-source")
+    p.add_argument("--ibge-municipalities", action="store_true", help="IBGE municipal boundaries of Rondonia (DE-24)")
     a = p.parse_args(argv)
+    if a.ibge_municipalities:
+        print(f"{MUNICIPALITIES.relative_to(ROOT)}: {download_municipalities()} municipalities")
+        return
     if a.api_source:
         if not a.dates:
             p.error("--dates is required with --api-source")

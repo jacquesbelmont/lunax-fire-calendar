@@ -3,7 +3,8 @@
  *          historical median and anomaly, CSV text, map layers. Runs in the browser and in Node (tests/js).
  * SCOPE: R3, R5, R6, R7, R8, R9, O3
  * Owner issue: JA-5, JA-6, JA-8
- * Rules: DE-13 (median/anomaly), DE-16 (uncertainty), DE-21 (map layers), DATA_CONTRACT.md (a). An empty value is NO DATA, never zero.
+ * Rules: DE-13 (median/anomaly), DE-16 (uncertainty), DE-21 (map layers), DE-22 (usual), DE-23 (fire season),
+ *        DE-24 (municipalities), DE-25 (KML), DATA_CONTRACT.md (a), (e), (f). An empty value is NO DATA, never zero.
  * AI-assisted code (Claude Code); logged in AI_USE.md.
  */
 (function (root, factory) {
@@ -19,24 +20,29 @@
     return s === "" ? NaN : Number(s);
   }
 
-  /** Parse monthly_cells.csv into typed arrays indexed [cell * nMonths + month]. */
-  function parseCellsCsv(text, cellSize) {
+  /**
+   * Parse monthly_cells.csv into typed arrays indexed [cell * nMonths + month]. Also parses municipalities.csv
+   * (DE-24) with idColumn "area_id": the same columns, one "cell" per municipality, without a grid position.
+   */
+  function parseCellsCsv(text, cellSize, idColumn) {
+    idColumn = idColumn || "cell_id";
     var lines = text.split("\n");
     var header = lines[0].replace(/\r$/, "").split(",");
     var col = {};
     header.forEach(function (h, i) { col[h] = i; });
-    ["cell_id", "year_month", "viirs_eq", "viirs_eq_var", "estimated"].forEach(function (c) {
-      if (!(c in col)) throw new Error("monthly_cells.csv: missing column " + c);
+    [idColumn, "year_month", "viirs_eq", "viirs_eq_var", "estimated"].forEach(function (c) {
+      if (!(c in col)) throw new Error("data file: missing column " + c);
     });
     var cellIndex = {}, monthIndex = {}, cells = [], months = [], rows = [];
     for (var i = 1; i < lines.length; i++) {
       if (!lines[i]) continue;
       var f = lines[i].replace(/\r$/, "").split(",");
-      var id = f[col.cell_id], ym = f[col.year_month];
+      var id = f[col[idColumn]], ym = f[col.year_month];
       if (!(id in cellIndex)) {
         cellIndex[id] = cells.length;
         var rc = id.split("_");
-        cells.push({ id: id, lat: (Number(rc[0]) + 0.5) * cellSize - 90, lon: (Number(rc[1]) + 0.5) * cellSize - 180 });
+        cells.push(idColumn !== "cell_id" ? { id: id } :
+          { id: id, lat: (Number(rc[0]) + 0.5) * cellSize - 90, lon: (Number(rc[1]) + 0.5) * cellSize - 180 });
       }
       if (!(ym in monthIndex)) { monthIndex[ym] = -1; months.push(ym); }
       rows.push(f);
@@ -48,7 +54,7 @@
                 columns: { viirs_eq: new Float64Array(n).fill(NaN), viirs_eq_var: new Float64Array(n).fill(NaN) } };
     SENSOR_COLUMNS.forEach(function (s) { if (s in col) out.columns[s] = new Float64Array(n).fill(NaN); });
     rows.forEach(function (f) {
-      var k = cellIndex[f[col.cell_id]] * nM + monthIndex[f[col.year_month]];
+      var k = cellIndex[f[col[idColumn]]] * nM + monthIndex[f[col.year_month]];
       out.columns.viirs_eq[k] = toNumber(f[col.viirs_eq]);
       out.columns.viirs_eq_var[k] = toNumber(f[col.viirs_eq_var]);
       out.estimated[k] = f[col.estimated] === "1" ? 1 : 0;
@@ -292,8 +298,8 @@
     return SAT_LABELS.filter(function (p) { return counts[p[0]]; })
       .map(function (p) { return p[1] + " " + counts[p[0]].toLocaleString("en-US"); }).join(", ");
   }
-  function hotspotCountText(counts, total, fromYm, toYm) {
-    return total.toLocaleString("en-US") + " rows in the hotspot list for the selected cells, " + fromYm + " to " + toYm + ": " +
+  function hotspotCountText(counts, total, fromYm, toYm, where) {
+    return total.toLocaleString("en-US") + " rows in the hotspot list for " + (where || "the selected cells") + ", " + fromYm + " to " + toYm + ": " +
       satelliteCountsText(counts) + ". These are individual detections of each sensor, not a harmonized count; MODIS and VIIRS are never added together.";
   }
 
@@ -321,7 +327,154 @@
     return head.concat(lines).join("\n") + "\n";
   }
 
-  return { parseCellsCsv: parseCellsCsv, filterHotspots: filterHotspots, countBySatellite: countBySatellite, hotspotCountText: hotspotCountText, hotspotsCsv: hotspotsCsv, selectCells: selectCells, areaSeries: areaSeries,
+  function xmlText(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  /**
+   * DE-25: KML of the same hotspot rows as hotspotsCsv, one placemark per detection, styled by sensor (colors of
+   * DE-21, KML order aabbggrr), with the FIRMS acknowledgment, cut-off date and disclaimer in the document description.
+   */
+  function hotspotsKml(meta, header, lines, label, fromYm, toYm) {
+    var desc = [meta.title + " - hotspots", "Area: " + label, "Period: " + fromYm + " to " + toYm,
+                "Data cut-off date: " + meta.data_cutoff_date + " (" + meta.archived + ")", meta.attribution,
+                "Disclaimer: " + meta.disclaimer_url,
+                "FIRMS standard-processing detections inside the study area, type 0 (presumed vegetation fire), no confidence filter. "
+                + "MODIS (1 km) and VIIRS (375 m) detections are never to be added together."].join("\n");
+    var style = function (id, color) {
+      return '<Style id="' + id + '"><IconStyle><color>' + color + "</color><scale>0.6</scale><Icon><href>" +
+        "https://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href></Icon></IconStyle></Style>";
+    };
+    var out = ['<?xml version="1.0" encoding="UTF-8"?>', '<kml xmlns="http://www.opengis.net/kml/2.2"><Document>',
+               "<name>" + xmlText(meta.title + " hotspots, " + fromYm + " to " + toYm) + "</name>",
+               "<description>" + xmlText(desc) + "</description>", style("MODIS", "ffb27200"), style("VIIRS", "ff005ed5")];
+    hotspotPoints(header, lines).forEach(function (p) {
+      out.push("<Placemark><name>" + xmlText(p.sat + " " + p.date + " " + p.time.slice(0, 2) + ":" + p.time.slice(2) + " UTC") +
+        "</name><styleUrl>#" + (p.sensor === "MODIS" ? "MODIS" : "VIIRS") + "</styleUrl><description>" + xmlText(hotspotPointText(p)) +
+        "</description><Point><coordinates>" + p.lon + "," + p.lat + "</coordinates></Point></Placemark>");
+    });
+    out.push("</Document></kml>");
+    return out.join("\n") + "\n";
+  }
+
+  /** DE-22: usual value of cell i in month index m: DE-13 median of the same calendar month in earlier years with data. */
+  function cellUsual(data, i, column, m) {
+    var nM = data.nMonths, arr = data.columns[column], mm = data.months[m].slice(5, 7), prev = [];
+    for (var j = m - 1; j >= 0; j--) {
+      var v = arr[i * nM + j];
+      if (data.months[j].slice(5, 7) === mm && !Number.isNaN(v)) prev.push(v);
+    }
+    return prev.length ? median(prev) : NaN;
+  }
+
+  /** DE-22 classes of the "Compared with the usual" view, in legend order: [key, color, label]. ColorBrewer PuOr, 5 classes. */
+  var USUAL_CLASSES = [["much_above", "#e66101", "2 times usual or more"], ["above", "#fdb863", "Above usual"],
+    ["near", "#f7f7f7", "Near usual"], ["below", "#b2abd2", "Below usual"], ["much_below", "#5e3c99", "Half of usual or less"],
+    ["first", "#d9d9d9", "No earlier year to compare"], ["none", "#9e9e9e", "No data (not zero)"]];
+
+  /** DE-22: class key of value v against usual value m (NaN = no data). */
+  function usualClass(v, m) {
+    if (Number.isNaN(v)) return "none";
+    if (Number.isNaN(m)) return "first";
+    if (Math.abs(v - m) <= 2 * Math.sqrt(Math.max(m, 1))) return "near"; // chance variation of a count (Poisson, 2 sd)
+    if (v > m) return m === 0 || v / m >= 2 ? "much_above" : "above";
+    return v / m <= 0.5 ? "much_below" : "below";
+  }
+
+  /** DE-23: {start, peak, end} months (1-12) of 12 monthly values without gaps; null when the year has no hotspots. */
+  function seasonOf(v) {
+    var total = v.reduce(function (a, b) { return a + b; }, 0), c = 0, start = 0, end = 0, peak = 0;
+    if (!(total > 0)) return null;
+    for (var k = 0; k < 12; k++) {
+      c += v[k];
+      if (!start && c >= 0.1 * total) start = k + 1;
+      if (!end && c >= 0.9 * total) end = k + 1;
+      if (v[k] > v[peak]) peak = k; // the earlier month on a tie
+    }
+    return { start: start, peak: peak + 1, end: end };
+  }
+
+  /**
+   * DE-23: fire season of each year with a month in the period. rows: [{ym, value, inRange}]. A missing month (no data,
+   * outside the period or not yet in the data) is tried as 0 and as the largest value of that calendar month in the
+   * other years; the year is shown only if both give the same season (missing data is never zero fire).
+   * Returns [{year, start, peak, end}] or [{year, reason: "missing data" | "no hotspots"}].
+   */
+  function seasonByYear(rows) {
+    var byYear = {}, maxByMonth = new Array(12).fill(0);
+    rows.forEach(function (r) {
+      var y = r.ym.slice(0, 4), k = Number(r.ym.slice(5, 7)) - 1;
+      if (!Number.isNaN(r.value)) maxByMonth[k] = Math.max(maxByMonth[k], r.value);
+      if (!r.inRange) return;
+      byYear[y] = byYear[y] || new Array(12).fill(NaN);
+      byYear[y][k] = r.value;
+    });
+    return Object.keys(byYear).sort().map(function (y) {
+      var v = byYear[y];
+      var lo = seasonOf(v.map(function (x) { return Number.isNaN(x) ? 0 : x; }));
+      var hi = seasonOf(v.map(function (x, k) { return Number.isNaN(x) ? maxByMonth[k] : x; }));
+      if (!lo && !hi) return { year: Number(y), reason: "no hotspots" };
+      if (lo && hi && lo.start === hi.start && lo.peak === hi.peak && lo.end === hi.end) {
+        return { year: Number(y), start: lo.start, peak: lo.peak, end: lo.end };
+      }
+      return { year: Number(y), reason: "missing data" };
+    });
+  }
+
+  /** DE-23: typical season of the computed years: nearest-rank median start, peak and end (always a month), earliest start, latest end. */
+  function typicalSeason(perYear) {
+    var ok = perYear.filter(function (s) { return s.start; });
+    if (!ok.length) return null;
+    var mid = function (key) {
+      var s = ok.map(function (o) { return o[key]; }).sort(function (a, b) { return a - b; });
+      return s[Math.ceil(s.length / 2) - 1];
+    };
+    var starts = ok.map(function (o) { return o.start; }), ends = ok.map(function (o) { return o.end; });
+    var first = Math.min.apply(null, starts), last = Math.max.apply(null, ends);
+    return { n: ok.length, start: mid("start"), peak: mid("peak"), end: mid("end"),
+             earliestStart: first, nEarliest: starts.filter(function (x) { return x === first; }).length,
+             latestEnd: last, nLatest: ends.filter(function (x) { return x === last; }).length };
+  }
+
+  /** DE-24: municipalities.geojson as [{code, name, ring, bbox}] (one Polygon without holes each, as checked by export.py). */
+  function parseMunicipalities(geojson) {
+    return geojson.features.map(function (f) {
+      var ring = f.geometry.coordinates[0], xs = ring.map(function (v) { return v[0]; }), ys = ring.map(function (v) { return v[1]; });
+      return { code: f.properties.code, name: f.properties.name, ring: ring,
+               bbox: [Math.min.apply(null, xs), Math.min.apply(null, ys), Math.max.apply(null, xs), Math.max.apply(null, ys)] };
+    });
+  }
+
+  function insideRing(x, y, ring) { // ray casting
+    var inside = false;
+    for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      var xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+      if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+    }
+    return inside;
+  }
+
+  /**
+   * DE-24: index of the municipality of a detection: the first polygon that contains it, else the municipality of the
+   * nearest boundary vertex (same rule as municipality_of in pipeline/export.py, so the app keeps the same detections).
+   */
+  function municipalityIndex(lon, lat, munis) {
+    for (var k = 0; k < munis.length; k++) {
+      var b = munis[k].bbox;
+      if (lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3] && insideRing(lon, lat, munis[k].ring)) return k;
+    }
+    var best = -1, bestD = Infinity;
+    munis.forEach(function (m, k) {
+      m.ring.forEach(function (v) {
+        var d = (v[0] - lon) * (v[0] - lon) + (v[1] - lat) * (v[1] - lat);
+        if (d < bestD) { bestD = d; best = k; }
+      });
+    });
+    return best;
+  }
+
+  return { parseCellsCsv: parseCellsCsv, hotspotsKml: hotspotsKml, parseMunicipalities: parseMunicipalities, municipalityIndex: municipalityIndex, cellUsual: cellUsual, USUAL_CLASSES: USUAL_CLASSES, usualClass: usualClass,
+           seasonByYear: seasonByYear, typicalSeason: typicalSeason, filterHotspots: filterHotspots, countBySatellite: countBySatellite, hotspotCountText: hotspotCountText, hotspotsCsv: hotspotsCsv, selectCells: selectCells, areaSeries: areaSeries,
            estimatedMonths: estimatedMonths, provisionalMonths: provisionalMonths, firstObservedMonth: firstObservedMonth, monthComparisonText: monthComparisonText,
            estimatedBoundaryPath: estimatedBoundaryPath, medianAnomaly: medianAnomaly, halfWidth90: halfWidth90,
            seriesCsv: seriesCsv, fmt: fmt, SENSOR_COLUMNS: SENSOR_COLUMNS,

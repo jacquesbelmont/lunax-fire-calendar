@@ -119,7 +119,9 @@
   "files": {
     "monthly_cells.csv": "cell_id, year_month, viirs_eq (harmonized), viirs_eq_var (variance, 0 when observed), estimated (1 = converted from MODIS), terra, aqua, snpp, noaa20, noaa21 (raw counts). Empty value = no data, never zero fire. Active cells only: other cells inside the boundary had no detection; cells outside the boundary are outside the area. A cell that crosses the boundary counts only its detections inside it.",
     "months.csv": "year_month, sat, missing_days, flagged (1 = missing data), provisional (1 = NRT)",
-    "area.geojson": "IBGE boundary of the area (DE-1); draw it and mark everything outside as outside the area"
+    "area.geojson": "IBGE boundary of the area (DE-1); draw it and mark everything outside as outside the area",
+    "municipalities.csv": "same columns as monthly_cells.csv with area_id (IBGE municipality code) instead of cell_id: the series of each municipality from the detections inside its boundary, with the same harmonization (DE-24)",
+    "municipalities.geojson": "IBGE municipal boundaries (malhas API v3, intermediate quality) with code and name; source URL and retrieval date in each feature (DE-24)"
   },
   "attribution": "We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Land, Atmosphere Near real-time Capability for Earth observations (LANCE) (https://earthdata.nasa.gov/lance) and NASA's Earth Science Data and Information System (ESDIS).",
   "disclaimer_url": "https://www.earthdata.nasa.gov/data/projects/lance#ed-lance-disclaimer",

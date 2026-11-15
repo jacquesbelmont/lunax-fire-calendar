@@ -8,17 +8,25 @@ Usage:
     python pipeline/export.py [--check]
 
 Reads data/interim/harmonized.csv.gz and data/interim/month_flags.csv (harmonize.py, aggregate.py),
-data/interim/clean/*.csv.gz (clean.py), config/area.json and method/results/harmonize_model.json. Writes:
+data/interim/clean/*.csv.gz (clean.py), config/area.json, config/municipalities.geojson (download.py, DE-24) and
+method/results/harmonize_model.json. Writes:
 - docs/data/monthly_cells.csv: one row per active cell and month. An empty value means no data (never zero fire).
 - docs/data/months.csv: coverage and flags per satellite and month (DE-14).
 - docs/data/metadata.json: area, source, versions, period, coverage, method, data cut-off date, grid, attribution.
+- docs/data/municipalities.csv and municipalities.geojson: the same series per IBGE municipality (DE-24).
 """
 
 import argparse
 import json
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
+from matplotlib.path import Path as PolygonPath
+from scipy.spatial import cKDTree
+
+from aggregate import count_monthly
+from harmonize import add_reference, build_panel, harmonize
 
 ROOT = Path(__file__).resolve().parent.parent
 HARMONIZED = ROOT / "data" / "interim" / "harmonized.csv.gz"
@@ -26,6 +34,7 @@ FLAGS = ROOT / "data" / "interim" / "month_flags.csv"
 CLEAN_DIR = ROOT / "data" / "interim" / "clean"
 AREA = ROOT / "config" / "area.json"
 BOUNDARY = ROOT / "config" / "area_boundary.geojson"  # IBGE boundary of Rondonia (DE-1)
+MUNICIPALITIES = ROOT / "config" / "municipalities.geojson"  # IBGE municipal boundaries (DE-24)
 MODEL = ROOT / "method" / "results" / "harmonize_model.json"
 CALIBRATION = ROOT / "method" / "results" / "uncertainty_calibration.json"
 DOCS_DATA = ROOT / "docs" / "data"
@@ -52,14 +61,14 @@ def calibration_lambda():
     return float(json.loads(CALIBRATION.read_text())["lambda"])
 
 
-def export_monthly_counts(harmonized, lam):
-    """(a) monthly_cells.csv: harmonized VIIRS-scale value, its calibrated variance (model variance x lambda,
-    DE-16), estimated flag and raw counts per satellite."""
+def export_monthly_counts(harmonized, lam, name="monthly_cells.csv", id_column="cell_id"):
+    """(a) monthly_cells.csv (or (e) municipalities.csv with id_column "area_id"): harmonized VIIRS-scale value, its
+    calibrated variance (model variance x lambda, DE-16), estimated flag and raw counts per satellite."""
     out = harmonized[["cell_id", "year_month", "viirs_eq", "viirs_eq_var", "estimated", *SAT_COLUMNS]]
-    out = out.rename(columns=SAT_COLUMNS).assign(viirs_eq_var=harmonized["viirs_eq_var"] * lam)
+    out = out.rename(columns={**SAT_COLUMNS, "cell_id": id_column}).assign(viirs_eq_var=harmonized["viirs_eq_var"] * lam)
     for c in SAT_COLUMNS.values():
         out[c] = out[c].astype("Int64")  # empty = satellite-month not covered or flagged
-    path = DOCS_DATA / "monthly_cells.csv"
+    path = DOCS_DATA / name
     # ponytail: 6 significant digits; RA-4 expected values are computed from this file, so Python and JS agree.
     out.to_csv(path, index=False, float_format="%.6g")
     return path
@@ -70,6 +79,47 @@ def export_area_boundary():
     path = DOCS_DATA / "area.geojson"
     path.write_text(BOUNDARY.read_text())
     return path
+
+
+def municipality_of(lon, lat, features):
+    """DE-24: index of the municipal polygon that contains each point (first match). A point in no polygon (a sliver
+    between the generalized borders and the state boundary) gets the municipality of the nearest boundary vertex.
+    Returns (index array, number of points placed by the nearest vertex). Same rule as municipalityIndex in docs/js/calc.js."""
+    rings = []
+    for f in features:
+        g = f["geometry"]
+        if g["type"] != "Polygon" or len(g["coordinates"]) != 1:
+            raise ValueError(f"municipality {f['properties']['code']}: expected one Polygon without holes (DE-24)")
+        rings.append(np.asarray(g["coordinates"][0], dtype=float)[:, :2])
+    xy = np.column_stack([lon, lat])
+    out = np.full(len(xy), -1)
+    for k, ring in enumerate(rings):
+        todo = np.flatnonzero(out < 0)
+        out[todo[PolygonPath(ring).contains_points(xy[todo])]] = k
+    rest = np.flatnonzero(out < 0)
+    if len(rest):
+        owner = np.concatenate([np.full(len(r), k) for k, r in enumerate(rings)])
+        out[rest] = owner[cKDTree(np.vstack(rings)).query(xy[rest])[1]]
+    return out, len(rest)
+
+
+def export_municipalities(flags, lam):
+    """(e)/(f) DE-24: monthly series per IBGE municipality with the production harmonization unchanged (saved ratios,
+    no new fit; the ratio method is linear, so the municipalities add up to the whole area), and their boundaries."""
+    features = json.loads(MUNICIPALITIES.read_text(encoding="utf-8"))["features"]
+    pts = pd.concat([pd.read_csv(f, usecols=["latitude", "longitude", "acq_date", "sat"], dtype={"acq_date": str, "sat": str})
+                     for f in sorted(CLEAN_DIR.glob("*.csv.gz"))], ignore_index=True)
+    idx, n_nearest = municipality_of(pts["longitude"].to_numpy(), pts["latitude"].to_numpy(), features)
+    codes = np.array([f["properties"]["code"] for f in features])
+    # The unit is the municipality: count_monthly/build_panel group by cell_id; lat/lon are not used (0 keeps groupby rows).
+    counts = count_monthly(pts.assign(cell_id=codes[idx], cell_lat=0.0, cell_lon=0.0))
+    params = json.loads(MODEL.read_text())["configurations"]
+    series = harmonize(add_reference(build_panel(counts, flags)), params)
+    csv_path = export_monthly_counts(series, lam, "municipalities.csv", "area_id")
+    geo_path = DOCS_DATA / "municipalities.geojson"
+    geo_path.write_text(MUNICIPALITIES.read_text(encoding="utf-8"), encoding="utf-8")
+    print(f"municipalities: {len(pts)} detections, {n_nearest} placed by the nearest boundary vertex (DE-24)")
+    return csv_path, geo_path
 
 
 def export_months(flags):
@@ -138,6 +188,11 @@ def export_metadata(harmonized):
                                  "that crosses the boundary counts only its detections inside it.",
             "months.csv": "year_month, sat, missing_days, flagged (1 = missing data), provisional (1 = NRT)",
             "area.geojson": "IBGE boundary of the area (DE-1); draw it and mark everything outside as outside the area",
+            "municipalities.csv": "same columns as monthly_cells.csv with area_id (IBGE municipality code) instead of "
+                                  "cell_id: the series of each municipality from the detections inside its boundary, "
+                                  "with the same harmonization (DE-24)",
+            "municipalities.geojson": "IBGE municipal boundaries (malhas API v3, intermediate quality) with code and name; "
+                                      "source URL and retrieval date in each feature (DE-24)",
         },
         "attribution": ATTRIBUTION,
         "disclaimer_url": DISCLAIMER_URL,
@@ -151,6 +206,13 @@ def export_metadata(harmonized):
 def check(harmonized, paths):
     """Invariants on the written files. Do not run Python with -O: asserts must stay on."""
     cells = pd.read_csv(paths[0], dtype={"year_month": str})
+    munis = pd.read_csv(DOCS_DATA / "municipalities.csv", dtype={"year_month": str, "area_id": str})
+    assert munis["area_id"].nunique() == 52, "every municipality of Rondonia has a series (DE-24)"
+    for col in ["viirs_eq", "terra", "aqua", "snpp", "noaa20", "noaa21"]:  # DE-24: municipalities add up to the area
+        a = cells.groupby("year_month")[col].sum(min_count=1)
+        m = munis.groupby("year_month")[col].sum(min_count=1).reindex(a.index)
+        same = ((a - m).abs() <= 1e-3 * a.abs().clip(lower=1)) | (a.isna() & m.isna())  # 6 significant digits per row
+        assert same.all(), f"municipal sum of {col}: {list(a.index[~same])[:5]}"
     assert len(cells) == len(harmonized), "row count"
     missing = harmonized["model"].eq("missing").to_numpy()
     assert cells.loc[missing, "viirs_eq"].isna().all(), "a missing month has a value"
@@ -168,7 +230,7 @@ def main(argv=None):
     flags = pd.read_csv(FLAGS, dtype={"year_month": str})
     DOCS_DATA.mkdir(parents=True, exist_ok=True)
     paths = [export_monthly_counts(harmonized, calibration_lambda()), export_months(flags), export_metadata(harmonized),
-             export_area_boundary()]
+             export_area_boundary(), *export_municipalities(flags, calibration_lambda())]
     if a.check:
         check(harmonized, paths)
     for path in paths:

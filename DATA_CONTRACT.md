@@ -1,7 +1,7 @@
 # DATA CONTRACT
 
 Files exchanged between the Python pipeline (`pipeline/`, owner: Rafael for outputs, Jacques for inputs) and the web app (`docs/`, owner: Jacques).
-Written only by `pipeline/export.py` into `docs/data/`. Status: **DRAFT** — v1 to be filled from real FIRMS headers and approved by Jacques and Rafael (JA-3).
+Written only by `pipeline/export.py` (and `pipeline/export_hotspots.py` for (b)) into `docs/data/`. Status: **DRAFT** — v1 to be filled from real FIRMS headers and approved by Jacques and Rafael (JA-3).
 
 Rules: never sum raw MODIS and VIIRS counts; never treat missing data as zero fire (see `missing_data` flag).
 Changing any format here requires updating this file and telling the other side.
@@ -42,6 +42,15 @@ A satellite-month absent from this file has no data. The data end on the last da
 
 ### (d) Area boundary
 Path: `docs/data/area.geojson`. This is the IBGE boundary of Rondônia (DE-1), a GeoJSON FeatureCollection with one Polygon. The source URL and retrieval date are in the feature `properties`. The app draws it and marks everything outside it as "outside the area".
+
+### (e) Monthly series per municipality
+Path: `docs/data/municipalities.csv`. Written by `pipeline/export.py` (DE-24).
+Same columns, units and rules as (a), with `area_id` (IBGE municipality code, 7 digits) instead of `cell_id`: one row per municipality (all 52 of Rondônia) and month.
+Each detection kept by `clean.py` belongs to the municipal polygon of (f) that contains it, else to the municipality of the nearest boundary vertex (1 of 2,168,855 detections on 2026-11-15). The harmonization is the production one (same ratios, DE-16 factor on the variance), applied with the municipality as the unit, so the 52 values add up to the whole-area value in every month (`export.py --check`).
+The app uses the same polygons and rule (`municipalityIndex` in docs/js/calc.js) to keep the hotspot rows of a municipality (tests/js/hotspots.test.js).
+
+### (f) Municipal boundaries
+Path: `docs/data/municipalities.geojson`, a copy of `config/municipalities.geojson` written by `pipeline/download.py --ibge-municipalities` from the IBGE malhas API v3 (`intrarregiao=municipio`, `qualidade=intermediaria`) and the IBGE localidades API v1 (names). FeatureCollection of 52 Polygons without holes; properties `code`, `name`, `source`, `url`, `names_url`, `retrieved`.
 
 ### (b) Hotspot list per year (CSV export)
 Paths: `docs/data/hotspots/<instrument>_<year>.csv.gz` and `docs/data/hotspots/index.json`. Written by `pipeline/export_hotspots.py` (DE-17, R9). `<instrument>` is the FIRMS country-file instrument: `modis`, `viirs-snpp`, `viirs-jpss1` (NOAA-20), plus `viirs-jpss2` (NOAA-21); the NOAA-21 files and all 2026 files come from the area API. 54 files, 2,168,855 rows (`index.json`).

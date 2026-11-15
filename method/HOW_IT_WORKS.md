@@ -5,6 +5,12 @@ Written for: people who use the LUNAX Fire Calendar app (early-warning and emerg
 ## What the calendar shows
 The calendar shows how many fire hotspots satellites detected in the area you choose, month by month, from November 2000 to October 2026. Each cell is one month. A darker color means more hotspots. You can draw a rectangle on the map (or type its limits), choose a period, and compare one calendar month with the median of the same month in earlier years.
 
+## Fire season, "usual" and municipalities
+- **Fire season (section 3):** for each year, the start is the month in which 10% of that year's hotspots had been detected, the end is the month in which 90% had been, and the peak is the month with the most hotspots. A year with missing months is shown only if the missing months cannot change the answer. For the whole state, the typical season runs from August to October with the peak in September; it started in July in 4 of 23 years and ended in November in 1 (2022). This is our convention, chosen with the data: January to April hold almost no hotspots, and the central 80% ignores a few scattered detections.
+- **Compared with the usual (map view):** each grid cell is compared with its usual value, the median of the same month in its earlier years. "Near usual" means the difference is small enough to be chance (about two standard deviations of a random count). Otherwise the cell is above or below usual, "2 times usual or more", or "half of usual or less".
+- **Municipalities:** you can choose one of the 52 municipalities of Rondônia (IBGE boundaries). Its numbers come from the detections inside its boundary, with the same conversion as the rest of the app, so the 52 municipalities add up to the state total. A table ranks the municipalities for the month shown on the map.
+- **Field use:** the hotspot list can be downloaded as KML for Google Earth, Avenza Maps or QGIS, the "Print a briefing" button prints the page without the controls, and a link opens the NASA FIRMS Fire Map on your area for today's fires (this app shows history, not live data).
+
 ## What is a hotspot?
 A hotspot is a satellite detection: the centre of a pixel where the sensor sees heat from one or more fires. It is not the exact place or size of a fire, and it does not measure burned area. Clouds, thick smoke and tree cover can hide fires, so a month with few hotspots does not prove there was no fire.
 
@@ -34,6 +40,8 @@ We pretended not to know the VIIRS numbers of 2012 to 2014, predicted them from 
 - The data are archived FIRMS data and end on 2026-10-31, the last complete month when we downloaded them. The "latest month" is October 2026, not the current month.
 - The most recent months (August to October 2026 for VIIRS, September and October 2026 for MODIS) are near real-time data, marked "prov." in the calendar. FIRMS replaces them later with final data, so their values can still change.
 - The ratios are fitted for Rondônia only.
+- The grid cells are about 27 x 27 km (0.25°). The map points show each detection at its own pixel (375 m for VIIRS, 1 km for MODIS), but the harmonized counts are not a 375 m map: "VIIRS scale" means as many hotspots as VIIRS would detect.
+- Fire season months are whole months, because the data are monthly.
 - Do not use this tool for the preservation of life or property.
 
 ## Credits

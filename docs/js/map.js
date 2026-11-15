@@ -3,6 +3,8 @@
  *          month (same numbers and color ramp as the calendar; no data = grey, never zero), and the detections of that
  *          month as points, grouped per sensor until zoomed in (DE-21; Leaflet.markercluster, docs/lib/README.md).
  *          Hover a cell for its value; click a detection for its date, time, satellite, confidence and FRP.
+ *          DE-22: cells can instead be colored by "Compared with the usual" classes (colors and texts come from main.js);
+ *          fullscreen button; the mouse wheel zooms only after a click on the map.
  * SCOPE: R4, R5, O1, O2
  * Owner issue: JA-5
  * AI-assisted code (Claude Code); logged in AI_USE.md.
@@ -24,7 +26,15 @@
     return ctl;
   }
 
-  /** legend: {title, status, cap, unit} or null to hide. Built with textContent only. */
+  function swatchRow(color, label) {
+    const row = document.createElement("div"), sw = document.createElement("span");
+    sw.className = "map-legend-swatch";
+    sw.style.background = color;
+    row.append(sw, document.createTextNode(" " + label));
+    return row;
+  }
+
+  /** legend: {title, status, cap, unit}, or {title, status, classes: [[key, color, label]]} (DE-22), or null to hide. textContent only. */
   function renderLegend(div, legend) {
     div.replaceChildren();
     div.hidden = !legend;
@@ -33,6 +43,10 @@
     title.textContent = legend.title;
     const status = document.createElement("div");
     status.textContent = legend.status;
+    if (legend.classes) {
+      div.append(title, status, ...legend.classes.map((c) => swatchRow(c[1], c[2])));
+      return;
+    }
     const bar = document.createElement("div");
     bar.className = "map-legend-bar";
     bar.style.background = LunaxCalc.viridisReversedGradient();
@@ -41,21 +55,41 @@
     const lo = document.createElement("span"), hi = document.createElement("span");
     lo.textContent = "0"; hi.textContent = LunaxCalc.fmt(legend.cap, 0) + "+ " + legend.unit;
     scale.append(lo, hi);
-    const grey = document.createElement("div");
-    const sw = document.createElement("span");
-    sw.className = "map-legend-swatch";
-    sw.style.background = NO_DATA;
-    grey.append(sw, document.createTextNode(" no data (not zero)"));
-    div.append(title, status, bar, scale, grey);
+    div.append(title, status, bar, scale, swatchRow(NO_DATA, "no data (not zero)"));
   }
 
-  function create(elId, boundary, bbox, cellSize, onRectangle) {
-    const map = L.map(elId);
+  /** DE-22: fullscreen button (browser Fullscreen API); not added where the API is missing (e.g. iPhone Safari). */
+  function fullscreenControl(map) {
+    const ctl = L.control({ position: "topleft" });
+    ctl.onAdd = function () {
+      const b = L.DomUtil.create("button", "map-fullscreen");
+      b.type = "button";
+      b.textContent = "Full screen";
+      L.DomEvent.disableClickPropagation(b);
+      b.addEventListener("click", () => (document.fullscreenElement ? document.exitFullscreen() : map.getContainer().requestFullscreen()));
+      document.addEventListener("fullscreenchange", function () {
+        b.textContent = document.fullscreenElement ? "Exit full screen" : "Full screen";
+        map.invalidateSize();
+      });
+      return b;
+    };
+    return ctl;
+  }
+
+  const MUNI_STYLE = { color: "#555", weight: 0.7, opacity: 0.8, fill: false, interactive: false };
+
+  function create(elId, boundary, muniGeo, cellSize, onRectangle) {
+    // DE-22: the wheel zooms only after a click on the map, so scrolling the page does not zoom it by accident.
+    const map = L.map(elId, { scrollWheelZoom: false });
+    map.on("click focus", () => map.scrollWheelZoom.enable());
+    map.on("mouseout", () => { if (!document.fullscreenElement) map.scrollWheelZoom.disable(); });
+    if (document.fullscreenEnabled) fullscreenControl(map).addTo(map);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 18, attribution: "&copy; OpenStreetMap contributors",
     }).addTo(map);
+    const muniLayer = L.geoJSON(muniGeo, { style: MUNI_STYLE }).addTo(map); // DE-24: municipal borders
     const boundaryLayer = L.geoJSON(boundary, { style: { color: "#c0392b", weight: 2, fill: false } }).addTo(map);
-    map.fitBounds([[bbox[1], bbox[0]], [bbox[3], bbox[2]]]);
+    map.fitBounds(boundaryLayer.getBounds()); // DE-22: the state, not the processing box
 
     const rectLayer = new L.FeatureGroup().addTo(map);
     const cellsLayer = L.layerGroup().addTo(map);
@@ -72,7 +106,8 @@
         } });
     });
     const pointsLayer = L.layerGroup([groups.MODIS, groups.VIIRS]).addTo(map);
-    L.control.layers(null, { "Cells: hotspots per cell": cellsLayer, "Points: detections": pointsLayer }, { position: "topright" }).addTo(map);
+    L.control.layers(null, { "Cells: hotspots per cell": cellsLayer, "Points: detections": pointsLayer, "Municipal borders": muniLayer },
+      { position: "topright" }).addTo(map);
     map.addControl(new L.Control.Draw({
       draw: { polyline: false, polygon: false, circle: false, marker: false, circlemarker: false, rectangle: { shapeOptions: { color: "#0b5cad" } } },
       edit: false,
@@ -84,7 +119,7 @@
 
     // DE-21 interaction. Cells: the canvas of the points lies above them, so the cell under the mouse is found from the
     // position (cell_id formula of DATA_CONTRACT.md (a)) and its value is shown in one tooltip. Points: click for details.
-    let shown = { byId: new Map(), paint: null }, drawing = false;
+    let shown = { byId: new Map(), paint: null }, drawing = false, selectedMuni = null;
     const tip = L.tooltip({ direction: "top", offset: [0, -6] });
     map.on(L.Draw.Event.DRAWSTART, () => { drawing = true; map.closeTooltip(tip); });
     map.on(L.Draw.Event.DRAWSTOP, () => { drawing = false; });
@@ -93,9 +128,7 @@
       const id = Math.floor((e.latlng.lat + 90) / cellSize) + "_" + Math.floor((e.latlng.lng + 180) / cellSize);
       const j = shown.byId.get(id), p = shown.paint;
       if (drawing || j === undefined || !p || !map.hasLayer(cellsLayer)) { map.closeTooltip(tip); return; }
-      const v = p.values[j];
-      tip.setLatLng(e.latlng).setContent(Number.isNaN(v) ? p.ym + ": no data (not zero)" :
-        p.ym + ": " + LunaxCalc.fmt(v, 0) + " hotspots in this cell (" + p.legend.status + ")");
+      tip.setLatLng(e.latlng).setContent(p.tips[j]);
       map.openTooltip(tip);
     });
     Object.keys(groups).forEach(function (s) {
@@ -108,23 +141,35 @@
 
     return {
       /**
-       * cells: selected cells; paint: null (empty selection) or {values: [number per cell, NaN = no data], cap, legend, ym}.
+       * box: rectangle outline or null (municipality mode); cells: cells to draw; paint: null (empty selection) or
+       * {colors: [one per cell], tips: [hover text per cell], legend}.
        */
       showSelection: function (box, cells, paint) {
         shown = { byId: new Map(cells.map((c, j) => [c.id, j])), paint: paint };
         cellsLayer.clearLayers();
         const half = cellSize / 2;
         cells.forEach(function (c, j) {
-          const v = paint ? paint.values[j] : NaN;
-          const color = Number.isNaN(v) ? NO_DATA : LunaxCalc.viridisReversed(v, paint.cap);
           L.rectangle([[c.lat - half, c.lon - half], [c.lat + half, c.lon + half]],
-            { stroke: false, fillColor: color, fillOpacity: 0.75, interactive: false, className: "map-cell" }).addTo(cellsLayer);
+            { stroke: false, fillColor: paint ? paint.colors[j] : NO_DATA, fillOpacity: 0.75, interactive: false, className: "map-cell" }).addTo(cellsLayer);
         });
+        muniLayer.bringToFront();
         boundaryLayer.bringToFront(); // boundary and selection outline above the cells
         rectLayer.clearLayers();
-        L.rectangle([[box[1], box[0]], [box[3], box[2]]], { color: "#0b5cad", weight: 2, fill: false }).addTo(rectLayer);
+        if (box) L.rectangle([[box[1], box[0]], [box[3], box[2]]], { color: "#0b5cad", weight: 2, fill: false }).addTo(rectLayer);
+        if (selectedMuni) selectedMuni.bringToFront();
         renderLegend(legend.getContainer(), paint ? paint.legend : null);
       },
+      /** DE-24: outline municipality k (index in municipalities.geojson) and zoom to it; null clears the outline. */
+      highlightMunicipality: function (k) {
+        muniLayer.setStyle(MUNI_STYLE);
+        selectedMuni = k === null ? null : muniLayer.getLayers()[k];
+        if (!selectedMuni) return;
+        selectedMuni.setStyle({ color: "#0b5cad", weight: 3, opacity: 1 });
+        selectedMuni.bringToFront();
+        map.fitBounds(selectedMuni.getBounds());
+      },
+      /** DE-25: re-fit the map to its container (the printed page is narrower than the screen). */
+      invalidate: function () { map.invalidateSize({ animate: false }); },
       /** points: [{lat, lon, sensor}] of the map month. */
       showPoints: function (points) {
         Object.keys(groups).forEach(function (s) {

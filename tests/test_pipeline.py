@@ -160,3 +160,27 @@ class MLChallengerTests(unittest.TestCase):
                      and abs(sel[c]["pooled_relative_bias_total"]) <= 0.02
                      and abs(a["hybrid"]["relative_bias_total"]) <= 0.02)
         self.assertEqual(r["exploratory_verdict"]["promising"], promising)
+
+
+class MunicipalitiesTest(unittest.TestCase):
+    """DE-24: every detection gets one municipality, and the 52 municipal series add up to the whole area."""
+
+    def test_assignment_of_real_detections(self):
+        import export  # noqa: E402 (imports matplotlib and scipy)
+        features = json.loads((ROOT / "config" / "municipalities.geojson").read_text(encoding="utf-8"))["features"]
+        with gzip.open(DOCS_DATA / "hotspots" / "viirs-jpss1_2025.csv.gz", "rt") as f:
+            rows = pd.read_csv(io.StringIO("".join(line for line in f if not line.startswith("#"))))
+        idx, n_nearest = export.municipality_of(rows["longitude"].to_numpy(), rows["latitude"].to_numpy(), features)
+        self.assertEqual(len(features), 52)
+        self.assertTrue(((idx >= 0) & (idx < 52)).all())
+        self.assertLessEqual(n_nearest, 1)  # 1 of 2,168,855 in the full export (2026-11-15)
+
+    def test_municipal_sums_equal_the_area(self):
+        cells = pd.read_csv(DOCS_DATA / "monthly_cells.csv", dtype={"year_month": str})
+        munis = pd.read_csv(DOCS_DATA / "municipalities.csv", dtype={"year_month": str, "area_id": str})
+        self.assertEqual(munis["area_id"].nunique(), 52)
+        for col in ["viirs_eq", "terra", "aqua", "snpp", "noaa20", "noaa21"]:
+            a = cells.groupby("year_month")[col].sum(min_count=1)
+            m = munis.groupby("year_month")[col].sum(min_count=1).reindex(a.index)
+            same = ((a - m).abs() <= 1e-3 * a.abs().clip(lower=1)) | (a.isna() & m.isna())
+            self.assertTrue(same.all(), col)

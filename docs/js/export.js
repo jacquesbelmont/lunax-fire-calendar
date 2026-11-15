@@ -1,13 +1,13 @@
 /*
  * Purpose: downloads: CSV of the selected area/period (FIRMS attribution and data cut-off date inside the file) and chart PNG.
- * SCOPE: R8, R9
+ * SCOPE: R8, R9, O4 (KML, DE-25)
  * Owner issue: JA-6
  * AI-assisted code (Claude Code); logged in AI_USE.md.
  */
 (function () {
   "use strict";
-  function saveText(filename, text) {
-    const url = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+  function saveText(filename, text, type) {
+    const url = URL.createObjectURL(new Blob([text], { type: type || "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
     a.href = url; a.download = filename;
     document.body.appendChild(a); a.click(); a.remove();
@@ -41,8 +41,13 @@
     saveText("lunax_hotspots.csv", LunaxCalc.hotspotsCsv(meta, header, lines, label, fromYm, toYm));
   }
 
+  /** DE-25: the same hotspot rows as KML (Google Earth, Avenza Maps, QGIS). */
+  function hotspotsKmlFile(meta, header, lines, label, fromYm, toYm) {
+    saveText("lunax_hotspots.kml", LunaxCalc.hotspotsKml(meta, header, lines, label, fromYm, toYm), "application/vnd.google-earth.kml+xml");
+  }
+
   function png(el, name) {
     return Plotly.downloadImage(el, { format: "png", filename: name, width: 1200, height: 800 });
   }
-  window.LunaxExport = { seriesFile: seriesFile, cellsFile: cellsFile, hotspotsFile: hotspotsFile, png: png };
+  window.LunaxExport = { seriesFile: seriesFile, cellsFile: cellsFile, hotspotsFile: hotspotsFile, hotspotsKmlFile: hotspotsKmlFile, png: png };
 })();

@@ -147,3 +147,44 @@ test("DE-21 map point details use the hotspot file fields (first rows of real 20
     assert.match(text, source === "modis" ? /\((MODIS)\), confidence \d+ %/ : /\(VIIRS\), confidence (low|nominal|high)/);
   }
 });
+
+// DE-25: the KML holds the same rows as the CSV, one placemark each, with the FIRMS acknowledgment and cut-off date.
+test("KML of a real hotspot file: one placemark per row, attribution, sensor styles, valid coordinates", { skip }, () => {
+  const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+  const e = index.files.find((f) => f.file === "viirs-jpss1_2025.csv.gz");
+  const rows = parseAll(e);
+  const kml = calc.hotspotsKml(meta, rows.header, rows.lines, "test area", "2025-01", "2025-12");
+  assert.strictEqual((kml.match(/<Placemark>/g) || []).length, rows.lines.length);
+  assert.ok(kml.includes(meta.attribution) && kml.includes(meta.data_cutoff_date));
+  assert.strictEqual((kml.match(/<styleUrl>#VIIRS<\/styleUrl>/g) || []).length, rows.lines.length);
+  const first = rows.lines[0].split(","), h = rows.header.split(",");
+  assert.ok(kml.includes("<coordinates>" + Number(first[h.indexOf("longitude")]) + "," + Number(first[h.indexOf("latitude")]) + "</coordinates>"));
+  assert.ok(!/[<>]/.test(kml.match(/<description>([\s\S]*?)<\/description>/)[1]), "description is escaped");
+});
+
+// DE-24: the app keeps the same detections per municipality as the pipeline (municipalities.csv raw columns).
+test("municipalityIndex agrees with municipalities.csv: 2025 counts per municipality, month and satellite", { skip }, () => {
+  const munis = calc.parseMunicipalities(JSON.parse(fs.readFileSync(path.join(root, "docs/data/municipalities.geojson"), "utf8")));
+  const md = calc.parseCellsCsv(fs.readFileSync(path.join(root, "docs/data/municipalities.csv"), "utf8"), 0.25, "area_id");
+  const index = JSON.parse(fs.readFileSync(indexPath, "utf8"));
+  const counts = new Map();
+  for (const e of index.files.filter((f) => f.year === 2025)) {
+    const rows = parseAll(e), h = rows.header.split(",");
+    const [ilat, ilon, idate, isat] = ["latitude", "longitude", "acq_date", "sat"].map((c) => h.indexOf(c));
+    for (const l of rows.lines) {
+      const f = l.split(","), k = munis[calc.municipalityIndex(Number(f[ilon]), Number(f[ilat]), munis)].code + " " + f[idate].slice(0, 7) + " " + f[isat];
+      counts.set(k, (counts.get(k) || 0) + 1);
+    }
+  }
+  let compared = 0;
+  md.cells.forEach((c, i) => md.months.forEach((ym, m) => {
+    if (!ym.startsWith("2025")) return;
+    for (const [sat, colName] of Object.entries(SAT_COLUMN)) {
+      const v = md.columns[colName][i * md.nMonths + m];
+      if (Number.isNaN(v)) continue; // satellite-month not covered or flagged
+      assert.strictEqual(counts.get(c.id + " " + ym + " " + sat) || 0, v, c.id + " " + ym + " " + sat);
+      compared++;
+    }
+  }));
+  assert.ok(compared > 52 * 12 * 3, "compared " + compared);
+});

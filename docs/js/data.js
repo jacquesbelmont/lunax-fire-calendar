@@ -14,14 +14,19 @@
 
   async function loadAll() {
     const meta = await fetchOk("data/metadata.json", "json");
-    const [boundary, csv, monthsCsv] = await Promise.all([
+    const [boundary, csv, monthsCsv, muniCsv, muniGeo] = await Promise.all([
       fetchOk("data/" + (meta.area.boundary_file || "area.geojson"), "json"),
       fetchOk("data/monthly_cells.csv", "text"),
       fetchOk("data/months.csv", "text"),
+      fetchOk("data/municipalities.csv", "text"), // DE-24
+      fetchOk("data/municipalities.geojson", "json"),
     ]);
     const data = LunaxCalc.parseCellsCsv(csv, meta.grid.cell_size_deg);
     data.provisional = LunaxCalc.provisionalMonths(monthsCsv);
-    return { meta: meta, boundary: boundary, data: data };
+    const muniData = LunaxCalc.parseCellsCsv(muniCsv, meta.grid.cell_size_deg, "area_id");
+    if (muniData.months.join() !== data.months.join()) throw new Error("municipalities.csv and monthly_cells.csv have different months");
+    muniData.provisional = data.provisional;
+    return { meta: meta, boundary: boundary, data: data, muniData: muniData, muniGeo: muniGeo, munis: LunaxCalc.parseMunicipalities(muniGeo) };
   }
   window.LunaxData = { loadAll: loadAll };
 })();
