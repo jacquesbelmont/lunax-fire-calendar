@@ -4,13 +4,13 @@ Owner: Tiara (TI-8, TI-9). Status on 2026-11-15, checked by Claude Code unless a
 
 ## S1-S8 (see SCOPE.md)
 - [ ] S1 English everywhere (repository, app and drafts are in English; Tiara's final read pending)
-- [ ] S2 Demo: max 7 slides or a video of 30 s or less, public, no login (outline ready in SLIDES_OUTLINE.md; deck pending)
+- [x] S2 Demo: max 7 slides, public, no login: the PDF answers 200 and has 7 pages (checked on the published site, 2026-11-15; slides 1, 4 and 6 carry team, challenge, image, user experience and NASA data; Tiara reads it once more)
 - [x] S3 Final project link public, no login: https://jacquesbelmont.github.io/lunax-fire-calendar/ (HTTP 200 and a fresh browser profile, 2026-11-15; another computer and a real phone below)
 - [x] S4 NASA data resource (FIRMS) used and listed (SOURCES.md, data/PROVENANCE.md, docs/data/metadata.json)
 - [ ] S5 All external data, code, text, images in References with licenses (SOURCES.md; IBGE resolved: no license stated, portal terms recorded, FACT_CHECK open item 2; check the references of the final deck)
 - [ ] S6 AI use declared (README, PROJECT_PAGE.md, app footer, docs/data/metadata.json `ai_use`); no AI images or NASA logos; open: team confirms the sentence about the solution idea (FACT_CHECK open item 4)
 - [ ] S7 No images, video or audio of people under 18 (the app has none; check the final deck)
-- [ ] S8 All 3 members in the same Local Event and in the Members tab; Submit for Judging before the deadline (target 22:00, hard 23:59 America/Porto_Velho)
+- [ ] S8 All 3 members in the same Local Event and in the Members tab; Submit for Judging before the deadline (target 22:00, hard 23:59 America/Porto_Velho). Status 2026-11-15: the Members tab lists jacques belmont, Rafael Silva de Souza and Tiara (Local Event: Universal Event, Anywhere in the World); the project form is filled and saved (Save Progress 17:29, with the two checkboxes ticked on Jacques's yes); Submit for Judging not pressed yet
 
 ## Automated link check (2026-11-15, script with curl, no login)
 34 links from PROJECT_PAGE.md, SLIDES_OUTLINE.md, README.md, SOURCES.md and HOW_IT_WORKS.md: 32 answered 200. Two did not:
@@ -29,6 +29,12 @@ Screenshots in submission/screenshots/: desktop light, desktop dark, 375 px. Fou
 - [x] Browser test on the published site: `node tests/e2e/app_smoke.mjs` (Node 22+, or `node --experimental-websocket` on Node 20; set `CHROME` on Linux) 13 passed, 0 failed (page loads, archived-data label, calendar drawn, provisional sentence, area typed as coordinates gives 46 cells, period 2025, hotspot row count per sensor shown before the download, hotspot / series / per-cell CSV with the FIRMS acknowledgment and the cut-off date, both PNG downloads start, no JavaScript errors).
 - [x] Links: 42 public links in the project page, slides, README, SOURCES, HOW_IT_WORKS and the app answer 200 without login, except https://www.ibge.gov.br (403 to a script; it is only a credit link).
 - [x] Deck PDF public: https://jacquesbelmont.github.io/lunax-fire-calendar/demo/LUNAX_Fire_Calendar_slides.pdf (200, application/pdf, 7 pages).
+
+## Visual check of the published site (2026-11-15, headless Chrome, main at d50e872, Claude Code)
+After PRs #62, #63 and #65 changed the layout: 375 px light, 375 px dark and 320 px light, full page. No horizontal page scroll (scrollWidth 360, 360 and 312, never above the window), no JavaScript errors, summary cards, map, calendar, comparison, outlook and downloads fit the width, and the text is readable in dark mode. At 320 px the municipality table scrolls inside its own box. This does not replace the tests on a real phone and another computer below.
+
+## Space Apps site (2026-11-15, Claude Code in Jacques's Chrome, on his authorization)
+Project form filled from submission/PROJECT_PAGE.md: name, summary (894 of 1,500 characters), demo and project links, project details (text with the AI use paragraphs), the SI-use selection (ideation, research, data analysis, coding, writing, presentation), 6 NASA data links and 12 other data links (every URL answered 200). Saved at 17:29; after a reload every value was still there. Not submitted for judging.
 
 ## Test checklist (TI-8): a person must do these
 - [ ] Private/incognito window: the app link and every link on the project page open without login
