@@ -3,6 +3,10 @@
 Owner issue: TI-6 (Tiara). Every number or claim in the project page, the app text, the slides and the README maps to a pipeline file path or an official URL.
 "Checked by": a first check was done on 2026-11-15 by Claude Code, reading the file or recomputing the number from the data (command in the last column when it is not a plain file read). Tiara re-checks each row before the submission.
 
+**Second check, 2026-11-15, after the 2026 and NOAA-21 data (main at 95be928):** rows 4-14, 20, 25 and 26 were recomputed by a script from docs/data/, method/results/ and method/results/cleaning_log.csv. All match: 3.8148 (row 4), 376 cells and 312 months 2000-11 to 2026-10 (5), 129 converted and 10 no-data months (6), 33 of 919 flagged (7), 2,043,625 rows from the 48 country-file runs and 2,168,855 from all 54 runs, 54 hotspot files, 25.3 MB (8), k 1.45-4.63 and 5.06-18.13 (9), +0.6% / 13.3% / 0.998 (10), +143% (11), 0.992 over 83 months (12), 85% (13), -8.5% / 27.3% (14), cut-off 2026-10-31 (20), 0.956 over 21 months (25), provisional months as in row 26.
+No stale number was found in README.md, submission/PROJECT_PAGE.md, submission/SLIDES_OUTLINE.md, the deck (submission/slides/slides.html and its PDF), method/HOW_IT_WORKS.md, method/METHOD.md, method/VALIDATION.md or the app text (searched for 3.82, 302 months, 845, "24 of", 48 files, 23.9 MB and a 2025-12-31 end).
+**Rounding of row 4:** the value is 3.8148. Technical texts (METHOD.md, VALIDATION.md) write 3.81; public texts and the deck write "about 3.8". Both are the same value rounded; 3.82 appears nowhere.
+
 | # | Claim | Where used | Source (file or URL) | First check | Status |
 |---|-------|-----------|----------------------|-------------|--------|
 | 1 | MODIS has 1 km pixels, since Nov 2000 (Terra) and Jul 2002 (Aqua) | page, slides 2-3, HOW_IT_WORKS | method/FIRMS_REFERENCE.md section 2 (FIRMS active-fire page) | file read | OK |
@@ -28,7 +32,7 @@ Owner issue: TI-6 (Tiara). Every number or claim in the project page, the app te
 | 21 | AI tools: Claude and Claude Code; every step logged in AI_USE.md | page, slide 7, README | AI_USE.md | file read | OK for the log; see open item 4 for the sentence on the idea |
 | 22 | The tool is not an official NASA product; do not use for the preservation of life or property | page, footer, HOW_IT_WORKS | method/FIRMS_REFERENCE.md section 10 (FIRMS map warning) | file read | OK |
 | 23 | Library versions and licenses | page, slide 7 | SOURCES.md (read from each package's metadata, 2026-11-15) | recomputed from package metadata | OK |
-| 24 | The deadline and rules of the submission | CHECKLIST | SCOPE.md S1-S8; https://www.spaceappschallenge.org/resources/project-submission-guide/ | SCOPE.md read; the guide was not re-read | Tiara to re-read the guide |
+| 24 | The deadline and rules of the submission | CHECKLIST | SCOPE.md S1-S8; https://www.spaceappschallenge.org/resources/project-submission-guide/ | guide (2026 edition) re-read on 2026-11-15 with curl; rules copied to CHECKLIST.md | OK |
 | 25 | NOAA-21 counts fewer hotspots than NOAA-20: ratio of totals 0.956 over 21 months (about 4% fewer); only a check, not in the series | page, HOW_IT_WORKS | validation_metrics.json `continuity.noaa21` (0.9557, 21 months); method/METHOD.md limitation 14 | JSON read | OK |
 | 26 | Near real-time (provisional) months: August to October 2026 (VIIRS), September and October 2026 (MODIS) | page, slide 6, HOW_IT_WORKS | docs/data/months.csv `provisional` | recounted from the CSV | OK |
 
