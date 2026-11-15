@@ -10,3 +10,6 @@ The slide 4 chart, `porto_velho_september_2025.png`, was captured from the publi
 
 PR RA-7 (DE-22 to DE-25), local build of the branch `RA-7-field-use`, headless Chrome, 2026-11-15, 1280 px, light:
 `app_map_usual_2026-10.png` (map view "Compared with the usual" for the whole area, 2026-10, provisional, with its legend), `app_fire_season.png` (section 3 for the whole area: 23 years computed, typical season August to October with the peak in September) and `app_municipality_porto_velho.png` (Porto Velho, IBGE code 1100205, selected as the area: outline, cells around it for context, its detections of 2026-10).
+
+Deck slide 4 "What a fire manager sees" (PR JA-12), published app at main 8492f81 (after PRs #55 and #61), headless Chrome, 2026-11-15, light, map or section only:
+`app_porto_velho_map_2026-10.png` (1068 x 720; Porto Velho, IBGE code 1100205, selected as the area; map month 2026-10, provisional; cells and points), `app_porto_velho_fire_season.png` (fire season section for Porto Velho: typical season August to October, peak in August, median of 23 years) and `app_map_recurrence_2012-2025.png` (whole area, map view "Places that burn year after year", points layer hidden, with the "not a forecast" note and the test result). The older `app_municipality_porto_velho.png` and `app_fire_season.png` were taken from a local build of PR #55.
