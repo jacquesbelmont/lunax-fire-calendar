@@ -4,3 +4,4 @@ python-dotenv
 scipy
 statsmodels
 matplotlib
+scikit-learn

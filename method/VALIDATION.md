@@ -84,6 +84,21 @@ Figure: `method/figures/backcast.png`.
 
 **Grid size** (DE-12): not run. The ratio per month of year is fitted on area sums, so k and every area total are the same for any cell size; only the split of a total between cells changes.
 
+## ML challenger (RA-6, DE-18)
+
+Gradient boosting with Poisson loss (`pipeline/ml.py`, scikit-learn 1.9.1) on MODIS counts, FRP, night share, low-confidence share and month, with hyperparameters and the margin fixed in DE-18 before any result. Results: `method/results/ml_metrics.json`, `method/results/ml_loyo.csv`.
+
+| Backcast 2012-2014 (same 12,784 cell-months) | Relative bias of the total | MdAPE of monthly area totals | Pearson r |
+|---|---|---|---|
+| Ratio, Terra + Aqua (**production**) | +0.6 % | 13.3 % | 0.998 |
+| ML, Terra + Aqua | +3.3 % | 17.5 % | 0.997 |
+| Ratio, Terra only | -8.5 % | 27.3 % | 0.965 |
+| ML, Terra only | +2.0 % | 33.5 % | 0.973 |
+
+- **Verdict (DE-18 rule: Terra + Aqua MdAPE ≤ 11.3 % and |bias| ≤ 2 %):** the ML model does not beat the ratio method. Production is unchanged.
+- **Leave-one-year-out 2012-2025** (Terra + Aqua): median MdAPE 13.5 % (ML) vs 11.7 % (ratio); ML yearly bias from -9.7 % to +15.2 %, ratio from -9.7 % to +7.9 %.
+- With far more parameters, the ML model gains nothing on monthly area totals. The simplest method stays the best, as the DE-15 selection rule prefers.
+
 ## Not done yet
 
 - **Calibrated intervals:** still slightly below 90 % in the backcast (see Uncertainty).
