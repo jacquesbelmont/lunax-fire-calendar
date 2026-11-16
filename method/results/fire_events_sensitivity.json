@@ -1,0 +1,24 @@
+{
+ "decision": "method/DECISIONS.md DE-36 (PROPOSED)",
+ "area": "Rondonia (docs/data/hotspots)",
+ "month": "2024-09",
+ "days": 1,
+ "viirs_detections": 70924,
+ "by_distance_km": {
+  "1": {
+   "events": 4283,
+   "single_detection_events": 1510,
+   "largest_event_detections": 1616
+  },
+  "2": {
+   "events": 3111,
+   "single_detection_events": 974,
+   "largest_event_detections": 1918
+  },
+  "0.5": {
+   "events": 6201,
+   "single_detection_events": 2715,
+   "largest_event_detections": 1322
+  }
+ }
+}

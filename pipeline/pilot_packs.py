@@ -186,6 +186,7 @@ def metadata(template, name, code, bbox, test, passed, lam, params, level):
                                        "which passed the DE-31 backcast test" if passed else
                                        "2000-11 to 2012-01: not harmonized (this state's ratios failed the DE-31 test); raw MODIS only")
     m["method"]["k_by_month"] = {k: v["k_by_month"] for k, v in params.items()} if params else None
+    m["method"]["alpha"] = {k: v["alpha"] for k, v in params.items()} if params else None  # DE-37: the app harmonizes a user's area
     m["method"]["uncertainty_lambda"] = None if lam != lam else lam  # JSON has no NaN (the national level has no single lambda)
     m["method"]["decisions"] = "method/DECISIONS.md DE-31 (PROPOSED)"
     m["state_test"] = {"rule": RULE, "passed": passed, **test}

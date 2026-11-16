@@ -18,7 +18,7 @@ label { display: flex; flex-direction: column; font-size: .85rem; color: var(--m
 input, select, button { font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); }
 input[type=number] { width: 7.5em; }
 button { cursor: pointer; background: var(--accent); color: #fff; border-color: var(--accent); }
-button[type=button]#bbox-reset { background: transparent; color: var(--accent); }
+button[type=button]#bbox-reset, button.secondary { background: transparent; color: var(--accent); }
 button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #f5a623; outline-offset: 2px; }
 #map { height: min(75vh, 720px); min-height: 360px; border: 1px solid var(--line); border-radius: 6px; } /* DE-22 */
 #map:fullscreen { height: 100%; border-radius: 0; }
@@ -84,10 +84,10 @@ label.check { flex-direction: row; align-items: center; gap: 6px; color: var(--f
 /* DE-24: municipal ranking */
 h3 { margin: 20px 0 4px; font-size: 1rem; }
 .table-wrap { max-height: 340px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
-#ranking { border-collapse: collapse; width: 100%; font-size: .88rem; }
-#ranking th { position: sticky; top: 0; background: var(--bg); text-align: left; }
-#ranking th, #ranking td { padding: 4px 8px; border-bottom: 1px solid var(--line); }
-#ranking td.num { text-align: right; font-variant-numeric: tabular-nums; }
+#ranking, #events { border-collapse: collapse; width: 100%; font-size: .88rem; }
+#ranking th, #events th { position: sticky; top: 0; background: var(--bg); text-align: left; }
+#ranking th, #ranking td, #events th, #events td { padding: 4px 8px; border-bottom: 1px solid var(--line); }
+#ranking td.num, #events td.num { text-align: right; font-variant-numeric: tabular-nums; }
 #ranking tr.selected td { font-weight: 700; }
 button.linkish { background: none; border: none; color: var(--accent); padding: 0; text-decoration: underline; text-align: left; }
 /* DE-25: "Print a briefing" prints the page with the controls hidden; map attribution and legend stay. */

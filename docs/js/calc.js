@@ -465,11 +465,15 @@
    * DE-24: index of the municipality of a detection: the first polygon that contains it, else the municipality of the
    * nearest boundary vertex (same rule as municipality_of in pipeline/export.py, so the app keeps the same detections).
    */
+  /** True when (lon, lat) is inside one of the polygon parts [[outer, holes...], ...] (and not in a hole). */
+  function insideParts(lon, lat, parts) {
+    return parts.some(function (p) { return insideRing(lon, lat, p[0]) && !p.slice(1).some(function (h) { return insideRing(lon, lat, h); }); });
+  }
+
   function municipalityIndex(lon, lat, munis) {
-    var inPart = function (p) { return insideRing(lon, lat, p[0]) && !p.slice(1).some(function (h) { return insideRing(lon, lat, h); }); };
     for (var k = 0; k < munis.length; k++) {
       var b = munis[k].bbox;
-      if (lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3] && munis[k].parts.some(inPart)) return k;
+      if (lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3] && insideParts(lon, lat, munis[k].parts)) return k;
     }
     var best = -1, bestD = Infinity;
     munis.forEach(function (m, k) {
@@ -599,7 +603,177 @@
     return by.map(function (v) { return v.length ? median(v) : NaN; });
   }
 
-  return { parseCellsCsv: parseCellsCsv, hotspotsKml: hotspotsKml, RECURRENCE_CLASSES: RECURRENCE_CLASSES, yearTotals: yearTotals, monthMedians: monthMedians,
+  /**
+   * DE-34: season so far. Tracking year = 12 months from the month after the quietest month (lowest monthly median).
+   * Running totals of the focus row's tracking year up to the focus month, against the earlier complete tracking years
+   * (all 12 months in the period with data): median and 10-90 % range at each month (range only with >= 5 years), and
+   * the focus year's rank at its last month with data. A missing month ends the focus line (missing is never zero).
+   * Returns null when the area has no monthly medians.
+   */
+  function seasonSoFar(rows, focus) {
+    var med = monthMedians(rows), s = -1;
+    med.forEach(function (v, k) { if (!Number.isNaN(v) && (s < 0 || v < med[s])) s = k; });
+    if (s < 0) return null;
+    var start = (s + 1) % 12, byYm = {};
+    rows.forEach(function (r) { byYm[r.ym] = r; });
+    var ymOf = function (t, k) { var m = start + k, y = t + Math.floor(m / 12); return y + "-" + String(m % 12 + 1).padStart(2, "0"); };
+    var running = function (t) { // running totals of tracking year t; NaN from the first missing month on
+      var out = [], c = 0;
+      for (var k = 0; k < 12; k++) {
+        var r = byYm[ymOf(t, k)], v = r && r.inRange ? r.value : NaN;
+        c = Number.isNaN(c) || Number.isNaN(v) ? NaN : c + v;
+        out.push(c);
+      }
+      return out;
+    };
+    var fy = Number(rows[focus].ym.slice(0, 4)), fm = Number(rows[focus].ym.slice(5, 7)) - 1;
+    var t0 = fm >= start ? fy : fy - 1, kf = (fm - start + 12) % 12, cur = running(t0).slice(0, kf + 1);
+    var first = Number(rows[0].ym.slice(0, 4)) - 1, past = [];
+    for (var t = first; t < t0; t++) {
+      var run = running(t);
+      if (!Number.isNaN(run[11])) past.push({ year: t, run: run });
+    }
+    var at = function (k, q) { return past.length ? (q === 0.5 ? median(past.map(function (p) { return p.run[k]; })) : quantile(past.map(function (p) { return p.run[k]; }), q)) : NaN; };
+    var band = past.length >= 5, last = -1;
+    cur.forEach(function (v, k) { if (!Number.isNaN(v)) last = k; });
+    var rank = last < 0 ? NaN : 1 + past.filter(function (p) { return p.run[last] > cur[last]; }).length;
+    var ks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    return { start: start + 1, trackingYear: t0, months: ks.map(function (k) { return ymOf(t0, k); }), current: cur, last: last,
+             median: ks.map(function (k) { return at(k, 0.5); }), lo: ks.map(function (k) { return band ? at(k, 0.1) : NaN; }),
+             hi: ks.map(function (k) { return band ? at(k, 0.9) : NaN; }), nPast: past.length, rank: rank };
+  }
+
+  /**
+   * DE-35: the DE-29 forecast per municipality. rows: lines of cell_outlook_<scale>.csv split by ",": [cell_id, p] (a model)
+   * or [cell_id, last, top] (last year's fire). A cell belongs to the municipality of its centre (DE-24 rule).
+   * Returns [{code, name, cells, sum, top, share}]: sum = expected cells with fire (sum of chances; cells under 0.01 are
+   * not in the file), top = cells in the top 10 %, share = of the area's sum (or of its top cells).
+   */
+  function outlookByMunicipality(rows, grid, munis) {
+    var by = munis.map(function (m) { return { code: m.code, name: m.name, cells: 0, sum: 0, top: 0 }; }), total = 0, totalTop = 0;
+    rows.forEach(function (f) {
+      var rc = f[0].split("_"), b = by[municipalityIndex((Number(rc[1]) + 0.5) * grid - 180, (Number(rc[0]) + 0.5) * grid - 90, munis)];
+      b.cells++;
+      if (f.length === 2) { b.sum += Number(f[1]); total += Number(f[1]); }
+      else if (f[2] === "1") { b.top++; totalTop++; }
+    });
+    by.forEach(function (b) { b.share = total ? b.sum / total : totalTop ? b.top / totalTop : NaN; });
+    return by;
+  }
+
+  /** Great-circle distance in km (haversine, mean Earth radius). */
+  function distanceKm(lat1, lon1, lat2, lon2) {
+    var r = Math.PI / 180, a = Math.sin((lat2 - lat1) * r / 2), b = Math.sin((lon2 - lon1) * r / 2);
+    return 2 * 6371.0088 * Math.asin(Math.sqrt(a * a + Math.cos(lat1 * r) * Math.cos(lat2 * r) * b * b));
+  }
+
+  /**
+   * DE-36: fire events = connected groups of VIIRS detections (points from hotspotPoints) at most `km` apart and at most
+   * `days` days apart. Grid hash on (x km, y km, day) and union-find: each point is compared only with the 27 neighbouring
+   * buckets. Returns events, most detections first: {n, first, last, days, extentKm, maxFrp, lat, lon (first detection),
+   * bbox [w, s, e, n], members (indexes into points)}.
+   */
+  function fireEvents(points, km, days) {
+    var pts = [], dayOf = function (d) { return Math.round(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / 864e5); };
+    points.forEach(function (p, i) { if (p.sensor === "VIIRS") pts.push({ i: i, p: p, day: dayOf(p.date), y: p.lat * 111.32, x: p.lon * 111.32 * Math.cos(p.lat * Math.PI / 180) }); });
+    var size = km * 1.01, grid = new Map(), parent = pts.map(function (_, k) { return k; });
+    var find = function (k) { while (parent[k] !== k) { parent[k] = parent[parent[k]]; k = parent[k]; } return k; };
+    var key = function (gx, gy, d) { return gx + "," + gy + "," + d; };
+    pts.forEach(function (q, k) {
+      q.gx = Math.floor(q.x / size); q.gy = Math.floor(q.y / size);
+      var kk = key(q.gx, q.gy, q.day);
+      if (!grid.has(kk)) grid.set(kk, []);
+      grid.get(kk).push(k);
+    });
+    pts.forEach(function (q, k) {
+      for (var dx = -1; dx <= 1; dx++) for (var dy = -1; dy <= 1; dy++) for (var dd = -days; dd <= days; dd++) {
+        var bucket = grid.get(key(q.gx + dx, q.gy + dy, q.day + dd));
+        if (!bucket) continue;
+        for (var j = 0; j < bucket.length; j++) {
+          var o = bucket[j];
+          if (o <= k || find(o) === find(k)) continue;
+          if (distanceKm(q.p.lat, q.p.lon, pts[o].p.lat, pts[o].p.lon) <= km) parent[find(o)] = find(k);
+        }
+      }
+    });
+    var groups = new Map();
+    pts.forEach(function (q, k) { var r = find(k); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(q); });
+    return Array.from(groups.values()).map(function (g) {
+      g.sort(function (a, b) { return (a.p.date + a.p.time).localeCompare(b.p.date + b.p.time); });
+      var lat = g.map(function (q) { return q.p.lat; }), lon = g.map(function (q) { return q.p.lon; });
+      var bbox = [Math.min.apply(null, lon), Math.min.apply(null, lat), Math.max.apply(null, lon), Math.max.apply(null, lat)];
+      var frp = g.map(function (q) { return Number(q.p.frp); }).filter(function (v) { return !Number.isNaN(v); });
+      return { n: g.length, first: g[0].p.date, last: g[g.length - 1].p.date, days: g[g.length - 1].day - g[0].day + 1,
+               extentKm: distanceKm(bbox[1], bbox[0], bbox[3], bbox[2]), maxFrp: frp.length ? Math.max.apply(null, frp) : NaN,
+               lat: g[0].p.lat, lon: g[0].p.lon, bbox: bbox, members: g.map(function (q) { return q.i; }) };
+    }).sort(function (a, b) { return b.n - a.n || a.first.localeCompare(b.first); });
+  }
+
+  /** months.csv text -> Map "sat|year_month" -> flagged (0 or 1). A satellite-month not listed has no data (DATA_CONTRACT a2). */
+  function monthFlags(text) {
+    var lines = text.trim().split("\n"), h = lines[0].split(","), is = h.indexOf("sat"), iy = h.indexOf("year_month"), iff = h.indexOf("flagged"), out = new Map();
+    lines.slice(1).forEach(function (l) { var f = l.split(","); out.set(f[is] + "|" + f[iy], Number(f[iff])); });
+    return out;
+  }
+
+  /**
+   * DE-37: the harmonized series of one area from its detections (the DE-24 rule; the same steps as pipeline/harmonize.py).
+   * counts: Map "year_month|sat" -> detections inside the area; flags: monthFlags(); meta: the open area's metadata.json.
+   * Raw counts: 0 when the satellite-month is valid, empty when flagged or not covered. From 2012-02 the DE-11 reference
+   * VIIRS satellite; before, k(month) x (Terra + Aqua) when both are valid, else k(month) x Terra, with variance
+   * (mu + alpha mu^2) x lambda; empty where the area's ratios failed the DE-31 test (Brazil pilot) or are missing.
+   * Returns the structure of parseCellsCsv with one unit, so the calendar and every chart use it unchanged.
+   */
+  function harmonizeCounts(counts, flags, months, meta) {
+    var nM = months.length, method = meta.method, sats = { terra: "Terra", aqua: "Aqua", snpp: "SNPP", noaa20: "NOAA20", noaa21: "NOAA21" };
+    var out = { cells: [{ id: "custom" }], months: months, nMonths: nM, estimated: new Uint8Array(nM), columns: {} };
+    ["viirs_eq", "viirs_eq_var"].concat(SENSOR_COLUMNS).forEach(function (c) { out.columns[c] = new Float64Array(nM).fill(NaN); });
+    var ratios = !(meta.state_test && meta.state_test.passed === false) && method.k_by_month, lam = method.uncertainty_lambda, alpha = method.alpha || {};
+    months.forEach(function (ym, m) {
+      SENSOR_COLUMNS.forEach(function (c) { if (flags.get(sats[c] + "|" + ym) === 0) out.columns[c][m] = counts.get(ym + "|" + sats[c]) || 0; });
+      if (ym >= "2012-02") {
+        var ref = out.columns[ym >= "2018-04" ? "noaa20" : "snpp"][m];
+        out.columns.viirs_eq[m] = ref;
+        out.columns.viirs_eq_var[m] = Number.isNaN(ref) ? NaN : 0;
+        return;
+      }
+      var t = out.columns.terra[m], a = out.columns.aqua[m], conf = !Number.isNaN(t) && !Number.isNaN(a) ? "TA" : !Number.isNaN(t) ? "T" : null;
+      var k = ratios && conf && ratios[conf] ? ratios[conf][ym.slice(5, 7)] : null;
+      if (k === null || k === undefined || Number.isNaN(k)) return;
+      var mu = k * (conf === "TA" ? t + a : t);
+      out.columns.viirs_eq[m] = mu;
+      out.estimated[m] = 1;
+      if (alpha[conf] !== undefined && lam !== null && lam !== undefined) out.columns.viirs_eq_var[m] = (mu + alpha[conf] * mu * mu) * lam;
+    });
+    return out;
+  }
+
+  /** DE-37: the polygons of a GeoJSON or KML text as one MultiPolygon feature named `name`; throws when there is none. */
+  function readPolygons(text, name) {
+    var polys = [];
+    if (/^\s*</.test(text)) { // KML: Polygon > outerBoundaryIs / innerBoundaryIs > LinearRing > coordinates "lon,lat[,alt] ..."
+      var doc = new DOMParser().parseFromString(text, "application/xml");
+      var ring = function (el) { return el.textContent.trim().split(/\s+/).map(function (t) { return t.split(",").slice(0, 2).map(Number); }); };
+      Array.prototype.forEach.call(doc.getElementsByTagName("Polygon"), function (p) {
+        var outer = p.getElementsByTagName("outerBoundaryIs")[0];
+        if (outer) polys.push([ring(outer)].concat(Array.prototype.map.call(p.getElementsByTagName("innerBoundaryIs"), ring)));
+      });
+    } else {
+      var g = JSON.parse(text);
+      var add = function (geom) {
+        if (!geom) return;
+        if (geom.type === "Polygon") polys.push(geom.coordinates);
+        else if (geom.type === "MultiPolygon") geom.coordinates.forEach(function (c) { polys.push(c); });
+        else if (geom.type === "GeometryCollection") geom.geometries.forEach(add);
+      };
+      (g.type === "FeatureCollection" ? g.features.map(function (f) { return f.geometry; }) : g.type === "Feature" ? [g.geometry] : [g]).forEach(add);
+    }
+    polys = polys.filter(function (p) { return p.length && p[0].length >= 4 && p[0].every(function (v) { return Number.isFinite(v[0]) && Number.isFinite(v[1]); }); });
+    if (!polys.length) throw new Error("No polygon in " + name + ": use a GeoJSON or KML file with a Polygon or MultiPolygon (longitude, latitude).");
+    return { type: "Feature", properties: { code: "custom", name: name }, geometry: { type: "MultiPolygon", coordinates: polys } };
+  }
+
+  return { parseCellsCsv: parseCellsCsv, seasonSoFar: seasonSoFar, insideParts: insideParts, readPolygons: readPolygons, monthFlags: monthFlags, harmonizeCounts: harmonizeCounts, outlookByMunicipality: outlookByMunicipality, fireEvents: fireEvents, distanceKm: distanceKm, hotspotsKml: hotspotsKml, RECURRENCE_CLASSES: RECURRENCE_CLASSES, yearTotals: yearTotals, monthMedians: monthMedians,
            seasonTotals: seasonTotals, outlookForecast: outlookForecast, outlookErrors: outlookErrors, quantile: quantile, recurrenceClass: recurrenceClass,
            gridCellRect: gridCellRect, mercatorHeight: mercatorHeight, OUTLOOK_CLASSES: OUTLOOK_CLASSES, outlookClass: outlookClass, parseMunicipalities: parseMunicipalities, municipalityIndex: municipalityIndex, cellUsual: cellUsual, USUAL_CLASSES: USUAL_CLASSES, usualClass: usualClass,
            seasonByYear: seasonByYear, typicalSeason: typicalSeason, filterHotspots: filterHotspots, countBySatellite: countBySatellite, hotspotCountText: hotspotCountText, hotspotsCsv: hotspotsCsv, selectCells: selectCells, areaSeries: areaSeries,

@@ -77,6 +77,13 @@
     removeNeighbors(map);
   }
 
+  /** DE-37: code of the state that holds (lon, lat), or null outside Brazil. */
+  async function stateAt(lon, lat) {
+    statesGeo = statesGeo || await (await fetch(PILOT + "BR/units.geojson")).json();
+    const st = LunaxCalc.parseMunicipalities(statesGeo).find((s) => LunaxCalc.insideParts(lon, lat, s.parts));
+    return st ? st.code : null;
+  }
+
   window.LunaxBrazil = { available: available, places: places, stateBase: stateBase, NATIONAL: PILOT + "BR/", showUnits: showUnits, hide: hide,
-    showNeighbors: showNeighbors, hideNeighbors: hideNeighbors };
+    showNeighbors: showNeighbors, hideNeighbors: hideNeighbors, stateAt: stateAt };
 })();

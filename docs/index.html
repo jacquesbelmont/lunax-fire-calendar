@@ -28,6 +28,8 @@
           <input id="place-search" type="search" list="place-list" placeholder="Search a state or municipality" autocomplete="off" aria-label="Search a place in Brazil" hidden>
           <datalist id="place-list"></datalist>
           <label class="inline">Municipality <select autocomplete="off" id="muni-select"><option value="">None: use the rectangle</option></select></label>
+          <button type="button" class="secondary" id="area-upload" title="A polygon of your own: farm, reserve, watershed (GeoJSON or KML). The file stays in this browser.">Your area…</button>
+          <input type="file" id="area-file" accept=".geojson,.json,.kml,application/geo+json,application/vnd.google-earth.kml+xml" hidden>
         </div>
         <div class="tb-group">
           <div class="chips" id="period-chips" role="group" aria-label="Period">
@@ -52,6 +54,7 @@
               <a href="#downloads-section">Hotspot list (CSV, KML): section 5</a>
             </div>
           </details>
+          <button type="button" id="copy-link" class="secondary" title="The address keeps the place, area, period, month and map view">Copy link</button>
         </div>
       </div>
       <p class="hint" id="series-note"></p>
@@ -99,9 +102,13 @@
       <div id="map" role="application" aria-label="Map for choosing the area, with the hotspots of one month"></div>
       <p class="hint" id="recurrence-note" role="status"></p>
       <p class="hint" id="map-note" role="status"></p>
+      <h3 id="events-title">Fire events of the map month</h3>
+      <p class="hint" id="events-caption" role="status"></p>
+      <div class="table-wrap"><table id="events"></table></div>
       <h3 id="ranking-title">Municipalities in the map month</h3>
       <p class="hint" id="ranking-caption"></p>
       <div class="table-wrap"><table id="ranking"></table></div>
+      <p><button type="button" id="priority-csv" hidden>Download this table (CSV)</button></p>
     </section>
 
     <section id="calendar-section" aria-label="Monthly calendar and fire season">
@@ -127,6 +134,10 @@
         <p id="compare-text" role="status"></p>
         <div id="compare" class="chart" role="img" aria-label="Same calendar month across years with the historical median"></div>
         <p><button type="button" id="png-compare" disabled>Download chart (PNG)</button></p>
+        <h3 id="progress-title">Season so far</h3>
+        <p class="hint">Is this year running ahead of the usual? Blue: the running total of the focus year since the start of its tracking year (the month after the area's quietest month). Dashed: the median of the earlier years at the same month; grey band: the middle 80% of them.</p>
+        <p id="progress-text" role="status"></p>
+        <div id="progress" class="chart" role="img" aria-label="Running total of hotspots of the focus year against the earlier years"></div>
       </section>
       <section id="outlook-section" aria-label="Outlook for the next fire season">
         <h2>4. Next season outlook (experimental)</h2>
@@ -179,6 +190,7 @@
   <script src="js/map.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/compare.js"></script>
+  <script src="js/progress.js"></script>
   <script src="js/season.js"></script>
   <script src="js/outlook.js"></script>
   <script src="js/brazil.js"></script>

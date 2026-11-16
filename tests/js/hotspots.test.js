@@ -218,3 +218,42 @@ test("municipalityIndex (parts and holes) agrees with a Brazil pack: Sergipe 202
   }));
   assert.ok(compared > 75 * 12 * 3, "compared " + compared);
 });
+
+// DE-37: a user's area is harmonized in the browser exactly as the pipeline does for a municipality (DE-24).
+// (1) Fed with the pipeline's own raw counts of a municipality, harmonizeCounts gives its municipalities.csv series.
+// (2) Counted from the detections inside its polygon, the raw counts agree except where the app's ray test and the
+//     pipeline's polygon test (matplotlib) disagree on a point of an overlap of two municipal polygons: 1 detection
+//     in 2024-09 (Aqua) for this municipality.
+test("harmonizeCounts: a municipality's counts give its municipalities.csv series (all years)", { skip }, () => {
+  const munis = calc.parseMunicipalities(JSON.parse(fs.readFileSync(path.join(root, "docs/data/municipalities.geojson"), "utf8")));
+  const md = calc.parseCellsCsv(fs.readFileSync(path.join(root, "docs/data/municipalities.csv"), "utf8"), 0.25, "area_id");
+  const flags = calc.monthFlags(fs.readFileSync(path.join(root, "docs/data/months.csv"), "utf8"));
+  const code = "1100015", k = munis.findIndex((m) => m.code === code), b = munis[k].bbox, i = md.cells.findIndex((c) => c.id === code);
+  const SAT = { terra: "Terra", aqua: "Aqua", snpp: "SNPP", noaa20: "NOAA20", noaa21: "NOAA21" }, pipeline = new Map(), fromPoints = new Map();
+  md.months.forEach((ym, m) => calc.SENSOR_COLUMNS.forEach((c) => { const v = md.columns[c][i * md.nMonths + m]; if (!Number.isNaN(v)) pipeline.set(ym + "|" + SAT[c], v); }));
+  const close = (a, x) => (Number.isNaN(a) && Number.isNaN(x)) || Math.abs(a - x) <= 1e-5 * Math.max(1, Math.abs(x));
+  const out = calc.harmonizeCounts(pipeline, flags, md.months, meta);
+  let estimated = 0;
+  md.months.forEach((ym, m) => {
+    for (const c of ["viirs_eq", "viirs_eq_var", ...calc.SENSOR_COLUMNS]) {
+      assert.ok(close(out.columns[c][m], md.columns[c][i * md.nMonths + m]), ym + " " + c + ": " + out.columns[c][m] + " vs " + md.columns[c][i * md.nMonths + m]);
+    }
+    assert.strictEqual(out.estimated[m], md.estimated[i * md.nMonths + m], ym + " estimated");
+    estimated += out.estimated[m];
+  });
+  assert.ok(estimated > 100, "estimated months compared: " + estimated);
+  for (const e of JSON.parse(fs.readFileSync(indexPath, "utf8")).files) {
+    const rows = parseAll(e), h = rows.header.split(",");
+    const [ilat, ilon, idate, isat] = ["latitude", "longitude", "acq_date", "sat"].map((c) => h.indexOf(c));
+    for (const l of rows.lines) {
+      const f = l.split(","), lon = Number(f[ilon]), lat = Number(f[ilat]);
+      // 0.1° margin: a detection in a gap between polygons goes to the nearest municipality (DE-24), maybe outside its box
+      if (lon < b[0] - 0.1 || lon > b[2] + 0.1 || lat < b[1] - 0.1 || lat > b[3] + 0.1 || calc.municipalityIndex(lon, lat, munis) !== k) continue;
+      const key = f[idate].slice(0, 7) + "|" + f[isat];
+      fromPoints.set(key, (fromPoints.get(key) || 0) + 1);
+    }
+  }
+  const valid = (key) => { const [ym, sat] = key.split("|"); return flags.get(sat + "|" + ym) === 0; }; // flagged months stay empty (rule 6)
+  const differ = [...new Set([...pipeline.keys(), ...fromPoints.keys()])].filter(valid).filter((key) => (pipeline.get(key) || 0) !== (fromPoints.get(key) || 0));
+  assert.deepStrictEqual(differ, ["2024-09|Aqua"]);
+});

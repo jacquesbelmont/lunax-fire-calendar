@@ -265,6 +265,7 @@ def export_metadata(harmonized):
                                 "DE-15 backcast; method/results/validation_metrics.json)",
             "train_years": model["train_years"],
             "k_by_month": {k: v["k_by_month"] for k, v in model["configurations"].items()},
+            "alpha": {k: v["alpha"] for k, v in model["configurations"].items()},  # DE-37: the app harmonizes a user's area
             "uncertainty": "viirs_eq_var = model variance x lambda (DE-16). For an area, sum viirs_eq and "
                            "viirs_eq_var over its cells; the 90 % interval is sum +/- 1.645 x sqrt(summed variance). "
                            "lambda was calibrated on the monthly totals of the whole demo area; see method/VALIDATION.md",

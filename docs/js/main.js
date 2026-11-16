@@ -27,8 +27,9 @@
 
   function buildRows() {
     // DE-24: a municipality uses its own series (detections inside its boundary); a rectangle sums its cells.
-    const data = state.muni ? state.muniData : state.data, column = $("series-select").value;
-    const sel = state.muni ? [state.muni.i] : state.sel, harmonized = column === "viirs_eq";
+    // DE-37: a user's area has its own series, harmonized in the browser (one unit, like a municipality)
+    const data = state.custom ? state.custom.data : state.muni ? state.muniData : state.data, column = $("series-select").value;
+    const sel = state.custom ? [0] : state.muni ? [state.muni.i] : state.sel, harmonized = column === "viirs_eq";
     const value = LunaxCalc.areaSeries(data, sel, column);
     const variance = harmonized ? LunaxCalc.areaSeries(data, sel, "viirs_eq_var") : null;
     const est = harmonized ? LunaxCalc.estimatedMonths(data, sel) : null;
@@ -200,6 +201,8 @@
   /** DE-24: municipalities of month index m, most hotspots first, with their usual value and DE-22 class. */
   function renderRanking(m) {
     const table = $("ranking"), d = state.muniData, column = $("series-select").value, f = LunaxCalc.fmt;
+    $("priority-csv").hidden = true;
+    if (mapMode().startsWith("outlook") && !state.national && state.meta.cell_outlook) { renderPriority(); return; } // DE-35
     table.replaceChildren();
     if (m < 0) { $("ranking-caption").textContent = ""; return; }
     const classes = new Map(LunaxCalc.USUAL_CLASSES.map((c) => [c[0], c]));
@@ -231,13 +234,67 @@
     });
   }
 
+  /** DE-35: municipalities by expected fire next season, from the ~1 km DE-29 forecast (computed once per place). */
+  async function renderPriority() {
+    const seq = state.packSeq, layers = state.layers, co = state.meta.cell_outlook, persistence = co.scales["001"].shown === "P";
+    try {
+      if (!layers.priority) {
+        $("ranking-caption").textContent = "Adding up the forecast per municipality...";
+        const resp = await fetch(state.base + "cell_outlook_001.csv");
+        if (!resp.ok) throw new Error("Could not load " + state.base + "cell_outlook_001.csv (" + resp.status + ").");
+        const rows = (await resp.text()).trim().split("\n").slice(1).map((l) => l.split(","));
+        if (seq !== state.packSeq) return;
+        layers.priority = LunaxCalc.outlookByMunicipality(rows, 0.01, state.munis)
+          .sort((a, b) => (persistence ? b.top - a.top : b.sum - a.sum) || a.name.localeCompare(b.name, "pt"));
+      }
+      if (seq !== state.packSeq || !mapMode().startsWith("outlook")) return;
+      $("ranking-title").textContent = "Where to act first: municipalities by expected fire in " + co.next_year;
+      $("ranking-caption").textContent = (persistence
+        ? "At about 1 km, last year's fire was the best guide in this area's test (method/DECISIONS.md DE-29), so municipalities are ranked by their cells in the top 10% of " + co.feature_year + " detections."
+        : "Expected number of cells of about 1 km with at least one VIIRS detection in January-October " + co.next_year +
+          " = the sum of the chances of the municipality's cells (method/DECISIONS.md DE-35). Cells with a chance under 1% are not in the forecast file, so a sum can be up to 0.01 x its cells too low.") +
+        " A planning aid from a tested forecast, not a certainty. Click a name to select the municipality.";
+      const table = $("ranking"), head = document.createElement("tr");
+      table.replaceChildren(head);
+      ["Municipality", persistence ? "Cells in the top 10%" : "Expected cells with fire", "Share of the area", "Cells in the forecast file"].forEach(function (h) {
+        const th = document.createElement("th"); th.textContent = h; head.appendChild(th);
+      });
+      layers.priority.forEach(function (r) {
+        const tr = document.createElement("tr"), name = document.createElement("td"), b = document.createElement("button");
+        b.type = "button"; b.className = "linkish"; b.textContent = r.name;
+        b.addEventListener("click", () => selectMunicipality(r.code));
+        name.appendChild(b);
+        const num = (x) => { const td = document.createElement("td"); td.className = "num"; td.textContent = x; return td; };
+        const n1 = (x) => x.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        tr.append(name, num(persistence ? r.top.toLocaleString("en-US") : n1(r.sum)), num(Number.isNaN(r.share) ? "-" : (100 * r.share).toFixed(1) + "%"),
+          num(r.cells.toLocaleString("en-US")));
+        if (state.muni && state.muni.code === r.code) tr.className = "selected";
+        table.appendChild(tr);
+      });
+      $("priority-csv").hidden = false;
+    } catch (err) {
+      if (seq === state.packSeq) $("ranking-caption").textContent = String(err.message || err);
+    }
+  }
+
+  /** DE-35: the priority table as CSV, with the FIRMS acknowledgment and the forecast's test reference. */
+  function priorityCsv() {
+    const co = state.meta.cell_outlook, rows = state.layers.priority || [], m = state.meta;
+    const head = ["# " + m.title, "# Area: " + m.area.name, "# Where to act first (method/DECISIONS.md DE-35): expected cells of about 1 km with at least one VIIRS detection in January-October " +
+      co.next_year + " per municipality, from the DE-29 forecast (" + co.scales["001"].shown + "); a planning aid, not a certainty",
+      "# Data cut-off date: " + m.data_cutoff_date + " (" + m.archived + ")", "# " + m.attribution, "# Disclaimer: " + m.disclaimer_url,
+      "municipality_code,municipality,expected_cells_with_fire,cells_in_top_10pct,share_of_area,cells_in_file"];
+    return head.concat(rows.map((r) => [r.code, '"' + r.name.replace(/"/g, '""') + '"', r.sum.toFixed(3), r.top, Number.isNaN(r.share) ? "" : r.share.toFixed(5), r.cells].join(","))).join("\n") + "\n";
+  }
+
   /** DE-24: hotspot rows inside the selected municipality (same rule as the pipeline); all rows in rectangle mode. */
   function keepSelected(res) {
-    if (!state.muni || !res.header) return res;
+    if (!(state.muni || state.custom) || !res.header) return res;
     const h = res.header.split(","), ilat = h.indexOf("latitude"), ilon = h.indexOf("longitude"), n = Math.max(ilat, ilon) + 1;
     res.lines = res.lines.filter(function (l) {
       const x = l.split(",", n);
-      return LunaxCalc.municipalityIndex(Number(x[ilon]), Number(x[ilat]), state.munis) === state.muni.k;
+      return state.custom ? LunaxCalc.insideParts(Number(x[ilon]), Number(x[ilat]), state.custom.poly.parts) // DE-37
+        : LunaxCalc.municipalityIndex(Number(x[ilon]), Number(x[ilat]), state.munis) === state.muni.k;
     });
     return res;
   }
@@ -246,6 +303,7 @@
   function selectMunicipality(code) {
     if (state.national) { openPlace({ type: "state", code: code }); return; } // RA-11: a state of the national ranking
     if (!code) { setBbox(state.meta.area.bbox_west_south_east_north.slice()); return; }
+    clearCustom();
     const k = state.munis.findIndex((x) => x.code === code), b = state.munis[k].bbox, h = state.meta.grid.cell_size_deg / 2;
     state.muni = { k: k, i: state.muniData.cells.findIndex((c) => c.id === code), code: code, name: state.munis[k].name };
     $("muni-select").value = code;
@@ -268,6 +326,7 @@
     const req = ++state.pointsReq, note = $("map-note");
     state.map.showPoints([]);
     state.map.setImageryMonth(ym, []); // DE-27: the 15th until the detections are loaded
+    renderEvents([], null);
     if (!ym || !state.sel.length) { note.textContent = ""; return; }
     note.textContent = "Loading the detections of " + ym + "...";
     try {
@@ -278,6 +337,7 @@
       const pts = res.lines.length ? LunaxCalc.hotspotPoints(res.header, res.lines) : [];
       state.map.showPoints(pts);
       state.map.setImageryMonth(ym, pts);
+      renderEvents(pts, ym);
       const source = $("series-select").value === "viirs_eq" ? "The harmonized calendar value of this month " + LunaxCalc.harmonizedSource(ym) +
         " (DE-11)." : "The calendar shows the raw counts of the series chosen above.";
       note.textContent = "Points: detections of " + ym + (state.data.provisional.has(ym) ? " (provisional: near real-time data)" : "") +
@@ -289,7 +349,96 @@
     }
   }
 
+  /** DE-37: back from a user's area (a municipality, a rectangle or another place was chosen). */
+  function clearCustom() {
+    if (!state.custom) return;
+    state.custom = null;
+    state.map.showCustomArea(null);
+  }
+
+  /** DE-37: a polygon file chosen by the user: its own series from the detections inside it, harmonized in the browser. */
+  async function openArea(file) {
+    const info = $("selection-info");
+    try {
+      const ft = LunaxCalc.readPolygons(await file.text(), file.name), poly = LunaxCalc.parseMunicipalities({ features: [ft] })[0];
+      const cx = (poly.bbox[0] + poly.bbox[2]) / 2, cy = (poly.bbox[1] + poly.bbox[3]) / 2;
+      if (state.places) { // RA-11 Brazil pilot: open the state that holds the area's centre
+        const code = await LunaxBrazil.stateAt(cx, cy), st = currentState();
+        if (code && (!st || st.code !== code)) await openPlace({ type: "state", code: code });
+      }
+      const seq = state.packSeq, index = await hotspotIndex();
+      if (!index) return;
+      const h = state.meta.grid.cell_size_deg / 2, box = [poly.bbox[0] - h, poly.bbox[1] - h, poly.bbox[2] + h, poly.bbox[3] + h];
+      const cellIds = LunaxCalc.selectCells(state.data, box).map((i) => state.data.cells[i].id), months = state.data.months;
+      if (!cellIds.length) throw new Error(file.name + " is outside " + state.meta.area.name.split(" (")[0] + ".");
+      const counts = new Map(); // detections inside the polygon per "year_month|sat", counted file by file (nothing kept)
+      let n = 0;
+      await LunaxHotspots.eachFile(index, cellIds, (d, t) => {
+        info.textContent = "Counting the detections of every year inside " + file.name + ": file " + Math.min(d + 1, t) + " of " + t + "...";
+      }, state.base, function (header, lines) {
+        if (!header) return;
+        const hd = header.split(","), ilat = hd.indexOf("latitude"), ilon = hd.indexOf("longitude"), id = hd.indexOf("acq_date"), is = hd.indexOf("sat");
+        lines.forEach(function (l) {
+          const f = l.split(",");
+          if (!LunaxCalc.insideParts(Number(f[ilon]), Number(f[ilat]), poly.parts)) return;
+          n++;
+          const key = f[id].slice(0, 7) + "|" + f[is];
+          counts.set(key, (counts.get(key) || 0) + 1);
+        });
+      });
+      state.monthFlags = state.monthFlags && state.monthFlags.base === state.base ? state.monthFlags :
+        { base: state.base, map: LunaxCalc.monthFlags(await (await fetch(state.base + "months.csv")).text()) };
+      if (seq !== state.packSeq) return; // another place was opened meanwhile
+      const data = LunaxCalc.harmonizeCounts(counts, state.monthFlags.map, months, state.meta);
+      data.provisional = state.data.provisional;
+      if (state.muni) { state.muni = null; $("muni-select").value = ""; state.map.highlightMunicipality(null); }
+      state.custom = { name: file.name, poly: poly, data: data, n: n };
+      state.bbox = box;
+      state.mapMonth = null;
+      ["w", "s", "e", "n"].forEach((k, i) => { $("bbox-" + k).value = LunaxCalc.fmt(box[i], 4); });
+      state.map.showCustomArea(ft);
+      update();
+    } catch (err) {
+      info.textContent = String(err.message || err);
+    }
+  }
+
+  /** DE-36: fire events of the map month in the selection: VIIRS detections at most 1 km and 1 day apart, chained. */
+  function renderEvents(pts, ym) {
+    const table = $("events"), cap = $("events-caption"), f = LunaxCalc.fmt;
+    table.replaceChildren();
+    if (!ym) { cap.textContent = state.national ? "Fire events: open a state." : ""; return; }
+    const ev = LunaxCalc.fireEvents(pts, 1, 1), where = state.custom ? "your area" : state.muni ? state.muni.name : "the selected cells";
+    if (!ev.length) {
+      cap.textContent = ym < "2012-01" ? "Fire events need the 375 m VIIRS detections, which start in 2012." : "No VIIRS detections in " + where + " in " + ym + ".";
+      return;
+    }
+    cap.textContent = ev.length.toLocaleString("en-US") + " fire events in " + where + " in " + ym + (state.data.provisional.has(ym) ? " (provisional data)" : "") +
+      ": groups of VIIRS detections at most 1 km and 1 day apart, chained, so likely the same fire (method/DECISIONS.md DE-36; the limits are not tuned " +
+      "against ground truth). Events are cut at the month's edges. The largest first; click a row to zoom the map to it.";
+    const head = document.createElement("tr");
+    ["Event", "First day", "Last day", "Days", "Detections", "Extent (km)", "Max FRP (MW)", "Municipality"].forEach(function (h) {
+      const th = document.createElement("th"); th.textContent = h; head.appendChild(th);
+    });
+    table.appendChild(head);
+    ev.slice(0, 15).forEach(function (e, k) {
+      const tr = document.createElement("tr"), b = document.createElement("button"), first = document.createElement("td");
+      b.type = "button"; b.className = "linkish"; b.textContent = "#" + (k + 1);
+      b.addEventListener("click", function () {
+        state.map.leaflet.fitBounds(L.latLngBounds([[e.bbox[1], e.bbox[0]], [e.bbox[3], e.bbox[2]]]).pad(0.5), { maxZoom: 13 });
+        $("map").scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      first.appendChild(b);
+      const td = (x, num) => { const c = document.createElement("td"); if (num) c.className = "num"; c.textContent = x; return c; };
+      const muni = state.munis && state.munis.length ? state.munis[LunaxCalc.municipalityIndex(e.lon, e.lat, state.munis)].name : "";
+      tr.append(first, td(e.first), td(e.last), td(e.days, true), td(e.n.toLocaleString("en-US"), true), td(f(e.extentKm, 1), true),
+        td(Number.isNaN(e.maxFrp) ? "-" : f(e.maxFrp, 1), true), td(muni));
+      table.appendChild(tr);
+    });
+  }
+
   function areaLabel() {
+    if (state.custom) return "Your area " + state.custom.name + " (uploaded polygon; the detections inside it, harmonized in the browser, DE-37); " + state.meta.area.name;
     if (state.national) return "Brazil, the 27 IBGE states (Brazil pilot, local)";
     if (state.muni) return "Municipality " + state.muni.name + " (IBGE code " + state.muni.code + "), inside its IBGE boundary; " + state.meta.area.name;
     const b = state.bbox.map((v) => LunaxCalc.fmt(v, 4));
@@ -338,7 +487,7 @@
     const hasCells = cells.length > 0;
     state.rows = hasCells ? buildRows() : null;
     SELECTION_BUTTONS.forEach((id) => { $(id).disabled = !hasCells; });
-    $("csv-cells").disabled = !hasCells || !!state.muni || state.national; // DE-24: 0.25° cells do not follow municipal borders
+    $("csv-cells").disabled = !hasCells || !!state.muni || !!state.custom || state.national; // DE-24: 0.25° cells do not follow municipal borders
     $("hotspots-count").disabled = !hasCells || state.national; // RA-11: the national list is too big; open a state
     refreshMap();
     $("firms-link").href = firmsLink(state.bbox);
@@ -346,20 +495,70 @@
     const info = $("selection-info");
     if (!hasCells) {
       info.textContent = "No grid cell centres inside this rectangle. Adjust the rectangle to select cells.";
-      Plotly.purge($("calendar")); Plotly.purge($("compare")); Plotly.purge($("outlook"));
-      ["compare-text", "season-text", "outlook-text", "card-month-big", "card-month-sub", "card-season-big", "card-season-sub",
+      Plotly.purge($("calendar")); Plotly.purge($("compare")); Plotly.purge($("outlook")); Plotly.purge($("progress"));
+      ["compare-text", "season-text", "outlook-text", "progress-text", "card-month-big", "card-month-sub", "card-season-big", "card-season-sub",
        "card-outlook-big", "card-outlook-sub"].forEach((id) => { $(id).textContent = ""; });
       return;
     }
     $("print-header").textContent = "Fire briefing. Area: " + areaLabel() + ". Period: " + state.data.months[Number($("range-from").value)] +
       " to " + state.data.months[Number($("range-to").value)] + ". Archived NASA FIRMS data through " + state.meta.data_cutoff_date + ", not live.";
-    info.textContent = state.national ? "Brazil (pilot, local): the 27 states, each harmonized with its own ratios where they passed the " +
+    info.textContent = state.custom ? "Your area " + state.custom.name + ": the calendar, fire season, comparison, outlook, fire events, map points " +
+      "and hotspot downloads use the " + state.custom.n.toLocaleString("en-US") + " detections inside it (every year and satellite), harmonized in this " +
+      "browser with the ratios of " + state.meta.area.name.split(" (")[0] + " (method/DECISIONS.md DE-37). Only the part inside " + state.meta.area.name.split(" (")[0] +
+      " is counted. The file stays in this browser. The map cells around it are 0.25° grid cells, shown for context." :
+      state.national ? "Brazil (pilot, local): the 27 states, each harmonized with its own ratios where they passed the " +
       "DE-31 test. The map colors the states; click one, or search a place, to open it with every feature. Hotspot lists: open a state." :
       state.muni ? "Municipality " + state.muni.name + " (IBGE code " + state.muni.code + "): the calendar, fire " +
       "season, comparison, map points and hotspot downloads use the detections inside its IBGE boundary. The map cells around it " +
       "are 0.25° grid cells, shown for context." : cells.length + (cells.length === 1 ? " grid cell" : " grid cells") +
       " selected. The rectangle selects whole " + state.meta.grid.cell_size_deg + "° cells by their centres.";
     renderAnalysis();
+    writeHash();
+  }
+
+  /** RA-12: what is on screen, in the address (#place=PA&muni=...&from=...&to=...&month=...&view=...&series=...),
+   *  so a copied link opens the same view. replaceState: no new history entry per click. */
+  function writeHash() {
+    if (!state.rows || state.applyingHash) return;
+    const q = new URLSearchParams(), st = currentState(), months = state.data.months, m = mapMonthIndex();
+    if (state.places) q.set("place", state.national ? "BR" : st ? st.name : "RO");
+    const box = state.bbox, area = state.meta.area.bbox_west_south_east_north;
+    if (state.muni) q.set("muni", state.muni.code);
+    else if (!state.national && box.some((v, i) => v !== area[i])) q.set("box", box.map((v) => LunaxCalc.fmt(v, 4)).join(","));
+    q.set("from", months[Number($("range-from").value)]); q.set("to", months[Number($("range-to").value)]);
+    if (m >= 0) q.set("month", state.rows[m].ym);
+    q.set("view", mapMode()); q.set("series", $("series-select").value);
+    history.replaceState(null, "", "#" + q.toString());
+  }
+
+  /** RA-12: open the view of a link (ignores what this page cannot show, e.g. a Brazil place without the local pilot). */
+  async function applyHash() {
+    const q = new URLSearchParams(location.hash.slice(1));
+    state.applyingHash = true;
+    try {
+      if (![...q.keys()].length) return;
+      const place = q.get("place"), st = state.places && state.places.find((x) => x.type === "state" && x.name === place);
+      if (state.places && place === "BR") await openPlace({ type: "brazil" });
+      else if (st) await openPlace({ type: "state", code: st.code });
+      const months = state.data.months, idx = (ym) => months.indexOf(ym);
+      if ([...$("series-select").options].some((o) => o.value === q.get("series"))) $("series-select").value = q.get("series");
+      if (idx(q.get("from")) >= 0) $("range-from").value = String(idx(q.get("from")));
+      if (idx(q.get("to")) >= 0) $("range-to").value = String(idx(q.get("to")));
+      markPeriod();
+      const view = document.querySelector('input[name="map-mode"][value="' + q.get("view") + '"]');
+      if (view && !view.closest("label").hidden) {
+        view.checked = true;
+        $("map-view-name").textContent = view.closest("label").querySelector("strong").textContent;
+      }
+      const box = (q.get("box") || "").split(",").map(Number);
+      if (state.munis && state.munis.some((x) => x.code === q.get("muni"))) selectMunicipality(q.get("muni"));
+      else if (box.length === 4 && box.every(Number.isFinite)) setBbox(box);
+      else update();
+      if (idx(q.get("month")) >= 0) setFocus(idx(q.get("month")));
+    } finally {
+      state.applyingHash = false;
+      writeHash();
+    }
   }
 
   const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -373,6 +572,7 @@
     $("compare-month").value = String(Number(state.rows[m].ym.slice(5, 7))); // the box shows the focus month; no change event
     renderAnalysis();
     refreshMap();
+    writeHash();
   }
 
   /** DE-30: calendar, comparison, outlook and summary cards for the current rows and focus month. */
@@ -383,6 +583,9 @@
       mode: document.querySelector('input[name="cal-mode"]:checked').value,
       onMonthClick: (ym) => setFocus(state.data.months.indexOf(ym)) });
     LunaxCompare.render($("compare"), $("compare-text"), rows, focus, unit, (ym) => setFocus(state.data.months.indexOf(ym)));
+    const sf = LunaxCalc.seasonSoFar(rows, focus); // DE-34
+    if (sf) LunaxProgress.render($("progress"), $("progress-text"), sf, unit);
+    else { Plotly.purge($("progress")); $("progress-text").textContent = ""; }
     const season = LunaxSeason.summary(rows);
     $("season-text").textContent = season.text;
     // Card: focus month
@@ -415,6 +618,7 @@
   function setBbox(box) {
     if (!(box[0] < box[2] && box[1] < box[3])) { $("selection-info").textContent = "West must be less than east and south less than north."; return; }
     if (state.muni) { state.muni = null; $("muni-select").value = ""; state.map.highlightMunicipality(null); } // back to the rectangle
+    clearCustom();
     state.bbox = box;
     ["w", "s", "e", "n"].forEach((k, i) => { $("bbox-" + k).value = LunaxCalc.fmt(box[i], 4); });
     update();
@@ -479,6 +683,7 @@
     else credit.innerHTML = credit.dataset.published;
     viewsAvailable();
     state.map.setArea(p.boundary, p.muniGeo);
+    clearCustom();
     renderCrumbs();
     syncNeighbors();
     markPeriod();
@@ -558,7 +763,7 @@
   async function init() {
     try {
       const first = await LunaxData.loadAll("data/");
-      Object.assign(state, { meta: first.meta, data: first.data });
+      Object.assign(state, { meta: first.meta, data: first.data, applyingHash: true }); // RA-12: keep an incoming link until applyHash reads it
       $("muni-select").addEventListener("change", (e) => selectMunicipality(e.target.value));
       addOptions($("series-select"), SERIES);
       addOptions($("compare-month"), ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((n, i) => [String(i + 1), n]));
@@ -568,7 +773,20 @@
       $("map-mode").addEventListener("change", function (e) { // DE-22, DE-26, DE-29: same month, other view
         $("map-view-name").textContent = e.target.closest("label").querySelector("strong").textContent;
         if (state.rows) refreshMap();
+        writeHash();
       });
+      $("area-upload").addEventListener("click", () => $("area-file").click()); // DE-37
+      $("area-file").addEventListener("change", function (e) {
+        if (e.target.files[0]) openArea(e.target.files[0]);
+        e.target.value = ""; // the same file can be chosen again
+      });
+      $("priority-csv").addEventListener("click", () => LunaxExport.saveText("lunax_where_to_act_first.csv", priorityCsv()));
+      $("copy-link").addEventListener("click", function () { // RA-12: share what is on screen
+        const b = $("copy-link"), done = () => { b.textContent = "Link copied"; setTimeout(() => { b.textContent = "Copy link"; }, 2000); };
+        if (navigator.clipboard) navigator.clipboard.writeText(location.href).then(done, () => window.prompt("Copy this link:", location.href));
+        else window.prompt("Copy this link:", location.href);
+      });
+      window.addEventListener("hashchange", () => { if (!state.applyingHash) applyHash(); }); // a link pasted into this tab
       $("cal-mode").addEventListener("change", renderAnalysis); // DE-30: calendar colors
       $("cal-season").addEventListener("change", renderAnalysis);
       // DE-25: the map is resized to the page width first, so its tiles and cells are drawn before the browser prints.
@@ -620,7 +838,7 @@
         Number($("range-from").value), Number($("range-to").value), areaLabel()));
       // RA-11: the Brazil pilot (local only): the place search and the breadcrumb appear when its files can be loaded
       LunaxBrazil.available().then(async function (ok) {
-        if (!ok) return;
+        if (!ok) { applyHash(); return; }
         state.places = await LunaxBrazil.places();
         const list = $("place-list"), byLabel = new Map();
         state.places.forEach(function (x) {
@@ -642,7 +860,8 @@
           if (pl) { openPlace(pl); e.target.value = ""; e.target.blur(); }
         });
         renderCrumbs();
-      });
+        applyHash();
+      }).catch(applyHash);
       applyPack(first);
     } catch (err) {
       $("subtitle").textContent = "The data could not be loaded.";

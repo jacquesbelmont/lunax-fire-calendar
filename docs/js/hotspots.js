@@ -43,5 +43,18 @@
     return { header: out.header, lines: out.lines, files: files.length, bytes: files.reduce((s, f) => s + f.bytes, 0) };
   }
 
-  window.LunaxHotspots = { loadIndex: loadIndex, load: load, filesFor: filesFor };
+  /** DE-37: the rows of the selected cells, one yearly file at a time (nothing kept, so no row limit): fn(header, lines). */
+  async function eachFile(index, cellIds, onProgress, base, fn) {
+    if (typeof DecompressionStream === "undefined") throw new Error("This browser cannot unpack the hotspot files. Use a recent browser.");
+    const cellSet = new Set(cellIds);
+    for (let k = 0; k < index.files.length; k++) {
+      onProgress(k, index.files.length);
+      const out = { header: null, lines: [] };
+      LunaxCalc.filterHotspots(await gunzipText((base || "data/") + "hotspots/" + index.files[k].file), cellSet, "0000-00", "9999-99", out);
+      fn(out.header, out.lines);
+    }
+    onProgress(index.files.length, index.files.length);
+  }
+
+  window.LunaxHotspots = { loadIndex: loadIndex, load: load, filesFor: filesFor, eachFile: eachFile };
 })();

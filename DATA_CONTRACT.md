@@ -108,6 +108,7 @@ The numbers of rows per instrument and year equal `rows_kept` of `method/results
 ### (c) metadata.json
 Path: `docs/data/metadata.json`
 Fields (attribution = exact FIRMS acknowledgment text): area; source; product; version; time period; geographic coverage; method; data cut-off date; FIRMS attribution.
+`method.alpha` (per MODIS configuration, from `method/results/harmonize_model.json`) lets the app harmonize a user's polygon with the area's own model (DE-37).
 Implemented in `pipeline/export.py` with keys: `title`, `area` (`name`, `bbox_west_south_east_north`, `source_countries`), `source` (`name`, `url`, `product`, `files`, `satellites`, `versions_by_satellite`), `period` (`first_month`, `last_month`), `data_cutoff_date`, `archived`, `grid`, `method`, `files`, `attribution` (exact FIRMS acknowledgment), `disclaimer_url`, `ai_use` (statement of AI use, S6).
 
 ## FIRMS API facts
