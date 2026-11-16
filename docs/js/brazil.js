@@ -77,13 +77,13 @@
     removeNeighbors(map);
   }
 
-  /** DE-37: code of the state that holds (lon, lat), or null outside Brazil. */
-  async function stateAt(lon, lat) {
+  /** DE-37: the state code of each [lon, lat] point (null outside Brazil). */
+  async function statesAt(points) {
     statesGeo = statesGeo || await (await fetch(PILOT + "BR/units.geojson")).json();
-    const st = LunaxCalc.parseMunicipalities(statesGeo).find((s) => LunaxCalc.insideParts(lon, lat, s.parts));
-    return st ? st.code : null;
+    const states = LunaxCalc.parseMunicipalities(statesGeo);
+    return points.map(function (pt) { const st = states.find((s) => LunaxCalc.insideParts(pt[0], pt[1], s.parts)); return st ? st.code : null; });
   }
 
   window.LunaxBrazil = { available: available, places: places, stateBase: stateBase, NATIONAL: PILOT + "BR/", showUnits: showUnits, hide: hide,
-    showNeighbors: showNeighbors, hideNeighbors: hideNeighbors, stateAt: stateAt };
+    showNeighbors: showNeighbors, hideNeighbors: hideNeighbors, statesAt: statesAt };
 })();

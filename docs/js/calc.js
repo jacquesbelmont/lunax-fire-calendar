@@ -444,11 +444,12 @@
    */
   function parseMunicipalities(geojson) {
     return geojson.features.map(function (f) {
-      var g = f.geometry, parts = g.type === "Polygon" ? [g.coordinates] : g.coordinates;
-      var xs = [], ys = [];
-      parts.forEach(function (p) { p[0].forEach(function (v) { xs.push(v[0]); ys.push(v[1]); }); });
-      return { code: f.properties.code, name: f.properties.name, parts: parts,
-               bbox: [Math.min.apply(null, xs), Math.min.apply(null, ys), Math.max.apply(null, xs), Math.max.apply(null, ys)] };
+      var g = f.geometry, parts = g.type === "Polygon" ? [g.coordinates] : g.coordinates, b = [Infinity, Infinity, -Infinity, -Infinity];
+      parts.forEach(function (p) { p[0].forEach(function (v) { // a loop: Math.min.apply overflows the stack on very detailed polygons
+        b[0] = Math.min(b[0], v[0]); b[1] = Math.min(b[1], v[1]); b[2] = Math.max(b[2], v[0]); b[3] = Math.max(b[3], v[1]);
+      }); });
+      var pr = f.properties || {};
+      return { code: pr.code, name: pr.name, parts: parts, bbox: b };
     });
   }
 
@@ -674,13 +675,18 @@
    * bbox [w, s, e, n], members (indexes into points)}.
    */
   function fireEvents(points, km, days) {
-    var pts = [], dayOf = function (d) { return Math.round(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / 864e5); };
-    points.forEach(function (p, i) { if (p.sensor === "VIIRS") pts.push({ i: i, p: p, day: dayOf(p.date), y: p.lat * 111.32, x: p.lon * 111.32 * Math.cos(p.lat * Math.PI / 180) }); });
-    var size = km * 1.01, grid = new Map(), parent = pts.map(function (_, k) { return k; });
+    var viirs = points.map(function (p, i) { return { i: i, p: p }; }).filter(function (q) { return q.p.sensor === "VIIRS"; });
+    var cmax = 1e-9, cmin = 1; // loops, not Math.max.apply: a month can hold more points than the call stack takes
+    viirs.forEach(function (q) { var c = Math.cos(q.p.lat * Math.PI / 180); if (c > cmax) cmax = c; if (c < cmin) cmin = c; });
+    var dayOf = function (d) { return Math.round(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / 864e5); };
+    // One x scale (cmax) for every point, so buckets never skew with latitude; the x bucket is widened by cmax / cmin so
+    // that two detections <= km apart always fall in neighbouring buckets. The decision itself is the great-circle distance.
+    var pts = viirs.map(function (q) { return { i: q.i, p: q.p, day: dayOf(q.p.date), y: q.p.lat * 111.32, x: q.p.lon * 111.32 * cmax }; });
+    var sizeY = km * 1.01, sizeX = km * 1.01 * cmax / cmin, grid = new Map(), parent = pts.map(function (_, k) { return k; });
     var find = function (k) { while (parent[k] !== k) { parent[k] = parent[parent[k]]; k = parent[k]; } return k; };
     var key = function (gx, gy, d) { return gx + "," + gy + "," + d; };
     pts.forEach(function (q, k) {
-      q.gx = Math.floor(q.x / size); q.gy = Math.floor(q.y / size);
+      q.gx = Math.floor(q.x / sizeX); q.gy = Math.floor(q.y / sizeY);
       var kk = key(q.gx, q.gy, q.day);
       if (!grid.has(kk)) grid.set(kk, []);
       grid.get(kk).push(k);
@@ -700,11 +706,14 @@
     pts.forEach(function (q, k) { var r = find(k); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(q); });
     return Array.from(groups.values()).map(function (g) {
       g.sort(function (a, b) { return (a.p.date + a.p.time).localeCompare(b.p.date + b.p.time); });
-      var lat = g.map(function (q) { return q.p.lat; }), lon = g.map(function (q) { return q.p.lon; });
-      var bbox = [Math.min.apply(null, lon), Math.min.apply(null, lat), Math.max.apply(null, lon), Math.max.apply(null, lat)];
-      var frp = g.map(function (q) { return Number(q.p.frp); }).filter(function (v) { return !Number.isNaN(v); });
+      var bbox = [Infinity, Infinity, -Infinity, -Infinity], maxFrp = NaN;
+      g.forEach(function (q) {
+        bbox[0] = Math.min(bbox[0], q.p.lon); bbox[1] = Math.min(bbox[1], q.p.lat); bbox[2] = Math.max(bbox[2], q.p.lon); bbox[3] = Math.max(bbox[3], q.p.lat);
+        var f = Number(q.p.frp);
+        if (!Number.isNaN(f) && !(f <= maxFrp)) maxFrp = f;
+      });
       return { n: g.length, first: g[0].p.date, last: g[g.length - 1].p.date, days: g[g.length - 1].day - g[0].day + 1,
-               extentKm: distanceKm(bbox[1], bbox[0], bbox[3], bbox[2]), maxFrp: frp.length ? Math.max.apply(null, frp) : NaN,
+               extentKm: distanceKm(bbox[1], bbox[0], bbox[3], bbox[2]), maxFrp: maxFrp,
                lat: g[0].p.lat, lon: g[0].p.lon, bbox: bbox, members: g.map(function (q) { return q.i; }) };
     }).sort(function (a, b) { return b.n - a.n || a.first.localeCompare(b.first); });
   }
@@ -752,11 +761,14 @@
   function readPolygons(text, name) {
     var polys = [];
     if (/^\s*</.test(text)) { // KML: Polygon > outerBoundaryIs / innerBoundaryIs > LinearRing > coordinates "lon,lat[,alt] ..."
-      var doc = new DOMParser().parseFromString(text, "application/xml");
-      var ring = function (el) { return el.textContent.trim().split(/\s+/).map(function (t) { return t.split(",").slice(0, 2).map(Number); }); };
-      Array.prototype.forEach.call(doc.getElementsByTagName("Polygon"), function (p) {
-        var outer = p.getElementsByTagName("outerBoundaryIs")[0];
-        if (outer) polys.push([ring(outer)].concat(Array.prototype.map.call(p.getElementsByTagName("innerBoundaryIs"), ring)));
+      var doc = new DOMParser().parseFromString(text, "application/xml"), tags = function (el, name) { return el.getElementsByTagNameNS("*", name); };
+      var ring = function (el) { // only the <coordinates> text (a LinearRing may also hold tessellate, altitudeMode...)
+        var c = tags(el, "coordinates")[0];
+        return c ? c.textContent.trim().split(/\s+/).map(function (t) { return t.split(",").slice(0, 2).map(Number); }) : [];
+      };
+      Array.prototype.forEach.call(tags(doc, "Polygon"), function (p) {
+        var outer = tags(p, "outerBoundaryIs")[0];
+        if (outer) polys.push([ring(outer)].concat(Array.prototype.map.call(tags(p, "innerBoundaryIs"), ring)));
       });
     } else {
       var g = JSON.parse(text);
