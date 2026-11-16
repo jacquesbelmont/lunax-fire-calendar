@@ -283,8 +283,9 @@
     const head = ["# " + m.title, "# Area: " + m.area.name, "# Where to act first (method/DECISIONS.md DE-35): expected cells of about 1 km with at least one VIIRS detection in January-October " +
       co.next_year + " per municipality, from the DE-29 forecast (" + co.scales["001"].shown + "); a planning aid, not a certainty",
       "# Data cut-off date: " + m.data_cutoff_date + " (" + m.archived + ")", "# " + m.attribution, "# Disclaimer: " + m.disclaimer_url,
-      "municipality_code,municipality,expected_cells_with_fire,cells_in_top_10pct,share_of_area,cells_in_file"];
-    return head.concat(rows.map((r) => [r.code, '"' + r.name.replace(/"/g, '""') + '"', r.sum.toFixed(3), r.top, Number.isNaN(r.share) ? "" : r.share.toFixed(5), r.cells].join(","))).join("\n") + "\n";
+      "municipality_code,municipality," + (co.scales["001"].shown === "P" ? "cells_in_top_10pct" : "expected_cells_with_fire") + ",share_of_area,cells_in_file"];
+    return head.concat(rows.map((r) => [r.code, '"' + r.name.replace(/"/g, '""') + '"', co.scales["001"].shown === "P" ? r.top : r.sum.toFixed(3),
+      Number.isNaN(r.share) ? "" : r.share.toFixed(5), r.cells].join(","))).join("\n") + "\n";
   }
 
   /** DE-24: hotspot rows inside the selected municipality (same rule as the pipeline); all rows in rectangle mode. */
@@ -304,6 +305,7 @@
     if (state.national) { openPlace({ type: "state", code: code }); return; } // RA-11: a state of the national ranking
     if (!code) { setBbox(state.meta.area.bbox_west_south_east_north.slice()); return; }
     clearCustom();
+    state.selSeq = (state.selSeq || 0) + 1; // a pending upload must not replace this choice
     const k = state.munis.findIndex((x) => x.code === code), b = state.munis[k].bbox, h = state.meta.grid.cell_size_deg / 2;
     state.muni = { k: k, i: state.muniData.cells.findIndex((c) => c.id === code), code: code, name: state.munis[k].name };
     $("muni-select").value = code;
@@ -361,16 +363,25 @@
     const info = $("selection-info");
     try {
       const ft = LunaxCalc.readPolygons(await file.text(), file.name), poly = LunaxCalc.parseMunicipalities({ features: [ft] })[0];
-      const cx = (poly.bbox[0] + poly.bbox[2]) / 2, cy = (poly.bbox[1] + poly.bbox[3]) / 2;
-      if (state.places) { // RA-11 Brazil pilot: open the state that holds the area's centre
-        const code = await LunaxBrazil.stateAt(cx, cy), st = currentState();
+      const sample = (rings) => { const v = rings.flat(), step = Math.max(1, Math.ceil(v.length / 300)); return v.filter((_, i) => i % step === 0); };
+      const vertices = sample(poly.parts.map((p) => p[0])); // up to ~300 vertices of the outer rings
+      if (state.places) { // RA-11 Brazil pilot: open the state that holds most of the polygon's vertices
+        const codes = (await LunaxBrazil.statesAt(vertices)).filter(Boolean), st = currentState(), tally = {};
+        codes.forEach((c) => { tally[c] = (tally[c] || 0) + 1; });
+        const code = Object.keys(tally).sort((a, b) => tally[b] - tally[a])[0];
         if (code && (!st || st.code !== code)) await openPlace({ type: "state", code: code });
       }
-      const seq = state.packSeq, index = await hotspotIndex();
+      const sel = state.selSeq = (state.selSeq || 0) + 1, seq = state.packSeq, where = state.meta.area.name.split(" (")[0];
+      // Only the part inside the open area has data: no overlap means no series (never zeros, rule 6)
+      const inArea = vertices.filter((v) => LunaxCalc.insideParts(v[0], v[1], state.areaParts)).length;
+      if (!inArea && !sample(state.areaParts.map((p) => p[0])).some((v) => LunaxCalc.insideParts(v[0], v[1], poly.parts))) {
+        throw new Error(file.name + " does not overlap " + where + ", so this page has no data for it.");
+      }
+      const index = await hotspotIndex();
       if (!index) return;
       const h = state.meta.grid.cell_size_deg / 2, box = [poly.bbox[0] - h, poly.bbox[1] - h, poly.bbox[2] + h, poly.bbox[3] + h];
       const cellIds = LunaxCalc.selectCells(state.data, box).map((i) => state.data.cells[i].id), months = state.data.months;
-      if (!cellIds.length) throw new Error(file.name + " is outside " + state.meta.area.name.split(" (")[0] + ".");
+      if (!cellIds.length) throw new Error(file.name + " does not overlap " + where + ", so this page has no data for it.");
       const counts = new Map(); // detections inside the polygon per "year_month|sat", counted file by file (nothing kept)
       let n = 0;
       await LunaxHotspots.eachFile(index, cellIds, (d, t) => {
@@ -388,11 +399,11 @@
       });
       state.monthFlags = state.monthFlags && state.monthFlags.base === state.base ? state.monthFlags :
         { base: state.base, map: LunaxCalc.monthFlags(await (await fetch(state.base + "months.csv")).text()) };
-      if (seq !== state.packSeq) return; // another place was opened meanwhile
+      if (seq !== state.packSeq || sel !== state.selSeq) return; // another place, area or upload was chosen meanwhile
       const data = LunaxCalc.harmonizeCounts(counts, state.monthFlags.map, months, state.meta);
       data.provisional = state.data.provisional;
       if (state.muni) { state.muni = null; $("muni-select").value = ""; state.map.highlightMunicipality(null); }
-      state.custom = { name: file.name, poly: poly, data: data, n: n };
+      state.custom = { name: file.name, poly: poly, data: data, n: n, partial: inArea < vertices.length };
       state.bbox = box;
       state.mapMonth = null;
       ["w", "s", "e", "n"].forEach((k, i) => { $("bbox-" + k).value = LunaxCalc.fmt(box[i], 4); });
@@ -505,7 +516,7 @@
     info.textContent = state.custom ? "Your area " + state.custom.name + ": the calendar, fire season, comparison, outlook, fire events, map points " +
       "and hotspot downloads use the " + state.custom.n.toLocaleString("en-US") + " detections inside it (every year and satellite), harmonized in this " +
       "browser with the ratios of " + state.meta.area.name.split(" (")[0] + " (method/DECISIONS.md DE-37). Only the part inside " + state.meta.area.name.split(" (")[0] +
-      " is counted. The file stays in this browser. The map cells around it are 0.25° grid cells, shown for context." :
+      " is counted" + (state.custom.partial ? ", and part of this area lies outside it" : "") + ". The file stays in this browser. The map cells around it are 0.25° grid cells, shown for context." :
       state.national ? "Brazil (pilot, local): the 27 states, each harmonized with its own ratios where they passed the " +
       "DE-31 test. The map colors the states; click one, or search a place, to open it with every feature. Hotspot lists: open a state." :
       state.muni ? "Municipality " + state.muni.name + " (IBGE code " + state.muni.code + "): the calendar, fire " +
@@ -523,7 +534,8 @@
     const q = new URLSearchParams(), st = currentState(), months = state.data.months, m = mapMonthIndex();
     if (state.places) q.set("place", state.national ? "BR" : st ? st.name : "RO");
     const box = state.bbox, area = state.meta.area.bbox_west_south_east_north;
-    if (state.muni) q.set("muni", state.muni.code);
+    if (state.custom) q.set("area", "file"); // the polygon stays on this computer: the link says so instead of a wrong box
+    else if (state.muni) q.set("muni", state.muni.code);
     else if (!state.national && box.some((v, i) => v !== area[i])) q.set("box", box.map((v) => LunaxCalc.fmt(v, 4)).join(","));
     q.set("from", months[Number($("range-from").value)]); q.set("to", months[Number($("range-to").value)]);
     if (m >= 0) q.set("month", state.rows[m].ym);
@@ -545,7 +557,7 @@
       if (idx(q.get("from")) >= 0) $("range-from").value = String(idx(q.get("from")));
       if (idx(q.get("to")) >= 0) $("range-to").value = String(idx(q.get("to")));
       markPeriod();
-      const view = document.querySelector('input[name="map-mode"][value="' + q.get("view") + '"]');
+      const view = [...document.querySelectorAll('input[name="map-mode"]')].find((r) => r.value === q.get("view"));
       if (view && !view.closest("label").hidden) {
         view.checked = true;
         $("map-view-name").textContent = view.closest("label").querySelector("strong").textContent;
@@ -553,8 +565,10 @@
       const box = (q.get("box") || "").split(",").map(Number);
       if (state.munis && state.munis.some((x) => x.code === q.get("muni"))) selectMunicipality(q.get("muni"));
       else if (box.length === 4 && box.every(Number.isFinite)) setBbox(box);
-      else update();
-      if (idx(q.get("month")) >= 0) setFocus(idx(q.get("month")));
+      else setBbox(state.meta.area.bbox_west_south_east_north.slice()); // the whole area, also when pasted into an open page
+      if (state.rows && idx(q.get("month")) >= 0) setFocus(idx(q.get("month")));
+      if (q.get("area") === "file") $("selection-info").textContent = "This link was made with an area uploaded from a file, which stays on " +
+        "the sender's computer: choose \"Your area…\" and the same file to see it. " + $("selection-info").textContent;
     } finally {
       state.applyingHash = false;
       writeHash();
@@ -619,6 +633,7 @@
     if (!(box[0] < box[2] && box[1] < box[3])) { $("selection-info").textContent = "West must be less than east and south less than north."; return; }
     if (state.muni) { state.muni = null; $("muni-select").value = ""; state.map.highlightMunicipality(null); } // back to the rectangle
     clearCustom();
+    state.selSeq = (state.selSeq || 0) + 1; // a pending upload must not replace this choice
     state.bbox = box;
     ["w", "s", "e", "n"].forEach((k, i) => { $("bbox-" + k).value = LunaxCalc.fmt(box[i], 4); });
     update();
@@ -683,6 +698,7 @@
     else credit.innerHTML = credit.dataset.published;
     viewsAvailable();
     state.map.setArea(p.boundary, p.muniGeo);
+    state.areaParts = LunaxCalc.parseMunicipalities(p.boundary).flatMap((m) => m.parts); // DE-37: overlap check of a user's area
     clearCustom();
     renderCrumbs();
     syncNeighbors();
@@ -706,7 +722,7 @@
       if (p.type === "brazil") { await loadPack(LunaxBrazil.NATIONAL); return; }
       const uf = state.places.find((x) => x.type === "state" && x.code === p.code.slice(0, 2)).name, base = LunaxBrazil.stateBase(uf);
       if (state.base !== base) { if (!(await loadPack(base))) return; }
-      else if (p.type === "state" && state.muni) selectMunicipality(""); // the open state again: the whole state
+      else if (p.type === "state" && (state.muni || state.custom)) selectMunicipality(""); // the open state again: the whole state
       if (p.type === "municipality") selectMunicipality(p.code);
     } catch (err) {
       $("selection-info").textContent = String(err.message || err);

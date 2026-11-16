@@ -6,7 +6,7 @@ After the hackathon submission. It changes nothing in the published app or in `d
 
 What each period contains:
 - **2012-02 to 2026-10:** the value is the DE-11 reference VIIRS satellite, observed (Suomi NPP to 2018-03, NOAA-20 from 2018-04). No harmonization fit is needed.
-- **2000-11 to 2012-01:** harmonized with **each state's own ratios** where they passed the DE-15 backcast test (DE-31, PROPOSED): 21 states. In the 6 that failed (AC, RR, CE, PB, PE, DF) these months stay raw MODIS, labelled not harmonized, and the national total is empty for them.
+- **2000-11 to 2012-01:** harmonized with **each state's own ratios** where they passed the DE-15 backcast test (DE-31): 21 states. In the 6 that failed (AC, RR, CE, PB, PE, DF) these months stay raw MODIS, labelled not harmonized, and the national total is empty for them.
 - **2026 (to 2026-10-31, Rondônia's cut-off):** from the FIRMS area API over Brazil's box (DE-33), with Rondônia's dates and SP/NRT split. 186 requests of 5 days used 1,824 transactions (limit 5,000 per 10 minutes) and 170 MB. Near real-time months are provisional (VIIRS from August, MODIS from September). NOAA-21 was not downloaded: no computation uses it.
 
 ## How to evaluate it
@@ -95,11 +95,11 @@ Machine: 20 cores, 15 GB RAM, 24 GB free disk, unchanged after the run.
 - **Hosting:** 0.83 GB for all of Brazil, close to the GitHub Pages site limit (to check). Object storage behind a CDN is the safer choice (provider and limits to check).
 
 ## Decisions the team needs for a national version
-1. **Review DE-31 and DE-32** (PROPOSED). For the 6 states that failed DE-31, ratios per biome (IBGE biomes) are the next option to test.
+1. **The 6 states that failed DE-31** (DE-31 to DE-33 were decided at the merge of #70): ratios per biome (IBGE biomes) are the next option to test.
 2. **Area attribution:** read the neighbouring countries' files for border states. The pilot did it for Bolivia; Paraguay, Argentina, Uruguay, Peru, Colombia, Venezuela, Guyana, Suriname and French Guiana were not downloaded.
 3. **The split:**
    - states for series and municipalities;
    - small tiles × month for points;
    - and whether to publish all satellites' points or only the reference satellite's.
-4. **Hosting** for about 0.7 GB of static files, and the update routine.
-5. **Review DE-33** (PROPOSED), and the update routine for 2026 onward (the area API, as above). NOAA-21 for Brazil is not downloaded.
+4. **Hosting** for about 0.8 GB of static files.
+5. **The update routine** for 2026 onward (the area API, as above). NOAA-21 for Brazil is not downloaded.

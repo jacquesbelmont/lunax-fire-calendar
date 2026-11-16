@@ -61,9 +61,9 @@ Path: `docs/data/recurrence.csv`. Written by `pipeline/export.py` (DE-26), after
 | `years` | int | years | Number of the years in `metadata.json` `recurrence.years` (2012-2025 without 2023) with at least one detection of the DE-11 reference VIIRS satellite |
 | `detections` | int | hotspots | Reference VIIRS detections in the cell in those years |
 
-`metadata.json` key `outlook` (DE-28, PROPOSED): the pre-registered test result copied by `export.py` from method/results/outlook_hindcast.json (`node method/outlook_hindcast.js`): test and fresh years, MALE per candidate, the chosen pre-season and early-season methods. The app computes the outlook of the selected area from its harmonized series with docs/js/calc.js.
+`metadata.json` key `outlook` (DE-28): the pre-registered test result copied by `export.py` from method/results/outlook_hindcast.json (`node method/outlook_hindcast.js`): test and fresh years, MALE per candidate, the chosen pre-season and early-season methods. The app computes the outlook of the selected area from its harmonized series with docs/js/calc.js.
 
-### (h) Where to expect fire next season (DE-29, PROPOSED)
+### (h) Where to expect fire next season (DE-29)
 Paths: `docs/data/cell_outlook_001.csv` (0.01°) and `docs/data/cell_outlook_005.csv` (0.05°), written by `pipeline/export.py` from `pipeline/cell_outlook.py` (data/interim/cell_outlook_2027_<scale>.csv; test in method/results/cell_outlook_hindcast.json).
 - When a model passed the test (`metadata.json` `cell_outlook.scales.<scale>.shown` = `L` or `G`): `cell_id,p` = chance (0-1, 3 decimals) of at least one reference VIIRS detection in January-October of next year; cells with p < 0.01 are not listed.
 - When persistence is shown (`shown` = `P`): `cell_id,last,top` = reference detections in January-October of the last year, and `top` = 1 for the 10 % of the scale's cells ranked first as in the test (last, then neighbours, then cell id); cells with no detection and not in the top are not listed.

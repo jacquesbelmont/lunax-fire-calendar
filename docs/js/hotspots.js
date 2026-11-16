@@ -16,7 +16,13 @@
   }
 
   async function gunzipText(url) {
-    const resp = await fetch(url);
+    let resp = null;
+    for (let attempt = 0; attempt < 3; attempt++) { // a static host can answer 503 for a moment: try twice more before failing
+      if (attempt) await new Promise((r) => setTimeout(r, 1000 * attempt));
+      try { resp = await fetch(url); } catch (e) { resp = null; } // network error
+      if (resp && resp.status < 500) break;
+    }
+    if (!resp) throw new Error("Could not load " + url + " (network error).");
     if (!resp.ok) throw new Error("Could not load " + url + " (" + resp.status + ").");
     const stream = resp.body.pipeThrough(new DecompressionStream("gzip"));
     return new Response(stream).text();
