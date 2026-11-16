@@ -223,6 +223,17 @@
         if (selectedMuni) selectedMuni.bringToFront();
         renderLegend(legend.getContainer(), paint ? paint.legend : null);
       },
+      /** RA-11: the Leaflet map, the legend and the first view, for the Brazil pilot view (docs/js/brazil.js). */
+      leaflet: map,
+      setLegend: function (lg) { renderLegend(legend.getContainer(), lg); },
+      fitHome: function () { map.fitBounds(boundaryLayer.getBounds()); },
+      /** RA-11: another area pack: its boundary and municipal borders replace the current ones, and the map fits it. */
+      setArea: function (boundary, muniGeo) {
+        boundaryLayer.clearLayers().addData(boundary);
+        muniLayer.clearLayers().addData(muniGeo);
+        selectedMuni = null;
+        map.fitBounds(boundaryLayer.getBounds());
+      },
       /** The map view panel (an element of the page) as a control in the top-right corner, under the layers button. */
       addPanel: function (el) {
         const ctl = L.control({ position: "topright" });

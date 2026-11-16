@@ -188,3 +188,33 @@ test("municipalityIndex agrees with municipalities.csv: 2025 counts per municipa
   }));
   assert.ok(compared > 52 * 12 * 3, "compared " + compared);
 });
+
+// RA-11 (local Brazil pilot): municipalityIndex with multipolygons and holes agrees with the pipeline's assignment.
+// Sergipe has both (one municipality in two parts, one with a hole). Skipped without the git-ignored pilot packs.
+const sePack = path.join(root, "data/pilot/brazil/SE");
+test("municipalityIndex (parts and holes) agrees with a Brazil pack: Sergipe 2024 per municipality, month and satellite",
+  { skip: fs.existsSync(path.join(sePack, "hotspots/index.json")) ? false : "no Brazil pilot packs (pipeline/pilot_packs.py)" }, () => {
+  const geo = JSON.parse(fs.readFileSync(path.join(sePack, "municipalities.geojson"), "utf8"));
+  const munis = calc.parseMunicipalities(geo);
+  assert.ok(munis.some((m) => m.parts.length > 1) && munis.some((m) => m.parts.some((p) => p.length > 1)), "Sergipe has parts and holes");
+  const md = calc.parseCellsCsv(fs.readFileSync(path.join(sePack, "municipalities.csv"), "utf8"), 0.25, "area_id");
+  const [head, ...lines] = zlib.gunzipSync(fs.readFileSync(path.join(sePack, "hotspots/hotspots_2024.csv.gz"))).toString("utf8")
+    .trim().split("\n").filter((l) => !l.startsWith("#"));
+  const h = head.split(","), [ilat, ilon, idate, isat] = ["latitude", "longitude", "acq_date", "sat"].map((c) => h.indexOf(c));
+  const counts = new Map();
+  for (const l of lines) {
+    const f = l.split(","), k = munis[calc.municipalityIndex(Number(f[ilon]), Number(f[ilat]), munis)].code + " " + f[idate].slice(0, 7) + " " + f[isat];
+    counts.set(k, (counts.get(k) || 0) + 1);
+  }
+  let compared = 0;
+  md.cells.forEach((c, i) => md.months.forEach((ym, m) => {
+    if (!ym.startsWith("2024")) return;
+    for (const [sat, colName] of Object.entries(SAT_COLUMN)) {
+      const v = md.columns[colName][i * md.nMonths + m];
+      if (Number.isNaN(v)) continue;
+      assert.strictEqual(counts.get(c.id + " " + ym + " " + sat) || 0, v, c.id + " " + ym + " " + sat);
+      compared++;
+    }
+  }));
+  assert.ok(compared > 75 * 12 * 3, "compared " + compared);
+});

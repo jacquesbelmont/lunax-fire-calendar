@@ -9,8 +9,8 @@
   "use strict";
   const MAX_ROWS = 1000000; // above this the browser may run out of memory: ask for a smaller area or period
 
-  async function loadIndex() {
-    const resp = await fetch("data/hotspots/index.json");
+  async function loadIndex(base) {
+    const resp = await fetch((base || "data/") + "hotspots/index.json");
     if (!resp.ok) throw new Error("The hotspot files are not available in this version.");
     return resp.json();
   }
@@ -29,13 +29,13 @@
   }
 
   /** Returns {header, lines, files, bytes}; throws if more than MAX_ROWS rows match. onProgress(done, total). */
-  async function load(index, cellIds, fromYm, toYm, onProgress) {
+  async function load(index, cellIds, fromYm, toYm, onProgress, base) {
     if (typeof DecompressionStream === "undefined") throw new Error("This browser cannot unpack the hotspot files. Use a recent browser.");
     const files = filesFor(index, fromYm, toYm), cellSet = new Set(cellIds), out = { header: null, lines: [] };
     let done = 0;
     for (const f of files) {
       onProgress(done, files.length);
-      LunaxCalc.filterHotspots(await gunzipText("data/hotspots/" + f.file), cellSet, fromYm, toYm, out);
+      LunaxCalc.filterHotspots(await gunzipText((base || "data/") + "hotspots/" + f.file), cellSet, fromYm, toYm, out);
       if (out.lines.length > MAX_ROWS) throw new Error("More than " + MAX_ROWS.toLocaleString("en-US") + " hotspots match. Choose a smaller area or period.");
       done++;
     }

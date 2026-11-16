@@ -1,0 +1,897 @@
+{
+ "decision": "method/DECISIONS.md DE-32 (PROPOSED)",
+ "note": "Rondonia's published layer is DE-26 (recurrence_hindcast.json); the RO row here is the pilot's own, for comparison",
+ "states": {
+  "RO": {
+   "k": 7438,
+   "cells_with_any_detection_train": 74418,
+   "area_share": 0.0999,
+   "pooled": {
+    "detections": 186020,
+    "recurrence": 0.1184,
+    "persistence": 0.2807
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 85420,
+     "recurrence": 0.1607,
+     "persistence": 0.3028
+    },
+    "2024": {
+     "detections": 87422,
+     "recurrence": 0.0743,
+     "persistence": 0.2605
+    },
+    "2025": {
+     "detections": 13178,
+     "recurrence": 0.1363,
+     "persistence": 0.2713
+    }
+   },
+   "fresh_2026": {
+    "detections": 9124,
+    "recurrence": 0.1083,
+    "persistence": 0.247,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "AC": {
+   "k": 8119,
+   "cells_with_any_detection_train": 37680,
+   "area_share": 0.2155,
+   "pooled": {
+    "detections": 103569,
+    "recurrence": 0.3278,
+    "persistence": 0.3478
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 51957,
+     "recurrence": 0.3599,
+     "persistence": 0.3785
+    },
+    "2024": {
+     "detections": 38777,
+     "recurrence": 0.3017,
+     "persistence": 0.3246
+    },
+    "2025": {
+     "detections": 12835,
+     "recurrence": 0.2764,
+     "persistence": 0.294
+    }
+   },
+   "fresh_2026": {
+    "detections": 16065,
+    "recurrence": 0.2806,
+    "persistence": 0.2776,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "AM": {
+   "k": 9453,
+   "cells_with_any_detection_train": 80528,
+   "area_share": 0.1174,
+   "pooled": {
+    "detections": 337558,
+    "recurrence": 0.1341,
+    "persistence": 0.2875
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 128056,
+     "recurrence": 0.1705,
+     "persistence": 0.3235
+    },
+    "2024": {
+     "detections": 178609,
+     "recurrence": 0.1086,
+     "persistence": 0.2815
+    },
+    "2025": {
+     "detections": 30893,
+     "recurrence": 0.1311,
+     "persistence": 0.1726
+    }
+   },
+   "fresh_2026": {
+    "detections": 65151,
+    "recurrence": 0.0943,
+    "persistence": 0.1476,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "RR": {
+   "k": 942,
+   "cells_with_any_detection_train": 49432,
+   "area_share": 0.0191,
+   "pooled": {
+    "detections": 72812,
+    "recurrence": 0.0287,
+    "persistence": 0.0212
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 9305,
+     "recurrence": 0.0388,
+     "persistence": 0.0385
+    },
+    "2024": {
+     "detections": 52229,
+     "recurrence": 0.0259,
+     "persistence": 0.0161
+    },
+    "2025": {
+     "detections": 11278,
+     "recurrence": 0.0333,
+     "persistence": 0.0305
+    }
+   },
+   "fresh_2026": {
+    "detections": 17089,
+    "recurrence": 0.0223,
+    "persistence": 0.0225,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "PA": {
+   "k": 28364,
+   "cells_with_any_detection_train": 307855,
+   "area_share": 0.0921,
+   "pooled": {
+    "detections": 834302,
+    "recurrence": 0.1232,
+    "persistence": 0.1719
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 308490,
+     "recurrence": 0.1505,
+     "persistence": 0.2117
+    },
+    "2024": {
+     "detections": 445618,
+     "recurrence": 0.1005,
+     "persistence": 0.1513
+    },
+    "2025": {
+     "detections": 80194,
+     "recurrence": 0.1444,
+     "persistence": 0.1334
+    }
+   },
+   "fresh_2026": {
+    "detections": 156372,
+    "recurrence": 0.1108,
+    "persistence": 0.143,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "AP": {
+   "k": 1234,
+   "cells_with_any_detection_train": 19645,
+   "area_share": 0.0628,
+   "pooled": {
+    "detections": 21605,
+    "recurrence": 0.1265,
+    "persistence": 0.0923
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 5132,
+     "recurrence": 0.1608,
+     "persistence": 0.1146
+    },
+    "2024": {
+     "detections": 11530,
+     "recurrence": 0.111,
+     "persistence": 0.0739
+    },
+    "2025": {
+     "detections": 4943,
+     "recurrence": 0.127,
+     "persistence": 0.1123
+    }
+   },
+   "fresh_2026": {
+    "detections": 8188,
+    "recurrence": 0.128,
+    "persistence": 0.0835,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "TO": {
+   "k": 9772,
+   "cells_with_any_detection_train": 171522,
+   "area_share": 0.057,
+   "pooled": {
+    "detections": 329715,
+    "recurrence": 0.1052,
+    "persistence": 0.0825
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 103494,
+     "recurrence": 0.1003,
+     "persistence": 0.0499
+    },
+    "2024": {
+     "detections": 129170,
+     "recurrence": 0.1103,
+     "persistence": 0.0999
+    },
+    "2025": {
+     "detections": 97051,
+     "recurrence": 0.1037,
+     "persistence": 0.094
+    }
+   },
+   "fresh_2026": {
+    "detections": 62322,
+    "recurrence": 0.124,
+    "persistence": 0.1072,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "MA": {
+   "k": 21871,
+   "cells_with_any_detection_train": 213523,
+   "area_share": 0.1024,
+   "pooled": {
+    "detections": 403854,
+    "recurrence": 0.1974,
+    "persistence": 0.1438
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 136990,
+     "recurrence": 0.1877,
+     "persistence": 0.1429
+    },
+    "2024": {
+     "detections": 135005,
+     "recurrence": 0.1946,
+     "persistence": 0.1326
+    },
+    "2025": {
+     "detections": 131859,
+     "recurrence": 0.2103,
+     "persistence": 0.1563
+    }
+   },
+   "fresh_2026": {
+    "detections": 54760,
+    "recurrence": 0.2156,
+    "persistence": 0.1467,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "PI": {
+   "k": 7320,
+   "cells_with_any_detection_train": 125490,
+   "area_share": 0.0583,
+   "pooled": {
+    "detections": 245712,
+    "recurrence": 0.1222,
+    "persistence": 0.0618
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 84221,
+     "recurrence": 0.1115,
+     "persistence": 0.024
+    },
+    "2024": {
+     "detections": 70959,
+     "recurrence": 0.1293,
+     "persistence": 0.0841
+    },
+    "2025": {
+     "detections": 90532,
+     "recurrence": 0.1265,
+     "persistence": 0.0794
+    }
+   },
+   "fresh_2026": {
+    "detections": 41178,
+    "recurrence": 0.1603,
+    "persistence": 0.0856,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "CE": {
+   "k": 1702,
+   "cells_with_any_detection_train": 59199,
+   "area_share": 0.0288,
+   "pooled": {
+    "detections": 68553,
+    "recurrence": 0.067,
+    "persistence": 0.0439
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 20809,
+     "recurrence": 0.0714,
+     "persistence": 0.0472
+    },
+    "2024": {
+     "detections": 22233,
+     "recurrence": 0.0656,
+     "persistence": 0.0504
+    },
+    "2025": {
+     "detections": 25511,
+     "recurrence": 0.0647,
+     "persistence": 0.0356
+    }
+   },
+   "fresh_2026": {
+    "detections": 10463,
+    "recurrence": 0.0942,
+    "persistence": 0.0535,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "RN": {
+   "k": 175,
+   "cells_with_any_detection_train": 12697,
+   "area_share": 0.0138,
+   "pooled": {
+    "detections": 12277,
+    "recurrence": 0.0333,
+    "persistence": 0.0242
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 3401,
+     "recurrence": 0.0365,
+     "persistence": 0.0176
+    },
+    "2024": {
+     "detections": 4405,
+     "recurrence": 0.0334,
+     "persistence": 0.0325
+    },
+    "2025": {
+     "detections": 4471,
+     "recurrence": 0.0309,
+     "persistence": 0.021
+    }
+   },
+   "fresh_2026": {
+    "detections": 2601,
+    "recurrence": 0.0215,
+    "persistence": 0.0423,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "PB": {
+   "k": 197,
+   "cells_with_any_detection_train": 18863,
+   "area_share": 0.0104,
+   "pooled": {
+    "detections": 17464,
+    "recurrence": 0.0193,
+    "persistence": 0.0148
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 5888,
+     "recurrence": 0.0238,
+     "persistence": 0.0114
+    },
+    "2024": {
+     "detections": 6182,
+     "recurrence": 0.0184,
+     "persistence": 0.0157
+    },
+    "2025": {
+     "detections": 5394,
+     "recurrence": 0.0154,
+     "persistence": 0.0176
+    }
+   },
+   "fresh_2026": {
+    "detections": 2558,
+    "recurrence": 0.0227,
+    "persistence": 0.0235,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "PE": {
+   "k": 231,
+   "cells_with_any_detection_train": 30724,
+   "area_share": 0.0075,
+   "pooled": {
+    "detections": 31012,
+    "recurrence": 0.0139,
+    "persistence": 0.012
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 8375,
+     "recurrence": 0.0161,
+     "persistence": 0.0152
+    },
+    "2024": {
+     "detections": 11453,
+     "recurrence": 0.0132,
+     "persistence": 0.011
+    },
+    "2025": {
+     "detections": 11184,
+     "recurrence": 0.0129,
+     "persistence": 0.0107
+    }
+   },
+   "fresh_2026": {
+    "detections": 5386,
+    "recurrence": 0.0117,
+    "persistence": 0.0085,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "AL": {
+   "k": 105,
+   "cells_with_any_detection_train": 10425,
+   "area_share": 0.0101,
+   "pooled": {
+    "detections": 6619,
+    "recurrence": 0.0216,
+    "persistence": 0.0133
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 1593,
+     "recurrence": 0.0257,
+     "persistence": 0.0119
+    },
+    "2024": {
+     "detections": 2675,
+     "recurrence": 0.0243,
+     "persistence": 0.0131
+    },
+    "2025": {
+     "detections": 2351,
+     "recurrence": 0.0157,
+     "persistence": 0.0145
+    }
+   },
+   "fresh_2026": {
+    "detections": 1833,
+    "recurrence": 0.0202,
+    "persistence": 0.0087,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "SE": {
+   "k": 56,
+   "cells_with_any_detection_train": 6974,
+   "area_share": 0.008,
+   "pooled": {
+    "detections": 4673,
+    "recurrence": 0.0152,
+    "persistence": 0.0111
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 1305,
+     "recurrence": 0.0138,
+     "persistence": 0.01
+    },
+    "2024": {
+     "detections": 1822,
+     "recurrence": 0.0132,
+     "persistence": 0.0066
+    },
+    "2025": {
+     "detections": 1546,
+     "recurrence": 0.0188,
+     "persistence": 0.0175
+    }
+   },
+   "fresh_2026": {
+    "detections": 1122,
+    "recurrence": 0.0267,
+    "persistence": 0.0125,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "BA": {
+   "k": 1379,
+   "cells_with_any_detection_train": 182259,
+   "area_share": 0.0076,
+   "pooled": {
+    "detections": 203445,
+    "recurrence": 0.0153,
+    "persistence": 0.0127
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 72326,
+     "recurrence": 0.0146,
+     "persistence": 0.0067
+    },
+    "2024": {
+     "detections": 57329,
+     "recurrence": 0.0162,
+     "persistence": 0.0066
+    },
+    "2025": {
+     "detections": 73790,
+     "recurrence": 0.0153,
+     "persistence": 0.0234
+    }
+   },
+   "fresh_2026": {
+    "detections": 53886,
+    "recurrence": 0.0191,
+    "persistence": 0.0237,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "MG": {
+   "k": 1263,
+   "cells_with_any_detection_train": 194628,
+   "area_share": 0.0065,
+   "pooled": {
+    "detections": 182374,
+    "recurrence": 0.0206,
+    "persistence": 0.0098
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 54816,
+     "recurrence": 0.0221,
+     "persistence": 0.0078
+    },
+    "2024": {
+     "detections": 73277,
+     "recurrence": 0.0206,
+     "persistence": 0.0088
+    },
+    "2025": {
+     "detections": 54281,
+     "recurrence": 0.0192,
+     "persistence": 0.0132
+    }
+   },
+   "fresh_2026": {
+    "detections": 27496,
+    "recurrence": 0.0468,
+    "persistence": 0.0137,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "ES": {
+   "k": 52,
+   "cells_with_any_detection_train": 12715,
+   "area_share": 0.0041,
+   "pooled": {
+    "detections": 10431,
+    "recurrence": 0.0148,
+    "persistence": 0.0104
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 3799,
+     "recurrence": 0.0161,
+     "persistence": 0.0142
+    },
+    "2024": {
+     "detections": 4432,
+     "recurrence": 0.0131,
+     "persistence": 0.0086
+    },
+    "2025": {
+     "detections": 2200,
+     "recurrence": 0.0159,
+     "persistence": 0.0077
+    }
+   },
+   "fresh_2026": {
+    "detections": 2738,
+    "recurrence": 0.1709,
+    "persistence": 0.0073,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "RJ": {
+   "k": 396,
+   "cells_with_any_detection_train": 14877,
+   "area_share": 0.0266,
+   "pooled": {
+    "detections": 15259,
+    "recurrence": 0.1066,
+    "persistence": 0.0708
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 4543,
+     "recurrence": 0.1098,
+     "persistence": 0.0656
+    },
+    "2024": {
+     "detections": 7391,
+     "recurrence": 0.1005,
+     "persistence": 0.067
+    },
+    "2025": {
+     "detections": 3325,
+     "recurrence": 0.1158,
+     "persistence": 0.0866
+    }
+   },
+   "fresh_2026": {
+    "detections": 2250,
+    "recurrence": 0.228,
+    "persistence": 0.1782,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "SP": {
+   "k": 767,
+   "cells_with_any_detection_train": 79826,
+   "area_share": 0.0096,
+   "pooled": {
+    "detections": 78206,
+    "recurrence": 0.03,
+    "persistence": 0.0239
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 14155,
+     "recurrence": 0.0449,
+     "persistence": 0.0307
+    },
+    "2024": {
+     "detections": 48381,
+     "recurrence": 0.0215,
+     "persistence": 0.025
+    },
+    "2025": {
+     "detections": 15670,
+     "recurrence": 0.043,
+     "persistence": 0.0144
+    }
+   },
+   "fresh_2026": {
+    "detections": 5339,
+    "recurrence": 0.0785,
+    "persistence": 0.0337,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "PR": {
+   "k": 805,
+   "cells_with_any_detection_train": 56597,
+   "area_share": 0.0142,
+   "pooled": {
+    "detections": 31004,
+    "recurrence": 0.0367,
+    "persistence": 0.034
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 8479,
+     "recurrence": 0.0466,
+     "persistence": 0.0439
+    },
+    "2024": {
+     "detections": 14977,
+     "recurrence": 0.0312,
+     "persistence": 0.0357
+    },
+    "2025": {
+     "detections": 7548,
+     "recurrence": 0.0366,
+     "persistence": 0.0197
+    }
+   },
+   "fresh_2026": {
+    "detections": 3383,
+    "recurrence": 0.0503,
+    "persistence": 0.0269,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "SC": {
+   "k": 358,
+   "cells_with_any_detection_train": 34222,
+   "area_share": 0.0105,
+   "pooled": {
+    "detections": 19227,
+    "recurrence": 0.0314,
+    "persistence": 0.0208
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 5802,
+     "recurrence": 0.0248,
+     "persistence": 0.0212
+    },
+    "2024": {
+     "detections": 7213,
+     "recurrence": 0.0373,
+     "persistence": 0.0227
+    },
+    "2025": {
+     "detections": 6212,
+     "recurrence": 0.0306,
+     "persistence": 0.0182
+    }
+   },
+   "fresh_2026": {
+    "detections": 4145,
+    "recurrence": 0.0232,
+    "persistence": 0.0135,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "RS": {
+   "k": 785,
+   "cells_with_any_detection_train": 55396,
+   "area_share": 0.0142,
+   "pooled": {
+    "detections": 26960,
+    "recurrence": 0.0752,
+    "persistence": 0.0313
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 10480,
+     "recurrence": 0.0511,
+     "persistence": 0.0318
+    },
+    "2024": {
+     "detections": 7955,
+     "recurrence": 0.1079,
+     "persistence": 0.0329
+    },
+    "2025": {
+     "detections": 8525,
+     "recurrence": 0.0744,
+     "persistence": 0.0291
+    }
+   },
+   "fresh_2026": {
+    "detections": 4782,
+    "recurrence": 0.0747,
+    "persistence": 0.0293,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "MS": {
+   "k": 1523,
+   "cells_with_any_detection_train": 87594,
+   "area_share": 0.0174,
+   "pooled": {
+    "detections": 135678,
+    "recurrence": 0.0338,
+    "persistence": 0.0335
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 20974,
+     "recurrence": 0.0256,
+     "persistence": 0.0476
+    },
+    "2024": {
+     "detections": 101108,
+     "recurrence": 0.0332,
+     "persistence": 0.0338
+    },
+    "2025": {
+     "detections": 13596,
+     "recurrence": 0.0507,
+     "persistence": 0.0099
+    }
+   },
+   "fresh_2026": {
+    "detections": 7543,
+    "recurrence": 0.0654,
+    "persistence": 0.0194,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "MT": {
+   "k": 13020,
+   "cells_with_any_detection_train": 296448,
+   "area_share": 0.0439,
+   "pooled": {
+    "detections": 721386,
+    "recurrence": 0.0732,
+    "persistence": 0.0862
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 237781,
+     "recurrence": 0.0982,
+     "persistence": 0.114
+    },
+    "2024": {
+     "detections": 403810,
+     "recurrence": 0.0525,
+     "persistence": 0.0735
+    },
+    "2025": {
+     "detections": 79795,
+     "recurrence": 0.1032,
+     "persistence": 0.0676
+    }
+   },
+   "fresh_2026": {
+    "detections": 74249,
+    "recurrence": 0.1357,
+    "persistence": 0.0902,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "GO": {
+   "k": 1760,
+   "cells_with_any_detection_train": 120298,
+   "area_share": 0.0146,
+   "pooled": {
+    "detections": 135244,
+    "recurrence": 0.0389,
+    "persistence": 0.0206
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 45967,
+     "recurrence": 0.028,
+     "persistence": 0.0084
+    },
+    "2024": {
+     "detections": 41024,
+     "recurrence": 0.0379,
+     "persistence": 0.0185
+    },
+    "2025": {
+     "detections": 48253,
+     "recurrence": 0.0501,
+     "persistence": 0.0342
+    }
+   },
+   "fresh_2026": {
+    "detections": 17894,
+    "recurrence": 0.0605,
+    "persistence": 0.0184,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  },
+  "DF": {
+   "k": 134,
+   "cells_with_any_detection_train": 2875,
+   "area_share": 0.0466,
+   "pooled": {
+    "detections": 4520,
+    "recurrence": 0.0881,
+    "persistence": 0.0573
+   },
+   "by_test_year": {
+    "2022": {
+     "detections": 1839,
+     "recurrence": 0.0696,
+     "persistence": 0.0321
+    },
+    "2024": {
+     "detections": 1547,
+     "recurrence": 0.095,
+     "persistence": 0.0633
+    },
+    "2025": {
+     "detections": 1134,
+     "recurrence": 0.1085,
+     "persistence": 0.0899
+    }
+   },
+   "fresh_2026": {
+    "detections": 758,
+    "recurrence": 0.1042,
+    "persistence": 0.0594,
+    "note": "January to October 2026, provisional near real-time data from August"
+   }
+  }
+ }
+}

@@ -64,6 +64,7 @@ Data: NASA FIRMS (https://www.earthdata.nasa.gov/data/tools/firms). No NASA logo
    python3 -m http.server 8000 --directory docs
    ```
    then open http://localhost:8000 (opening `index.html` via `file://` will not load data).
+5. Brazil pilot (local only, after the submission): every state with Rondônia's features, a place search and a breadcrumb. See [method/PILOT_BRAZIL.md](method/PILOT_BRAZIL.md).
 
 ## AI use
 Claude and Claude Code (Anthropic) assisted with code, comparisons of method options, analysis and documentation. Codex (OpenAI) reviewed the app and helped revise the app, tests and submission materials. [AI_USE.md](AI_USE.md) records the work. The `ai_use` field in `docs/data/metadata.json` describes the assistance used when producing the data. The deck uses real app screenshots and pipeline figures.

@@ -233,3 +233,57 @@ class CellOutlookTest(unittest.TestCase):
             best = "G" if s["pooled"]["log_loss"]["G"] <= 0.98 * s["pooled"]["log_loss"]["L"] else "L"
             ok = all(d["capture"][best] > d["capture"]["P"] and d["log_loss"][best] < d["log_loss"]["B0"] for d in (s["pooled"], s["fresh"]))
             self.assertEqual((s["best_model"], s["shown"]), (best, best if ok else "P"))
+class BrazilPilotTest(unittest.TestCase):
+    """RA-11 pilot: the two-level assignment puts Rondonia's detections in Rondonia (skipped without the pilot data)."""
+
+    def test_rondonia_points_in_state_11(self):
+        pilot = ROOT / "data" / "pilot" / "brazil" / "states.geojson"
+        src = ROOT / "data" / "interim" / "clean" / "viirs-jpss1_2024.csv.gz"
+        if not (pilot.exists() and src.exists()):
+            self.skipTest("pilot data or cleaned files not present")
+        import pilot_brazil  # noqa: E402
+        states = pilot_brazil.load_areas(pilot)
+        d = pd.read_csv(src, usecols=["latitude", "longitude", "acq_date", "country"])
+        d = d[d["acq_date"].eq("2024-09-01") & d["country"].eq("Brazil")]
+        k = pilot_brazil.assign(d["longitude"].to_numpy(), d["latitude"].to_numpy(), states)
+        codes = [states[i]["code"] if i >= 0 else None for i in k]
+        self.assertGreater(len(d), 100)
+        self.assertGreaterEqual(codes.count("11") / len(codes), 0.99)  # boundary detail differs slightly (maxima vs intermediaria)
+
+
+class StateResultsTest(unittest.TestCase):
+    """RA-11: DE-31 decisions follow the rule fixed before the fits; DE-32 reproduces Rondonia's DE-26 hindcast."""
+
+    def test_de31_decisions_follow_the_rule(self):
+        out = json.loads((ROOT / "method" / "results" / "state_ratios.json").read_text())
+        rule = out["rule"]
+        self.assertEqual(rule, {"max_abs_bias": 0.10, "max_mdape": 0.25, "min_months": 12})
+        self.assertEqual(len(out["states"]), 27)
+        for uf, s in out["states"].items():
+            ok = (s["months_with_detections"] >= rule["min_months"] and abs(s["relative_bias_total"]) <= rule["max_abs_bias"]
+                  and s["mdape_monthly_area"] <= rule["max_mdape"])
+            self.assertEqual(s["passed"], ok, uf)
+            self.assertEqual(uf in out["passed"], ok, uf)
+        self.assertLess(out["rondonia_vs_published_TA_max_relative_difference"], 0.02)
+
+    def test_de32_rondonia_matches_de26(self):
+        pub = json.loads((ROOT / "method" / "results" / "recurrence_hindcast.json").read_text())
+        ro = json.loads((ROOT / "method" / "results" / "state_recurrence.json").read_text())["states"]["RO"]
+        self.assertLess(abs(ro["k"] / pub["k"] - 1), 0.01)
+        for key in ("recurrence", "persistence"):
+            self.assertAlmostEqual(ro["pooled"][key], pub["pooled"][key], delta=0.002)
+
+    def test_de33_choices_follow_the_rules(self):
+        path = ROOT / "method" / "results" / "state_outlook.json"
+        if not path.exists():
+            self.skipTest("no per-state forecasts yet (pipeline/pilot_packs.py)")
+        for uf, o in json.loads(path.read_text())["states"].items():
+            for moment, cands in (("pre_season", ["P", "P3"]), ("early_season", ["R"])):  # DE-28 rule, as outlook_hindcast.js
+                d = o["outlook"][moment]
+                best = min(cands, key=lambda c: d["test"]["male"][c])
+                ok = d["test"]["male"][best] <= 0.9 * d["test"]["male"]["C"] and d["fresh"]["male"][best] < d["fresh"]["male"]["C"]
+                self.assertEqual((d["best_candidate"], d["chosen"]), (best, best if ok else "C"), f"{uf} {moment}")
+            for key, s in o.get("cell_outlook", {}).get("scales", {}).items():  # DE-29 rule, as CellOutlookTest
+                best = "G" if s["pooled"]["log_loss"]["G"] <= 0.98 * s["pooled"]["log_loss"]["L"] else "L"
+                ok = all(d["capture"][best] > d["capture"]["P"] and d["log_loss"][best] < d["log_loss"]["B0"] for d in (s["pooled"], s["fresh"]))
+                self.assertEqual((s["best_model"], s["shown"]), (best, best if ok else "P"), f"{uf} {key}")

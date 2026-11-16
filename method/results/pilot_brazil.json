@@ -1,0 +1,1103 @@
+{
+ "issue": "RA-11 (#66)",
+ "years": [
+  2000,
+  2026
+ ],
+ "sources": [
+  "modis",
+  "viirs-snpp",
+  "viirs-jpss1"
+ ],
+ "countries_read": [
+  "Brazil",
+  "Bolivia"
+ ],
+ "note": "viirs_eq = DE-11 reference VIIRS from 2012-02 (observed), empty before (raw MODIS here; pilot_packs.py applies the DE-31 state ratios); 2026 from the FIRMS area API over Brazil's box, to 2026-10-31 (DE-33)",
+ "rows": {
+  "modis 2000": {
+   "raw": 16445,
+   "clean": 16323,
+   "outside_states": 813,
+   "inside_from_bolivia_file": 1
+  },
+  "modis 2001": {
+   "raw": 159853,
+   "clean": 158641,
+   "outside_states": 14233,
+   "inside_from_bolivia_file": 22
+  },
+  "modis 2002": {
+   "raw": 589726,
+   "clean": 582205,
+   "outside_states": 65586,
+   "inside_from_bolivia_file": 238
+  },
+  "modis 2003": {
+   "raw": 602121,
+   "clean": 586594,
+   "outside_states": 53865,
+   "inside_from_bolivia_file": 165
+  },
+  "modis 2004": {
+   "raw": 737891,
+   "clean": 711294,
+   "outside_states": 103528,
+   "inside_from_bolivia_file": 182
+  },
+  "modis 2005": {
+   "raw": 720731,
+   "clean": 713893,
+   "outside_states": 88917,
+   "inside_from_bolivia_file": 361
+  },
+  "modis 2006": {
+   "raw": 477811,
+   "clean": 474130,
+   "outside_states": 70951,
+   "inside_from_bolivia_file": 108
+  },
+  "modis 2007": {
+   "raw": 805835,
+   "clean": 801185,
+   "outside_states": 105571,
+   "inside_from_bolivia_file": 137
+  },
+  "modis 2008": {
+   "raw": 425861,
+   "clean": 424074,
+   "outside_states": 70930,
+   "inside_from_bolivia_file": 78
+  },
+  "modis 2009": {
+   "raw": 293813,
+   "clean": 293277,
+   "outside_states": 43488,
+   "inside_from_bolivia_file": 57
+  },
+  "modis 2010": {
+   "raw": 734810,
+   "clean": 733785,
+   "outside_states": 151357,
+   "inside_from_bolivia_file": 126
+  },
+  "modis 2011": {
+   "raw": 334625,
+   "clean": 333080,
+   "outside_states": 63143,
+   "inside_from_bolivia_file": 44
+  },
+  "modis 2012": {
+   "raw": 443911,
+   "clean": 442226,
+   "outside_states": 41877,
+   "inside_from_bolivia_file": 51
+  },
+  "viirs-snpp 2012": {
+   "raw": 1788911,
+   "clean": 1770734,
+   "outside_states": 159829,
+   "inside_from_bolivia_file": 242
+  },
+  "modis 2013": {
+   "raw": 250151,
+   "clean": 248817,
+   "outside_states": 29812,
+   "inside_from_bolivia_file": 62
+  },
+  "viirs-snpp 2013": {
+   "raw": 982694,
+   "clean": 967304,
+   "outside_states": 115668,
+   "inside_from_bolivia_file": 182
+  },
+  "modis 2014": {
+   "raw": 340105,
+   "clean": 337446,
+   "outside_states": 28816,
+   "inside_from_bolivia_file": 37
+  },
+  "viirs-snpp 2014": {
+   "raw": 1346894,
+   "clean": 1328049,
+   "outside_states": 101756,
+   "inside_from_bolivia_file": 142
+  },
+  "modis 2015": {
+   "raw": 460828,
+   "clean": 458127,
+   "outside_states": 41048,
+   "inside_from_bolivia_file": 93
+  },
+  "viirs-snpp 2015": {
+   "raw": 1865151,
+   "clean": 1846625,
+   "outside_states": 146446,
+   "inside_from_bolivia_file": 325
+  },
+  "modis 2016": {
+   "raw": 402733,
+   "clean": 400848,
+   "outside_states": 68460,
+   "inside_from_bolivia_file": 89
+  },
+  "viirs-snpp 2016": {
+   "raw": 1551869,
+   "clean": 1533647,
+   "outside_states": 247985,
+   "inside_from_bolivia_file": 401
+  },
+  "modis 2017": {
+   "raw": 447032,
+   "clean": 444783,
+   "outside_states": 57849,
+   "inside_from_bolivia_file": 68
+  },
+  "viirs-snpp 2017": {
+   "raw": 1743234,
+   "clean": 1724222,
+   "outside_states": 199754,
+   "inside_from_bolivia_file": 244
+  },
+  "modis 2018": {
+   "raw": 281773,
+   "clean": 274985,
+   "outside_states": 49429,
+   "inside_from_bolivia_file": 47
+  },
+  "viirs-snpp 2018": {
+   "raw": 1089792,
+   "clean": 1072637,
+   "outside_states": 173978,
+   "inside_from_bolivia_file": 166
+  },
+  "viirs-jpss1 2018": {
+   "raw": 1013635,
+   "clean": 999397,
+   "outside_states": 163362,
+   "inside_from_bolivia_file": 149
+  },
+  "modis 2019": {
+   "raw": 465440,
+   "clean": 460111,
+   "outside_states": 90650,
+   "inside_from_bolivia_file": 88
+  },
+  "viirs-snpp 2019": {
+   "raw": 1839100,
+   "clean": 1821063,
+   "outside_states": 379825,
+   "inside_from_bolivia_file": 357
+  },
+  "viirs-jpss1 2019": {
+   "raw": 1816783,
+   "clean": 1798475,
+   "outside_states": 382443,
+   "inside_from_bolivia_file": 345
+  },
+  "modis 2020": {
+   "raw": 484434,
+   "clean": 479184,
+   "outside_states": 79000,
+   "inside_from_bolivia_file": 203
+  },
+  "viirs-snpp 2020": {
+   "raw": 1975108,
+   "clean": 1957326,
+   "outside_states": 308930,
+   "inside_from_bolivia_file": 929
+  },
+  "viirs-jpss1 2020": {
+   "raw": 1947318,
+   "clean": 1929699,
+   "outside_states": 313585,
+   "inside_from_bolivia_file": 911
+  },
+  "modis 2021": {
+   "raw": 417296,
+   "clean": 412201,
+   "outside_states": 76670,
+   "inside_from_bolivia_file": 85
+  },
+  "viirs-snpp 2021": {
+   "raw": 1636230,
+   "clean": 1617365,
+   "outside_states": 303201,
+   "inside_from_bolivia_file": 426
+  },
+  "viirs-jpss1 2021": {
+   "raw": 1598543,
+   "clean": 1579744,
+   "outside_states": 294042,
+   "inside_from_bolivia_file": 473
+  },
+  "modis 2022": {
+   "raw": 453572,
+   "clean": 447610,
+   "outside_states": 90085,
+   "inside_from_bolivia_file": 88
+  },
+  "viirs-snpp 2022": {
+   "raw": 1735373,
+   "clean": 1718299,
+   "outside_states": 329524,
+   "inside_from_bolivia_file": 413
+  },
+  "viirs-jpss1 2022": {
+   "raw": 1787289,
+   "clean": 1769133,
+   "outside_states": 333736,
+   "inside_from_bolivia_file": 446
+  },
+  "modis 2023": {
+   "raw": 457562,
+   "clean": 452141,
+   "outside_states": 99093,
+   "inside_from_bolivia_file": 186
+  },
+  "viirs-snpp 2023": {
+   "raw": 1701693,
+   "clean": 1684302,
+   "outside_states": 355676,
+   "inside_from_bolivia_file": 700
+  },
+  "viirs-jpss1 2023": {
+   "raw": 1666492,
+   "clean": 1648367,
+   "outside_states": 353129,
+   "inside_from_bolivia_file": 651
+  },
+  "modis 2024": {
+   "raw": 741711,
+   "clean": 734477,
+   "outside_states": 213401,
+   "inside_from_bolivia_file": 232
+  },
+  "viirs-snpp 2024": {
+   "raw": 2819680,
+   "clean": 2798723,
+   "outside_states": 884035,
+   "inside_from_bolivia_file": 1234
+  },
+  "viirs-jpss1 2024": {
+   "raw": 2926042,
+   "clean": 2903885,
+   "outside_states": 937352,
+   "inside_from_bolivia_file": 1307
+  },
+  "modis 2025": {
+   "raw": 274354,
+   "clean": 269396,
+   "outside_states": 37482,
+   "inside_from_bolivia_file": 18
+  },
+  "viirs-snpp 2025": {
+   "raw": 1001175,
+   "clean": 984865,
+   "outside_states": 139503,
+   "inside_from_bolivia_file": 71
+  },
+  "viirs-jpss1 2025": {
+   "raw": 995469,
+   "clean": 979059,
+   "outside_states": 141510,
+   "inside_from_bolivia_file": 54
+  },
+  "modis 2026": {
+   "raw": 248886,
+   "clean": 243682,
+   "outside_states": 70198,
+   "inside_from_bolivia_file": 0
+  },
+  "viirs-snpp 2026": {
+   "raw": 948065,
+   "clean": 928544,
+   "outside_states": 268636,
+   "inside_from_bolivia_file": 0
+  },
+  "viirs-jpss1 2026": {
+   "raw": 956213,
+   "clean": 936261,
+   "outside_states": 277586,
+   "inside_from_bolivia_file": 0
+  }
+ },
+ "nearest_vertex": 36880,
+ "timing_s": {
+  "2000": 0.5,
+  "2001": 3.3,
+  "2002": 12.4,
+  "2003": 12.5,
+  "2004": 14.3,
+  "2005": 15.3,
+  "2006": 9.7,
+  "2007": 16.6,
+  "2008": 8.9,
+  "2009": 6.3,
+  "2010": 14.4,
+  "2011": 6.5,
+  "2012": 46.1,
+  "2013": 24.5,
+  "2014": 35.3,
+  "2015": 48.5,
+  "2016": 38.4,
+  "2017": 45.3,
+  "2018": 42.7,
+  "2019": 76.4,
+  "2020": 84.5,
+  "2021": 65.8,
+  "2022": 73.7,
+  "2023": 66.2,
+  "2024": 103.1,
+  "2025": 42.1,
+  "2026": 32.5,
+  "aggregate_write_s": 11.9,
+  "total": 957.9
+ },
+ "peak_rss_mb": 3141.3,
+ "files_bytes": {
+  "states.csv": 268834,
+  "RO": {
+   "detections": 2063709,
+   "cells": 374,
+   "hotspots_bytes": 24559234,
+   "area.geojson": 10696,
+   "hotspots": 4096,
+   "metadata.json": 6404,
+   "monthly_cells.csv": 3670198,
+   "months.csv": 16597,
+   "municipalities.csv": 523386,
+   "municipalities.geojson": 250125,
+   "recurrence.csv": 1294138
+  },
+  "AC": {
+   "detections": 910629,
+   "cells": 246,
+   "hotspots_bytes": 11312414,
+   "area.geojson": 5541,
+   "hotspots": 4096,
+   "metadata.json": 6308,
+   "monthly_cells.csv": 2409567,
+   "months.csv": 16597,
+   "municipalities.csv": 222648,
+   "municipalities.geojson": 110926,
+   "recurrence.csv": 647084
+  },
+  "AM": {
+   "detections": 2414217,
+   "cells": 1929,
+   "hotspots_bytes": 29203746,
+   "area.geojson": 18339,
+   "hotspots": 4096,
+   "metadata.json": 6401,
+   "monthly_cells.csv": 18749563,
+   "months.csv": 16597,
+   "municipalities.csv": 621790,
+   "municipalities.geojson": 698697,
+   "recurrence.csv": 1463707
+  },
+  "RR": {
+   "detections": 680255,
+   "cells": 311,
+   "hotspots_bytes": 8061509,
+   "area.geojson": 10268,
+   "hotspots": 4096,
+   "metadata.json": 6369,
+   "monthly_cells.csv": 3034115,
+   "months.csv": 16597,
+   "municipalities.csv": 154451,
+   "municipalities.geojson": 138192,
+   "recurrence.csv": 831869
+  },
+  "PA": {
+   "detections": 7507598,
+   "cells": 1651,
+   "hotspots_bytes": 91110093,
+   "area.geojson": 18704,
+   "hotspots": 4096,
+   "metadata.json": 6403,
+   "monthly_cells.csv": 16180845,
+   "months.csv": 16597,
+   "municipalities.csv": 1459577,
+   "municipalities.geojson": 805145,
+   "recurrence.csv": 5310377
+  },
+  "AP": {
+   "detections": 301501,
+   "cells": 182,
+   "hotspots_bytes": 3656523,
+   "area.geojson": 7255,
+   "hotspots": 4096,
+   "metadata.json": 6309,
+   "monthly_cells.csv": 1773468,
+   "months.csv": 16597,
+   "municipalities.csv": 159885,
+   "municipalities.geojson": 129029,
+   "recurrence.csv": 317869
+  },
+  "TO": {
+   "detections": 3158709,
+   "cells": 435,
+   "hotspots_bytes": 37624211,
+   "area.geojson": 12583,
+   "hotspots": 4096,
+   "metadata.json": 6395,
+   "monthly_cells.csv": 4303443,
+   "months.csv": 16597,
+   "municipalities.csv": 1396384,
+   "municipalities.geojson": 504466,
+   "recurrence.csv": 2790402
+  },
+  "MA": {
+   "detections": 4215824,
+   "cells": 505,
+   "hotspots_bytes": 51487378,
+   "area.geojson": 16800,
+   "hotspots": 4096,
+   "metadata.json": 6390,
+   "monthly_cells.csv": 5011733,
+   "months.csv": 16597,
+   "municipalities.csv": 2174892,
+   "municipalities.geojson": 532506,
+   "recurrence.csv": 3436775
+  },
+  "PI": {
+   "detections": 2436044,
+   "cells": 390,
+   "hotspots_bytes": 29004153,
+   "area.geojson": 12112,
+   "hotspots": 4096,
+   "metadata.json": 6397,
+   "monthly_cells.csv": 3842388,
+   "months.csv": 16597,
+   "municipalities.csv": 2215524,
+   "municipalities.geojson": 362723,
+   "recurrence.csv": 2107189
+  },
+  "CE": {
+   "detections": 682211,
+   "cells": 232,
+   "hotspots_bytes": 8794212,
+   "area.geojson": 7063,
+   "hotspots": 4096,
+   "metadata.json": 6361,
+   "monthly_cells.csv": 2275825,
+   "months.csv": 16597,
+   "municipalities.csv": 1809069,
+   "municipalities.geojson": 373845,
+   "recurrence.csv": 1040047
+  },
+  "RN": {
+   "detections": 119733,
+   "cells": 95,
+   "hotspots_bytes": 1597228,
+   "area.geojson": 5678,
+   "hotspots": 4096,
+   "metadata.json": 6385,
+   "monthly_cells.csv": 925482,
+   "months.csv": 16597,
+   "municipalities.csv": 1622926,
+   "municipalities.geojson": 186970,
+   "recurrence.csv": 229500
+  },
+  "PB": {
+   "detections": 175914,
+   "cells": 112,
+   "hotspots_bytes": 2314272,
+   "area.geojson": 7526,
+   "hotspots": 4096,
+   "metadata.json": 6370,
+   "monthly_cells.csv": 1092537,
+   "months.csv": 16597,
+   "municipalities.csv": 2167776,
+   "municipalities.geojson": 291923,
+   "recurrence.csv": 331248
+  },
+  "PE": {
+   "detections": 263474,
+   "cells": 179,
+   "hotspots_bytes": 3561248,
+   "area.geojson": 10301,
+   "hotspots": 4096,
+   "metadata.json": 6362,
+   "monthly_cells.csv": 1745786,
+   "months.csv": 16597,
+   "municipalities.csv": 1802994,
+   "municipalities.geojson": 286859,
+   "recurrence.csv": 569383
+  },
+  "AL": {
+   "detections": 93436,
+   "cells": 54,
+   "hotspots_bytes": 1250693,
+   "area.geojson": 4235,
+   "hotspots": 4096,
+   "metadata.json": 6343,
+   "monthly_cells.csv": 527281,
+   "months.csv": 16597,
+   "municipalities.csv": 991988,
+   "municipalities.geojson": 121481,
+   "recurrence.csv": 177144
+  },
+  "SE": {
+   "detections": 45498,
+   "cells": 49,
+   "hotspots_bytes": 632332,
+   "area.geojson": 3508,
+   "hotspots": 4096,
+   "metadata.json": 6343,
+   "monthly_cells.csv": 476829,
+   "months.csv": 16597,
+   "municipalities.csv": 728477,
+   "municipalities.geojson": 107162,
+   "recurrence.csv": 124067
+  },
+  "BA": {
+   "detections": 2211086,
+   "cells": 850,
+   "hotspots_bytes": 27864771,
+   "area.geojson": 17674,
+   "hotspots": 4096,
+   "metadata.json": 6396,
+   "monthly_cells.csv": 8305948,
+   "months.csv": 16597,
+   "municipalities.csv": 4090743,
+   "municipalities.geojson": 1016974,
+   "recurrence.csv": 3187279
+  },
+  "MG": {
+   "detections": 1828776,
+   "cells": 900,
+   "hotspots_bytes": 23530466,
+   "area.geojson": 19548,
+   "hotspots": 4096,
+   "metadata.json": 6401,
+   "monthly_cells.csv": 8786913,
+   "months.csv": 16597,
+   "municipalities.csv": 8325449,
+   "municipalities.geojson": 2118717,
+   "recurrence.csv": 3418385
+  },
+  "ES": {
+   "detections": 102967,
+   "cells": 90,
+   "hotspots_bytes": 1356853,
+   "area.geojson": 4470,
+   "hotspots": 4096,
+   "metadata.json": 6381,
+   "monthly_cells.csv": 875804,
+   "months.csv": 16597,
+   "municipalities.csv": 759447,
+   "municipalities.geojson": 180795,
+   "recurrence.csv": 232037
+  },
+  "RJ": {
+   "detections": 133698,
+   "cells": 91,
+   "hotspots_bytes": 1742892,
+   "area.geojson": 7112,
+   "hotspots": 4096,
+   "metadata.json": 6375,
+   "monthly_cells.csv": 887052,
+   "months.csv": 16597,
+   "municipalities.csv": 896736,
+   "municipalities.geojson": 184759,
+   "recurrence.csv": 258547
+  },
+  "SP": {
+   "detections": 802659,
+   "cells": 412,
+   "hotspots_bytes": 10235587,
+   "area.geojson": 13814,
+   "hotspots": 4096,
+   "metadata.json": 6394,
+   "monthly_cells.csv": 4021420,
+   "months.csv": 16597,
+   "municipalities.csv": 6278353,
+   "municipalities.geojson": 1233029,
+   "recurrence.csv": 1383672
+  },
+  "PR": {
+   "detections": 425315,
+   "cells": 329,
+   "hotspots_bytes": 5660304,
+   "area.geojson": 9787,
+   "hotspots": 4096,
+   "metadata.json": 6407,
+   "monthly_cells.csv": 3204265,
+   "months.csv": 16597,
+   "municipalities.csv": 3881316,
+   "municipalities.geojson": 865418,
+   "recurrence.csv": 950157
+  },
+  "SC": {
+   "detections": 245695,
+   "cells": 178,
+   "hotspots_bytes": 3224857,
+   "area.geojson": 8795,
+   "hotspots": 4096,
+   "metadata.json": 6365,
+   "monthly_cells.csv": 1733769,
+   "months.csv": 16597,
+   "municipalities.csv": 2865766,
+   "municipalities.geojson": 552121,
+   "recurrence.csv": 575105
+  },
+  "RS": {
+   "detections": 349908,
+   "cells": 473,
+   "hotspots_bytes": 4615693,
+   "area.geojson": 14337,
+   "hotspots": 4096,
+   "metadata.json": 6400,
+   "monthly_cells.csv": 4595682,
+   "months.csv": 16597,
+   "municipalities.csv": 4826891,
+   "municipalities.geojson": 1052113,
+   "recurrence.csv": 924824
+  },
+  "MS": {
+   "detections": 1456022,
+   "cells": 556,
+   "hotspots_bytes": 17036286,
+   "area.geojson": 11207,
+   "hotspots": 4096,
+   "metadata.json": 6396,
+   "monthly_cells.csv": 5419743,
+   "months.csv": 16597,
+   "municipalities.csv": 782883,
+   "municipalities.geojson": 400515,
+   "recurrence.csv": 1529887
+  },
+  "MT": {
+   "detections": 6924043,
+   "cells": 1300,
+   "hotspots_bytes": 82595304,
+   "area.geojson": 14064,
+   "hotspots": 4096,
+   "metadata.json": 6401,
+   "monthly_cells.csv": 12754419,
+   "months.csv": 16597,
+   "municipalities.csv": 1440244,
+   "municipalities.geojson": 898772,
+   "recurrence.csv": 5146744
+  },
+  "GO": {
+   "detections": 1425857,
+   "cells": 532,
+   "hotspots_bytes": 17472511,
+   "area.geojson": 14408,
+   "hotspots": 4096,
+   "metadata.json": 6391,
+   "monthly_cells.csv": 5200162,
+   "months.csv": 16597,
+   "municipalities.csv": 2418670,
+   "municipalities.geojson": 819120,
+   "recurrence.csv": 2080543
+  },
+  "DF": {
+   "detections": 39719,
+   "cells": 14,
+   "hotspots_bytes": 518971,
+   "area.geojson": 1273,
+   "hotspots": 4096,
+   "metadata.json": 6295,
+   "monthly_cells.csv": 137167,
+   "months.csv": 16597,
+   "municipalities.csv": 10407,
+   "municipalities.geojson": 2944,
+   "recurrence.csv": 49478
+  }
+ },
+ "hotspots_bytes_total": 500023741,
+ "pilot_dir_bytes": 1230334365,
+ "rondonia_vs_pipeline": [
+  {
+   "source": "modis",
+   "year": 2000,
+   "pilot": 134,
+   "pipeline": 134,
+   "difference": 0
+  },
+  {
+   "source": "modis",
+   "year": 2001,
+   "pilot": 6208,
+   "pipeline": 6206,
+   "difference": 2
+  },
+  {
+   "source": "modis",
+   "year": 2002,
+   "pilot": 38544,
+   "pipeline": 38543,
+   "difference": 1
+  },
+  {
+   "source": "modis",
+   "year": 2003,
+   "pilot": 43647,
+   "pipeline": 43658,
+   "difference": -11
+  },
+  {
+   "source": "modis",
+   "year": 2004,
+   "pilot": 59669,
+   "pipeline": 59703,
+   "difference": -34
+  },
+  {
+   "source": "modis",
+   "year": 2005,
+   "pilot": 71453,
+   "pipeline": 71460,
+   "difference": -7
+  },
+  {
+   "source": "modis",
+   "year": 2006,
+   "pilot": 44768,
+   "pipeline": 44782,
+   "difference": -14
+  },
+  {
+   "source": "modis",
+   "year": 2007,
+   "pilot": 44413,
+   "pipeline": 44416,
+   "difference": -3
+  },
+  {
+   "source": "modis",
+   "year": 2008,
+   "pilot": 19626,
+   "pipeline": 19629,
+   "difference": -3
+  },
+  {
+   "source": "modis",
+   "year": 2009,
+   "pilot": 9352,
+   "pipeline": 9341,
+   "difference": 11
+  },
+  {
+   "source": "modis",
+   "year": 2010,
+   "pilot": 32538,
+   "pipeline": 32533,
+   "difference": 5
+  },
+  {
+   "source": "modis",
+   "year": 2011,
+   "pilot": 11478,
+   "pipeline": 11483,
+   "difference": -5
+  },
+  {
+   "source": "modis",
+   "year": 2012,
+   "pilot": 15469,
+   "pipeline": 15463,
+   "difference": 6
+  },
+  {
+   "source": "modis",
+   "year": 2013,
+   "pilot": 7020,
+   "pipeline": 7015,
+   "difference": 5
+  },
+  {
+   "source": "modis",
+   "year": 2014,
+   "pilot": 11594,
+   "pipeline": 11594,
+   "difference": 0
+  },
+  {
+   "source": "modis",
+   "year": 2015,
+   "pilot": 22866,
+   "pipeline": 22872,
+   "difference": -6
+  },
+  {
+   "source": "modis",
+   "year": 2016,
+   "pilot": 21468,
+   "pipeline": 21469,
+   "difference": -1
+  },
+  {
+   "source": "modis",
+   "year": 2017,
+   "pilot": 18611,
+   "pipeline": 18617,
+   "difference": -6
+  },
+  {
+   "source": "modis",
+   "year": 2018,
+   "pilot": 16594,
+   "pipeline": 16588,
+   "difference": 6
+  },
+  {
+   "source": "modis",
+   "year": 2019,
+   "pilot": 21310,
+   "pipeline": 21308,
+   "difference": 2
+  },
+  {
+   "source": "modis",
+   "year": 2020,
+   "pilot": 18644,
+   "pipeline": 18645,
+   "difference": -1
+  },
+  {
+   "source": "modis",
+   "year": 2021,
+   "pilot": 19729,
+   "pipeline": 19734,
+   "difference": -5
+  },
+  {
+   "source": "modis",
+   "year": 2022,
+   "pilot": 21480,
+   "pipeline": 21495,
+   "difference": -15
+  },
+  {
+   "source": "modis",
+   "year": 2023,
+   "pilot": 14200,
+   "pipeline": 14214,
+   "difference": -14
+  },
+  {
+   "source": "modis",
+   "year": 2024,
+   "pilot": 22199,
+   "pipeline": 22206,
+   "difference": -7
+  },
+  {
+   "source": "modis",
+   "year": 2025,
+   "pilot": 3085,
+   "pipeline": 3082,
+   "difference": 3
+  },
+  {
+   "source": "modis",
+   "year": 2026,
+   "pilot": 2146,
+   "pipeline": 2148,
+   "difference": -2
+  },
+  {
+   "source": "viirs-jpss1",
+   "year": 2018,
+   "pilot": 61362,
+   "pipeline": 61395,
+   "difference": -33
+  },
+  {
+   "source": "viirs-jpss1",
+   "year": 2019,
+   "pilot": 79404,
+   "pipeline": 79455,
+   "difference": -51
+  },
+  {
+   "source": "viirs-jpss1",
+   "year": 2020,
+   "pilot": 76895,
+   "pipeline": 76927,
+   "difference": -32
+  },
+  {
+   "source": "viirs-jpss1",
+   "year": 2021,
+   "pilot": 74725,
+   "pipeline": 74737,
+   "difference": -12
+  },
+  {
+   "source": "viirs-jpss1",
+   "year": 2022,
+   "pilot": 85420,
+   "pipeline": 85450,
+   "difference": -30
+  },
+  {
+   "source": "viirs-jpss1",
+   "year": 2023,
+   "pilot": 52823,
+   "pipeline": 52874,
+   "difference": -51
+  },
+  {
+   "source": "viirs-jpss1",
+   "year": 2024,
+   "pilot": 87422,
+   "pipeline": 87445,
+   "difference": -23
+  },
+  {
+   "source": "viirs-jpss1",
+   "year": 2025,
+   "pilot": 13178,
+   "pipeline": 13176,
+   "difference": 2
+  },
+  {
+   "source": "viirs-jpss1",
+   "year": 2026,
+   "pilot": 9124,
+   "pipeline": 9090,
+   "difference": 34
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2012,
+   "pilot": 57139,
+   "pipeline": 57125,
+   "difference": 14
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2013,
+   "pilot": 27247,
+   "pipeline": 27233,
+   "difference": 14
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2014,
+   "pilot": 45484,
+   "pipeline": 45475,
+   "difference": 9
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2015,
+   "pilot": 90360,
+   "pipeline": 90362,
+   "difference": -2
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2016,
+   "pilot": 79605,
+   "pipeline": 79589,
+   "difference": 16
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2017,
+   "pilot": 68182,
+   "pipeline": 68193,
+   "difference": -11
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2018,
+   "pilot": 63220,
+   "pipeline": 63266,
+   "difference": -46
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2019,
+   "pilot": 80496,
+   "pipeline": 80578,
+   "difference": -82
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2020,
+   "pilot": 77409,
+   "pipeline": 77462,
+   "difference": -53
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2021,
+   "pilot": 75012,
+   "pipeline": 75041,
+   "difference": -29
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2022,
+   "pilot": 86905,
+   "pipeline": 86963,
+   "difference": -58
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2023,
+   "pilot": 51604,
+   "pipeline": 51625,
+   "difference": -21
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2024,
+   "pilot": 80453,
+   "pipeline": 80502,
+   "difference": -49
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2025,
+   "pilot": 12582,
+   "pipeline": 12562,
+   "difference": 20
+  },
+  {
+   "source": "viirs-snpp",
+   "year": 2026,
+   "pilot": 9413,
+   "pipeline": 9388,
+   "difference": 25
+  }
+ ],
+ "checks": [
+  "RO",
+  "AC",
+  "AM",
+  "RR",
+  "PA",
+  "AP",
+  "TO",
+  "MA",
+  "PI",
+  "CE",
+  "RN",
+  "PB",
+  "PE",
+  "AL",
+  "SE",
+  "BA",
+  "MG",
+  "ES",
+  "RJ",
+  "SP",
+  "PR",
+  "SC",
+  "RS",
+  "MS",
+  "MT",
+  "GO",
+  "DF",
+  "states + outside = clean rows, per source and year"
+ ]
+}

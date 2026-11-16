@@ -30,7 +30,7 @@
     return "Outlook for August-October " + o.next + " (experimental): about " + f(o.forecast, 0) + " hotspots" +
       (o.range ? " (80% of past seasons of this area fell between " + f(o.range[0], 0) + " and " + f(o.range[1], 0) + " for such a forecast)" : "") +
       ". Method: " + LABEL[o.method] + (o.method !== "C" && o.prov ? " (" + (o.next - 1) + " is provisional)" : "") +
-      ". In a test fixed in advance on the 52 municipalities, " + o.t0 + "-" + o.t1 + ", it missed by a typical factor of " + factor(male[o.method]) +
+      ". In a test fixed in advance on " + (outlook.areas || "the 52 municipalities") + ", " + o.t0 + "-" + o.t1 + ", it missed by a typical factor of " + factor(male[o.method]) +
       ", against " + factor(male.C) + " for the median of the earlier years. Updating it with January-July did not help enough in that test (" +
       (100 * (1 - outlook.early_season.test.male.R / outlook.early_season.test.male.C)).toFixed(1) + "% smaller error, short of the 10% required), so the outlook is not updated during the year. It says how much, not where.";
   }

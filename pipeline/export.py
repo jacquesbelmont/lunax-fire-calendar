@@ -153,6 +153,11 @@ def reference_viirs():
     files = sorted(CLEAN_DIR.glob("viirs-snpp_*.csv.gz")) + sorted(CLEAN_DIR.glob("viirs-jpss1_*.csv.gz"))
     pts = pd.concat([pd.read_csv(f, usecols=["latitude", "longitude", "acq_date", "sat"], dtype={"acq_date": str, "sat": str})
                      for f in files], ignore_index=True)
+    return reference_rows(pts)
+
+
+def reference_rows(pts):
+    """Rows of the DE-11 reference VIIRS satellite on its dates (columns acq_date and sat)."""
     snpp = pts["sat"].eq("SNPP") & pts["acq_date"].ge("2012-02-01") & pts["acq_date"].lt("2018-04-01")
     return pts[snpp | (pts["sat"].eq("NOAA20") & pts["acq_date"].ge("2018-04-01"))].reset_index(drop=True)
 
@@ -182,19 +187,27 @@ def export_cell_outlook():
     persistence is shown."""
     paths = []
     for key in ("001", "005"):
-        d = pd.read_csv(INTERIM / f"cell_outlook_2027_{key}.csv", dtype={"cell_id": str})
-        d = d[d["p"] >= 0.01].assign(p=d["p"].round(3)) if "p" in d else d[d["last"].gt(0) | d["top"].eq(1)]
+        d = outlook_rows(pd.read_csv(INTERIM / f"cell_outlook_2027_{key}.csv", dtype={"cell_id": str}))
         path = DOCS_DATA / f"cell_outlook_{key}.csv"
         d.to_csv(path, index=False)
         paths.append(path)
     return paths
 
 
+def outlook_rows(d):
+    """The rows of a DE-29 forecast the app needs: chances of at least 0.01 (3 decimals), or the persistence cells."""
+    return d[d["p"] >= 0.01].assign(p=d["p"].round(3)) if "p" in d else d[d["last"].gt(0) | d["top"].eq(1)]
+
+
 def cell_outlook_summary():
     """DE-29 test result for the app: per scale, what is shown and the test numbers."""
     if not CELL_OUTLOOK.exists():
         raise FileNotFoundError(f"{CELL_OUTLOOK.relative_to(ROOT)} missing: run python pipeline/cell_outlook.py first (DE-29)")
-    h = json.loads(CELL_OUTLOOK.read_text())
+    return cell_outlook_meta(json.loads(CELL_OUTLOOK.read_text()))
+
+
+def cell_outlook_meta(h):
+    """metadata.json `cell_outlook` from a DE-29 result (cell_outlook.run)."""
     return {"decision": h["decision"], "window": h["window"], "next_year": 2027, "feature_year": 2026,
             "scales": {k: {x: s[x] for x in ("grid_deg", "cells", "test_years", "fresh_year", "pooled", "fresh", "best_model", "shown")}
                        | {"calibration": s["calibration"].get(s["shown"])} for k, s in h["scales"].items()}}

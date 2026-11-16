@@ -438,11 +438,16 @@
              latestEnd: last, nLatest: ends.filter(function (x) { return x === last; }).length };
   }
 
-  /** DE-24: municipalities.geojson as [{code, name, ring, bbox}] (one Polygon without holes each, as checked by export.py). */
+  /**
+   * DE-24: municipalities.geojson as [{code, name, parts: [rings], bbox}]: each part is a Polygon's rings (outer ring
+   * first, then holes). RA-11: Brazil has MultiPolygons and holes; Rondonia's are single Polygons without holes.
+   */
   function parseMunicipalities(geojson) {
     return geojson.features.map(function (f) {
-      var ring = f.geometry.coordinates[0], xs = ring.map(function (v) { return v[0]; }), ys = ring.map(function (v) { return v[1]; });
-      return { code: f.properties.code, name: f.properties.name, ring: ring,
+      var g = f.geometry, parts = g.type === "Polygon" ? [g.coordinates] : g.coordinates;
+      var xs = [], ys = [];
+      parts.forEach(function (p) { p[0].forEach(function (v) { xs.push(v[0]); ys.push(v[1]); }); });
+      return { code: f.properties.code, name: f.properties.name, parts: parts,
                bbox: [Math.min.apply(null, xs), Math.min.apply(null, ys), Math.max.apply(null, xs), Math.max.apply(null, ys)] };
     });
   }
@@ -461,15 +466,20 @@
    * nearest boundary vertex (same rule as municipality_of in pipeline/export.py, so the app keeps the same detections).
    */
   function municipalityIndex(lon, lat, munis) {
+    var inPart = function (p) { return insideRing(lon, lat, p[0]) && !p.slice(1).some(function (h) { return insideRing(lon, lat, h); }); };
     for (var k = 0; k < munis.length; k++) {
       var b = munis[k].bbox;
-      if (lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3] && insideRing(lon, lat, munis[k].ring)) return k;
+      if (lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3] && munis[k].parts.some(inPart)) return k;
     }
     var best = -1, bestD = Infinity;
     munis.forEach(function (m, k) {
-      m.ring.forEach(function (v) {
-        var d = (v[0] - lon) * (v[0] - lon) + (v[1] - lat) * (v[1] - lat);
-        if (d < bestD) { bestD = d; best = k; }
+      m.parts.forEach(function (p) {
+        p.forEach(function (ring) {
+          ring.forEach(function (v) {
+            var d = (v[0] - lon) * (v[0] - lon) + (v[1] - lat) * (v[1] - lat);
+            if (d < bestD) { bestD = d; best = k; }
+          });
+        });
       });
     });
     return best;

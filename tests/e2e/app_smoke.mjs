@@ -232,6 +232,10 @@ try {
     ${JSON.stringify(exportIds)}.every(id => !document.getElementById(id).disabled) &&
     document.getElementById('hotspots-download').disabled && document.getElementById('hotspots-kml').disabled
   )`));
+  check("the Brazil pilot (place search, breadcrumb) stays hidden without local pilot data (published app unchanged)", await evaluate(`document.querySelector('#place-search').hidden && document.querySelector('#crumbs').hidden`));
+  check("toolbar: a period chip sets From/To and is marked", await evaluate(`(async () => { document.querySelector('#period-chips [data-period="10y"]').click();
+    await new Promise((r) => setTimeout(r, 1500)); const n = document.querySelector('#range-to').options.length;
+    return Number(document.querySelector('#range-from').value) === n - 120 && document.querySelector('#period-chips [data-period="10y"]').classList.contains('on'); })()`));
   check("no JavaScript errors", errors.length === 0, errors.join(" | ").slice(0, 200));
 } catch (e) {
   check("run", false, String(e.message || e));
