@@ -31,7 +31,8 @@
       hovertemplate: "%{x}: median %{y:,.0f}<extra></extra>" });
     traces.push({ x: x.slice(0, s.current.length), y: s.current, mode: "lines+markers", line: { color: "#0b5cad", width: 3 }, name: String(label),
       hovertemplate: "%{x}: %{y:,.0f} " + unit + " so far<extra></extra>" });
-    const layout = { margin: { l: 60, r: 30, t: 10, b: 40 }, height: 300, // r: room for the last slanted month label paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
+    // margin r: room for the last slanted month label; transparent backgrounds so the dark theme's text stays readable
+    const layout = { margin: { l: 60, r: 30, t: 10, b: 40 }, height: 300, paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
       xaxis: { type: "category" }, yaxis: { title: { text: unit + " so far" }, rangemode: "tozero" },
       legend: { orientation: "h", y: -0.2 }, font: { color: LunaxTheme.text() } };
     layout.xaxis.gridcolor = layout.yaxis.gridcolor = LunaxTheme.grid();

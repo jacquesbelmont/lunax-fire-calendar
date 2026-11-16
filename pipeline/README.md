@@ -21,4 +21,6 @@ The exact versions used in the setup are in `requirements.lock.txt`. Put `FIRMS_
 | 9 | `export_hotspots.py` | `data/interim/clean/*.csv.gz` | `docs/data/hotspots/<instrument>_<year>.csv.gz`, `docs/data/hotspots/index.json` (R9, DE-17) | JA-6 |
 | 10 | `ml.py` (optional, RA-6) | `data/interim/monthly_counts.csv.gz`, `data/interim/month_flags.csv`, `data/interim/clean/modis_*.csv.gz` | `method/results/ml_metrics.json`, `method/results/ml_loyo.csv` (ML challenger, DE-18); with `--hybrid`: `ml_hybrid_metrics.json`, `ml_hybrid_loyo.csv` (DE-19). Does not change `docs/data/` | RA-6 |
 
+Brazil pilot (local, SCOPE O6; data git-ignored): `pilot_brazil.py` (every state, 2000-2026) then `pilot_packs.py` (one area pack per state, DE-31 to DE-33). Commands, times and memory: [method/PILOT_BRAZIL.md](../method/PILOT_BRAZIL.md).
+
 Tests: `.venv/bin/python -m unittest discover -s tests` and `node --test tests/js/calc.test.js tests/js/hotspots.test.js`
