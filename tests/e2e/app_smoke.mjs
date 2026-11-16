@@ -6,7 +6,7 @@
 //   Chrome: set CHROME to the binary if it is not found (Linux: google-chrome, chromium or /snap/bin/chromium).
 // AI-assisted code (Claude Code and Codex); logged in AI_USE.md.
 import { spawn } from "node:child_process";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -130,6 +130,11 @@ try {
     await waitFor(`!!document.querySelector('#map img.recurrence-overlay') && /test fixed in advance/.test(document.querySelector('#recurrence-note').textContent)`);
     const lg = await evaluate(`document.querySelector('#map-legend').textContent`);
     check("map view " + mode + " draws the forecast layer with its legend and test result", /Where to expect fire in 2027/.test(lg) && re.test(lg), lg.slice(0, 90));
+    if (mode === "outlook001") { // RA-12, DE-35: the table under the map ranks the municipalities by expected fire
+      await waitFor(`/Where to act first/.test(document.querySelector('#ranking-title').textContent) && document.querySelectorAll('#ranking tr').length === 53`);
+      check("DE-35: 'Where to act first' ranks the 52 municipalities by expected fire, with a CSV", await evaluate(`!document.querySelector('#priority-csv').hidden`),
+        await evaluate(`document.querySelector('#ranking tr:nth-child(2)').textContent`));
+    }
   }
   await evaluate(`document.querySelector('input[name="map-mode"][value="hotspots"]').click(), true`);
   check("back to the hotspots view removes the 1 km layer", await evaluate(`!document.querySelector('#map img.recurrence-overlay') && document.querySelectorAll('#map path.map-cell').length === 376`));
@@ -236,6 +241,46 @@ try {
   check("toolbar: a period chip sets From/To and is marked", await evaluate(`(async () => { document.querySelector('#period-chips [data-period="10y"]').click();
     await new Promise((r) => setTimeout(r, 1500)); const n = document.querySelector('#range-to').options.length;
     return Number(document.querySelector('#range-from').value) === n - 120 && document.querySelector('#period-chips [data-period="10y"]').classList.contains('on'); })()`));
+  // RA-12, DE-34 and DE-36: season so far and fire events of the map month
+  await waitFor(`!!document.querySelector('#progress .main-svg') && /Season so far/.test(document.querySelector('#progress-text').textContent)`);
+  check("DE-34: season so far chart and sentence", true, await evaluate(`document.querySelector('#progress-text').textContent.slice(0, 160)`));
+  await waitFor(`/fire events in/.test(document.querySelector('#events-caption').textContent) && document.querySelectorAll('#events tr').length > 1`, 90000);
+  check("DE-36: fire events table of the map month", true, await evaluate(`document.querySelector('#events-caption').textContent.slice(0, 90)`));
+  // RA-12: the address keeps the view: reopening a copied link shows the same municipality, month and map view
+  await evaluate(`(() => { const s = document.querySelector('#muni-select'); s.value = s.options[2].value; s.dispatchEvent(new Event('change')); return true; })()`);
+  await evaluate(`(() => { const s = document.querySelector('#compare-month'); s.value = '9'; s.dispatchEvent(new Event('change')); return true; })()`);
+  await evaluate(`document.querySelector('input[name="map-mode"][value="usual"]').click(), true`);
+  const shared = await evaluate(`({ hash: location.hash, muni: document.querySelector('#muni-select').value, month: new URLSearchParams(location.hash.slice(1)).get('month') })`);
+  await send("Page.navigate", { url: "about:blank" });
+  await sleep(500);
+  await send("Page.navigate", { url: URL_.replace(/#.*$/, "") + shared.hash });
+  await waitFor(`document.querySelector('#selection-info') && /Municipality/.test(document.querySelector('#selection-info').textContent)`);
+  await sleep(1500);
+  const reopened = await evaluate(`({ muni: document.querySelector('#muni-select').value, view: document.querySelector('input[name="map-mode"]:checked').value,
+    month: new URLSearchParams(location.hash.slice(1)).get('month') })`);
+  check("a copied link reopens the same municipality, month and map view", reopened.muni === shared.muni && reopened.view === "usual" &&
+    reopened.month === shared.month && /month=20..-09/.test(shared.hash), shared.hash);
+  // RA-12, DE-37: a real IBGE municipality uploaded as "your area" gives the same harmonized series as choosing it
+  const muniGeo = JSON.parse(readFileSync(new URL("../../docs/data/municipalities.geojson", import.meta.url), "utf8"));
+  // next to this test, not in /tmp: a snap-packaged Chrome has its own /tmp and could not read the file there
+  const areaFile = new URL("area_1100015.geojson", import.meta.url).pathname;
+  writeFileSync(areaFile, JSON.stringify({ type: "FeatureCollection", features: muniGeo.features.filter((f) => f.properties.code === "1100015") }));
+  await evaluate(`window.__downloads = []; const _c = URL.createObjectURL; URL.createObjectURL = (b) => { window.__downloads.push(b); return _c(b); }; true`);
+  const input = await send("Runtime.evaluate", { expression: "document.querySelector('#area-file')" });
+  await send("DOM.setFileInputFiles", { files: [areaFile], objectId: input.result.objectId });
+  try { await waitFor(`/Your area area_1100015/.test(document.querySelector('#selection-info').textContent)`, 120000); }
+  catch (e) { throw new Error("upload: " + await evaluate(`document.querySelector('#selection-info').textContent`)); }
+  finally { rmSync(areaFile, { force: true }); }
+  const seriesCsv = async () => { const n = await evaluate(`window.__downloads.length`); await evaluate(`document.querySelector('#csv-series').click(), true`);
+    await waitFor(`window.__downloads.length > ${n}`, 15000); return evaluate(`window.__downloads[window.__downloads.length - 1].text()`); };
+  const values = (t) => new Map(t.split("\n").filter((l) => /^\d{4}-\d\d,/.test(l)).map((l) => [l.split(",")[0], l.split(",")[1]]));
+  const mine = values(await seriesCsv());
+  await evaluate(`(() => { const s = document.querySelector('#muni-select'); s.value = '1100015'; s.dispatchEvent(new Event('change')); return true; })()`);
+  await waitFor(`/Municipality Alta Floresta/.test(document.querySelector('#selection-info').textContent)`);
+  const theirs = values(await seriesCsv());
+  const differ = [...theirs.keys()].filter((ym) => mine.get(ym) !== theirs.get(ym));
+  check("DE-37: a municipality uploaded as your area gives its own harmonized series", theirs.size > 100 && mine.size === theirs.size && differ.length === 0,
+    theirs.size + " months compared; differ: " + differ.slice(0, 5).join(" "));
   check("no JavaScript errors", errors.length === 0, errors.join(" | ").slice(0, 200));
 } catch (e) {
   check("run", false, String(e.message || e));

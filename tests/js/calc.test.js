@@ -259,3 +259,72 @@ test("DE-30 year totals (complete years only), month medians and the comparison 
   assert.match(calc.monthComparisonText(r, "September", "hotspots", false), /^September 2015: 10 hotspots, compared/);
   assert.match(calc.monthComparisonText(r, "September", "hotspots"), /^Latest September in the data \(2015\)/);
 });
+
+// DE-34: season so far on Rondonia's harmonized series, recomputed here month by month.
+test("seasonSoFar: tracking year, running totals, earlier complete years only, stop at a missing month", () => {
+  const sel = data.cells.map((c, i) => i), v = calc.areaSeries(data, sel, "viirs_eq");
+  const rows = data.months.map((ym, i) => ({ ym: ym, value: v[i], inRange: true }));
+  const focus = data.months.indexOf("2024-09"), s = calc.seasonSoFar(rows, focus);
+  const med = calc.monthMedians(rows), quiet = med.indexOf(Math.min(...med.filter((x) => !Number.isNaN(x))));
+  assert.strictEqual(s.start, (quiet + 1) % 12 + 1);
+  const ym = (y, k) => { const m = s.start - 1 + k; return (y + Math.floor(m / 12)) + "-" + String(m % 12 + 1).padStart(2, "0"); };
+  const val = (y, k) => v[data.months.indexOf(ym(y, k))]; // undefined index -> NaN
+  const run = (y, k) => { let c = 0; for (let j = 0; j <= k; j++) c += val(y, j); return c; };
+  assert.strictEqual(s.months[0], ym(s.trackingYear, 0));
+  assert.ok(Math.abs(s.current[s.last] - run(s.trackingYear, s.last)) < 1e-6);
+  const past = [];
+  for (let y = 1999; y < s.trackingYear; y++) if (!Number.isNaN(run(y, 11))) past.push(run(y, s.last));
+  assert.strictEqual(s.nPast, past.length);
+  past.sort((a, b) => a - b);
+  const h = past.length >> 1, m = past.length % 2 ? past[h] : (past[h - 1] + past[h]) / 2;
+  assert.ok(Math.abs(s.median[s.last] - m) < 1e-6);
+  assert.strictEqual(s.rank, 1 + past.filter((x) => x > s.current[s.last]).length);
+  // a month outside the period ends the focus line there (missing is never zero)
+  const gap = data.months.indexOf(ym(s.trackingYear, 2));
+  const cut = calc.seasonSoFar(rows.map((r, i) => (i === gap ? Object.assign({}, r, { inRange: false }) : r)), focus);
+  assert.strictEqual(cut.last, 1);
+  assert.ok(cut.current.slice(2).every(Number.isNaN));
+});
+
+// DE-35: Rondonia's ~1 km forecast per municipality: every listed cell is counted once and the sums add up to the file's.
+test("outlookByMunicipality: sums of chances per municipality add up to the forecast file", () => {
+  const munis = calc.parseMunicipalities(JSON.parse(fs.readFileSync(path.join(root, "docs/data/municipalities.geojson"), "utf8")));
+  const rows = fs.readFileSync(path.join(root, "docs/data/cell_outlook_001.csv"), "utf8").trim().split("\n").slice(1).map((l) => l.split(","));
+  const by = calc.outlookByMunicipality(rows, 0.01, munis);
+  assert.strictEqual(by.length, 52);
+  assert.strictEqual(by.reduce((a, b) => a + b.cells, 0), rows.length);
+  const total = rows.reduce((a, f) => a + Number(f[1]), 0);
+  assert.ok(Math.abs(by.reduce((a, b) => a + b.sum, 0) - total) < 1e-6 * total);
+  assert.ok(Math.abs(by.reduce((a, b) => a + b.share, 0) - 1) < 1e-9);
+  // one cell recomputed: the municipality of the first row's centre
+  const rc = rows[0][0].split("_"), k = calc.municipalityIndex((Number(rc[1]) + 0.5) * 0.01 - 180, (Number(rc[0]) + 0.5) * 0.01 - 90, munis);
+  assert.ok(by[k].cells >= 1);
+});
+
+// DE-36: fire events on real VIIRS detections (Rondonia, 2024-08-01 to 03): the grid-hash grouping equals a brute-force
+// grouping over every pair, and every detection is in exactly one event.
+test("fireEvents: same groups as a brute-force check of every pair (1 km, 1 day)", () => {
+  const zlib = require("node:zlib"), lines = [];
+  let header = null;
+  for (const f of ["viirs-snpp_2024.csv.gz", "viirs-jpss1_2024.csv.gz", "viirs-jpss2_2024.csv.gz"]) {
+    zlib.gunzipSync(fs.readFileSync(path.join(root, "docs/data/hotspots", f))).toString("utf8").split("\n").forEach((l) => {
+      if (!l || l.startsWith("#")) return;
+      if (l.startsWith("cell_id")) { header = header || l; return; }
+      const d = l.split(",")[3];
+      if (d >= "2024-08-01" && d <= "2024-08-03") lines.push(l);
+    });
+  }
+  const pts = calc.hotspotPoints(header, lines), ev = calc.fireEvents(pts, 1, 1);
+  assert.ok(pts.length > 500, "points " + pts.length);
+  assert.strictEqual(ev.reduce((a, e) => a + e.n, 0), pts.length);
+  const parent = pts.map((_, i) => i), find = (i) => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+  const day = (d) => Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / 864e5;
+  for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+    if (Math.abs(day(pts[i].date) - day(pts[j].date)) <= 1 && calc.distanceKm(pts[i].lat, pts[i].lon, pts[j].lat, pts[j].lon) <= 1) parent[find(j)] = find(i);
+  }
+  const groups = new Map();
+  pts.forEach((_, i) => { const r = find(i); groups.set(r, (groups.get(r) || []).concat(i)); });
+  const norm = (gs) => gs.map((g) => g.slice().sort((a, b) => a - b).join(" ")).sort();
+  assert.deepStrictEqual(norm(ev.map((e) => e.members)), norm([...groups.values()]));
+  assert.ok(ev.every((e) => e.days >= 1 && e.days <= 3 && e.extentKm >= 0));
+});

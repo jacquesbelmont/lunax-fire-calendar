@@ -49,5 +49,5 @@
   function png(el, name) {
     return Plotly.downloadImage(el, { format: "png", filename: name, width: 1200, height: 800 });
   }
-  window.LunaxExport = { seriesFile: seriesFile, cellsFile: cellsFile, hotspotsFile: hotspotsFile, hotspotsKmlFile: hotspotsKmlFile, png: png };
+  window.LunaxExport = { saveText: saveText, seriesFile: seriesFile, cellsFile: cellsFile, hotspotsFile: hotspotsFile, hotspotsKmlFile: hotspotsKmlFile, png: png };
 })();

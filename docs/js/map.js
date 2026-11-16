@@ -121,7 +121,7 @@
     const legend = legendControl().addTo(map);
     map.createPane("points").style.zIndex = 450; // above the cells (overlay pane, 400), below markers and popups
     map.createPane("recurrence").style.zIndex = 420; // DE-26 image, between the cells and the points
-    let overlay = null, overlayTip = null;
+    let overlay = null, overlayTip = null, customLayer = null;
     const canvas = L.canvas({ padding: 0.5, pane: "points" }); // up to ~120,000 points in one month: canvas, not SVG
     // DE-21 grouping: one group per sensor, so a number is never MODIS plus VIIRS; groups split when zooming in.
     const groups = {};
@@ -241,6 +241,13 @@
         ctl.addTo(map);
       },
       /** DE-24: outline municipality k (index in municipalities.geojson) and zoom to it; null clears the outline. */
+      /** DE-37: outline of the user's area (a GeoJSON feature), or none; the map fits it. */
+      showCustomArea: function (feature) {
+        if (customLayer) customLayer.remove();
+        if (!map.getPane("custom")) { map.createPane("custom").style.zIndex = 455; map.getPane("custom").style.pointerEvents = "none"; } // above cells and points
+        customLayer = feature ? L.geoJSON(feature, { pane: "custom", interactive: false, style: { color: "#e66101", weight: 3, fill: false } }).addTo(map) : null;
+        if (customLayer) map.fitBounds(customLayer.getBounds(), { maxZoom: 13 });
+      },
       highlightMunicipality: function (k) {
         muniLayer.setStyle(MUNI_STYLE);
         selectedMuni = k === null ? null : muniLayer.getLayers()[k];

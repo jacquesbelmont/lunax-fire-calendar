@@ -5,7 +5,7 @@
 //   CHROME=<binary> if Chrome is not found; SHOTS=<folder> to save screenshots of each level.
 // AI-assisted code (Claude Code); logged in AI_USE.md.
 import { spawn } from "node:child_process";
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -100,6 +100,10 @@ try {
     await waitFor(`!!${q("#map img.recurrence-overlay")} && /test fixed in advance/.test(${q("#recurrence-note")}.textContent)`, 90000);
     check("Pará: " + mode + " draws with its legend and its own test result", /Where to expect fire in 2027/.test(await text("#map-legend")),
       (await text("#recurrence-note")).slice(0, 160));
+    if (mode === "outlook001") { // RA-12, DE-35
+      await waitFor(`/Where to act first/.test(${q("#ranking-title")}.textContent) && document.querySelectorAll('#ranking tr').length === 145`, 90000);
+      check("Pará: 'Where to act first' ranks its 144 municipalities", true, await ev(`document.querySelector('#ranking tr:nth-child(2)').textContent`));
+    }
     await shot("pk_pa_" + mode + ".png");
   }
   await view("hotspots");
@@ -129,6 +133,27 @@ try {
   check("period chip '2012 on' sets From and is marked", (await ev(`${q("#range-from")}.selectedOptions[0].textContent`)) === "2012-02" &&
     await ev(`${q('#period-chips [data-period="viirs"]')}.classList.contains('on')`));
   await shot("pk_altamira.png");
+  // RA-12, DE-37: Altamira's IBGE polygon uploaded as "your area" gives Altamira's own harmonized series
+  const pa = JSON.parse(readFileSync(new URL("../../data/pilot/brazil/PA/municipalities.geojson", import.meta.url), "utf8"));
+  const areaFile = new URL("area_altamira.geojson", import.meta.url).pathname; // not /tmp: a snap Chrome has its own /tmp
+  writeFileSync(areaFile, JSON.stringify({ type: "FeatureCollection", features: pa.features.filter((f) => f.properties.code === "1500602") }));
+  await ev(`window.__downloads = []; const _c = URL.createObjectURL; URL.createObjectURL = (b) => { window.__downloads.push(b); return _c(b); }; true`);
+  const seriesCsv = async () => { const n = await ev(`window.__downloads.length`); await ev(`${q("#csv-series")}.click(), true`);
+    await waitFor(`window.__downloads.length > ${n}`, 15000); return ev(`window.__downloads[window.__downloads.length - 1].text()`); };
+  const values = (t) => new Map(t.split("\n").filter((l) => /^\d{4}-\d\d,/.test(l)).map((l) => [l.split(",")[0], l.split(",")[1]]));
+  const theirs = values(await seriesCsv());
+  const input = await send("Runtime.evaluate", { expression: "document.querySelector('#area-file')" });
+  await send("DOM.setFileInputFiles", { files: [areaFile], objectId: input.result.objectId });
+  try { await waitFor(`/Your area area_altamira/.test(${q("#selection-info")}.textContent)`, 180000); } finally { rmSync(areaFile, { force: true }); }
+  // a detection right on the border can be classified differently by the pilot's polygon test (matplotlib) and the
+  // browser's ray test (DE-37 check result): at most 1 detection in at most 1% of the months
+  const mine = values(await seriesCsv()), differ = [...theirs.keys()].filter((ym) => mine.get(ym) !== theirs.get(ym));
+  check("Altamira uploaded as your area gives Altamira's harmonized series (border detections aside)", theirs.size > 100 && mine.size === theirs.size &&
+    differ.length <= Math.ceil(0.01 * theirs.size) && differ.every((ym) => Math.abs(Number(mine.get(ym)) - Number(theirs.get(ym))) <= 1),
+    theirs.size + " months; differ: " + differ.map((ym) => ym + " " + mine.get(ym) + " vs " + theirs.get(ym)).join(", "));
+  await waitFor(`/fire events in your area/.test(${q("#events-caption")}.textContent) && !!${q("#progress .main-svg")}`, 90000);
+  check("your area: fire events and season so far", true, (await text("#events-caption")).slice(0, 80));
+  await shot("pk_your_area.png");
 
   await search("Acre (AC)");
   await waitFor(`/Brazil › AC/.test(${q("#crumbs")}.textContent) && /grid cells selected/.test(${q("#selection-info")}.textContent)`);

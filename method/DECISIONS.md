@@ -42,6 +42,10 @@ PROPOSED rows become DECIDED when the team approves them in PR review. PR #27 wa
 | DE-31 | 2026-11-15 17:56 | **Harmonization ratios per Brazilian state** (RA-11 Brazil pilot, local; post-submission): for each IBGE state, the DE-6 ratio per month of year is fitted on its own 2015-2025 cells and backcast on 2012-2014 exactly as DE-15. A state's ratios convert its 2000-11 to 2012-01 MODIS months only if the backcast passes: absolute relative bias of the total at most 10 %, MdAPE of the monthly state totals at most 25 %, and at least 12 backcast months with observed detections; otherwise those months stay raw MODIS, labelled not harmonized. Uncertainty: DE-16 lambda per state from its own leave-one-year-out | Rondonia's ratios for all of Brazil (not tested elsewhere); ratios per IBGE biome (needs new boundary data); raw MODIS before 2012 | Rafael (chose ratios per state on 2026-11-15); rule and thresholds proposed by Claude Code, justified in the details; approved by Jacques at the merge of PR #70 on 2026-11-15 (the thresholds were proposed by Claude Code; Rafael did not review them again at the merge) | The 25-year view must mean the same in every state; a ratio is used only where it passed the same test as Rondonia's | [details](#de-31-harmonization-ratios-per-brazilian-state) ; pipeline/pilot_packs.py, method/results/state_ratios.json | DECIDED |
 | DE-32 | 2026-11-15 18:12 | **Places that burn year after year, per Brazilian state** (RA-11 Brazil pilot, local; post-submission): the DE-26 layer and its hindcast, unchanged (same grid, years, classes, K rule, test years and persistence baseline), computed for each state from the pilot's reference VIIRS detections inside the state (FIRMS country files, 2012-2025). No 2026 check: the country files end in 2025. Rondonia keeps its published layer. The per-state DE-29 outlook is not made: a next-season forecast needs 2026 data, which the pilot does not have | Rondonia's layer only; a per-state DE-29 forecast for 2026 from 2025 (a season already over) | Rafael (asked for every state to have Rondonia's features); applied by Claude Code with DE-26 unchanged; approved by Jacques at the merge of PR #70 on 2026-11-15 (the thresholds were proposed by Claude Code; Rafael did not review them again at the merge) | The layer is history, and its own hindcast says how far to trust it in each state | [details](#de-32-places-that-burn-year-after-year-per-brazilian-state) ; pipeline/pilot_packs.py, method/results/state_recurrence.json | DECIDED |
 | DE-33 | 2026-11-15 18:33 | **Forecasts per Brazilian state** (RA-11 Brazil pilot, local; post-submission): the DE-28 outlook and the DE-29 cell outlook, unchanged (same candidates, models, features, test years, fresh year 2026 and rules), run for each state on its own data; each state's own test decides what it shows. DE-28 is tested on the state's municipalities, and the national level on the 27 states. Data: 2026 of Brazil from the FIRMS area API with Rondonia's dates and SP/NRT split (cut-off 2026-10-31; near real-time months provisional). DE-32 gains its 2026 check | Rondonia's chosen methods for every state (not tested there); no forecast outside Rondonia | Rafael (asked for the forecast for every place); applied by Claude Code with DE-28 and DE-29 unchanged; approved by Jacques at the merge of PR #70 on 2026-11-15 (the thresholds were proposed by Claude Code; Rafael did not review them again at the merge) | A forecast is shown for a state only with the result of its own test | [details](#de-33-forecasts-per-brazilian-state) ; pipeline/pilot_packs.py, pipeline/cell_outlook.py, method/outlook_hindcast.js, method/results/state_outlook.json | DECIDED |
+| DE-34 | 2026-11-15 19:23 | **Season so far** (R5, R7, O3, O4; display): the cumulative harmonized hotspots of the focus year, month by month, against the median and the 10-90 % range of the earlier complete years at the same month, with the focus year's rank. The tracking year starts the month after the area's quietest month (lowest median month), so a season that crosses December (Roraima) is not split. A month without data ends the focus-year line and leaves that earlier year out of the range (missing is never zero). The range is drawn only with at least 5 earlier years | Calendar-year cumulative (splits Roraima's season); no tracker | Claude Code proposed it; Rafael chose it on 2026-11-15 | In August a manager needs to know whether this year is running ahead of the usual, before the peak | [details](#de-34-season-so-far) ; docs/js/calc.js, docs/js/progress.js | PROPOSED |
+| DE-35 | 2026-11-15 19:23 | **Where to act first: municipalities by expected fire next season** (O4, O5): from the DE-29 forecast of about 1 km, the expected number of cells with at least one VIIRS detection in a municipality = the sum of the chances of its cells (a cell belongs to the municipality of its centre); also its share of the area's sum. Where the DE-29 test chose last year's fire, municipalities are ranked by their cells in that top 10 %. Cells with a chance under 0.01 are not in the file, so a sum can be up to 0.01 x cells low (said in the text) | Mean chance per municipality (hides size); a new model per municipality | Rafael (the forecast and its use for planning brigades were his idea); aggregation rule proposed by Claude Code | Brigades are planned per municipality; a sum of chances is the expected count, which a planner can compare across municipalities of any size | [details](#de-35-where-to-act-first) ; docs/js/calc.js, docs/js/main.js | PROPOSED |
+| DE-36 | 2026-11-15 19:23 | **Fire events: groups of detections** (O3 "number of fires detected", O4): within the focus month and the selected area, two VIIRS detections (any VIIRS satellite, 375 m) belong to the same event when they are at most 1 km apart and at most 1 day apart; an event is a connected group. Shown per event: first and last day, days, detections, extent, maximum FRP, municipality; the largest events of the month first. Events are cut at the month's edges. No VIIRS before 2012. Fixed before any event is computed; the counts at 0.5, 1 and 2 km for one month are reported, as a sensitivity, without changing the rule | Hotspot counts only; MODIS included (1 km pixels); thresholds tuned on data (no ground truth in FIRMS data to tune them against) | Jacques suggested something like it in the team chat (reported by Rafael); rule proposed by Claude Code | FIRMS warns that one fire can give many detections; managers count fires, not pixels | [details](#de-36-fire-events-groups-of-detections) ; docs/js/calc.js, docs/js/main.js | PROPOSED |
+| DE-37 | 2026-11-15 19:23 | **Your own area** (R4, O1, O4): a polygon uploaded by the user (GeoJSON or KML; it stays in the browser) is used like a municipality (DE-24): its series comes from the detections inside it, counted per satellite and month and harmonized in the browser exactly as harmonize.py (native reference VIIRS from 2012-02; before, k(month) x MODIS with Terra + Aqua when both are valid, else Terra; variance (mu + alpha mu^2) x lambda; flagged satellite-months empty). Only the part inside the open area is counted | Cells touching the polygon (0.25°, too coarse for a farm or a reserve); a server | Jacques suggested something like it in the team chat (reported by Rafael); Rafael chose it; implementation by Claude Code | Land managers, reserves and communities manage their own boundary, not a municipality | [details](#de-37-your-own-area) ; docs/js/calc.js, docs/js/main.js, pipeline/export.py (alpha in metadata) | PROPOSED |
 
 ## Decision details
 
@@ -574,3 +578,67 @@ Registered on 2026-11-15 at 09:48 (UTC-4), after the DE-18 result and before any
     - where a model is shown, its 2026 capture beats last year's fire by 1.5 to 33.4 percentage points (median 7.7).
   - **DE-29 at about 5 km:** L in 18; P in AC, BA, DF, MG, PA, PE, RN and RR.
   - **DE-32, 2026 check:** the places that burn year after year held more of 2026's detections than last year's top cells in 20 of 27 states.
+
+### DE-34 Season so far
+- **Status: PROPOSED** (display; RA-12). Fixed at 2026-11-15 19:23, before code.
+- **What:** for the selected area and series, the running total of the focus year from the start of its tracking year to each month, against the earlier complete tracking years at the same month: median and 10-90 % range, and the focus year's rank among them at its last month with data.
+- **Tracking year:** it starts the month after the area's quietest month, i.e. the month with the lowest median over the period (`calc.monthMedians`). Rondonia's season (June-November) stays inside one tracking year, and so does Roraima's (December-April).
+- **Missing data:** a month without data ends the focus year's line there. An earlier year with a missing month inside the window is left out of the range (missing is never zero, rule 6).
+- **Range:** drawn only with at least 5 earlier years; with fewer, only the median.
+- **Origin:** proposed by Claude Code in the list of features; chosen by Rafael on 2026-11-15.
+
+### DE-35 Where to act first
+- **Status: PROPOSED** (RA-12). Fixed at 2026-11-15 19:23, before code.
+- **Origin:** Rafael proposed the forecast per cell (DE-29) for planning brigades; this table is its use per municipality.
+- **Rule:**
+  - each ~1 km cell of `cell_outlook_001.csv` belongs to the municipality its centre falls in (`calc.municipalityIndex`, DE-24 nearest-vertex rule for slivers);
+  - expected cells with fire in a municipality = the sum of its cells' chances; its share = that sum over the area's sum.
+- **Where the DE-29 test chose last year's fire,** municipalities are ranked by their cells in the top 10 % instead (no chance is given then).
+- **Limit, stated in the app:** cells under a 0.01 chance are not in the file, so a sum can be up to 0.01 x the municipality's cells too low.
+
+### DE-36 Fire events: groups of detections
+- **Status: PROPOSED** (RA-12). Fixed at 2026-11-15 19:23, before any event is computed.
+- **Origin:** Jacques suggested something like it in the team chat (reported by Rafael). Claude Code proposed the rule.
+- **Rule:** in the focus month and the selected area, two VIIRS detections (S-NPP, NOAA-20 or NOAA-21; 375 m pixels) belong to the same event when:
+  - they are at most 1 km apart (great-circle distance between pixel centres);
+  - and their dates are at most 1 day apart.
+
+  An event is a connected group: links chain, so an event can grow over days and kilometres.
+- **Why 1 km and 1 day:** 1 km is about 2.7 VIIRS pixels at nadir, and pixels grow toward the edge of the scan (`scan`, `track`; method/FIRMS_REFERENCE.md). One day joins the day and night overpasses. The values are not tuned: FIRMS data alone has no ground truth to tune them against. The app calls them "groups of detections, likely the same fire".
+- **Shown per event:** first and last day, number of days, detections, extent (largest distance across its bounding box, km), maximum FRP, and the municipality of its first detection.
+- **Display:** the largest events of the month first.
+- **Limits:**
+  - events are cut at the month's edges;
+  - MODIS is not used (1 km pixels), so there are no events before 2012.
+- **Sensitivity (reported, not used to change the rule):** the number of events at 0.5, 1 and 2 km for one month.
+- **Result** (`node method/fire_events_sensitivity.js`, `method/results/fire_events_sensitivity.json`): Rondonia, 2024-09, 70,924 VIIRS detections.
+
+  | Distance | Events | Largest event (detections) |
+  |---|---|---|
+  | 0.5 km | 6,201 | 1,322 |
+  | 1 km | 4,283 | 1,616 |
+  | 2 km | 3,111 | 1,918 |
+
+  Doubling the distance gives 27 % fewer events, halving it 45 % more: the count of events is approximate, and the app says the limits are not tuned.
+
+### DE-37 Your own area
+- **Status: PROPOSED** (RA-12). Fixed at 2026-11-15 19:23, before code.
+- **Origin:** Jacques suggested something like it in the team chat (reported by Rafael). Rafael chose it.
+- **Input:** a GeoJSON or KML polygon read in the browser; the file is never sent anywhere.
+- **Series (the DE-24 rule):** the detections inside the polygon, per satellite and month. They are harmonized in the browser with the open area's own ratios, exactly as `pipeline/harmonize.py`:
+  - from 2012-02, the reference VIIRS count (DE-11);
+  - before, k(month) x (Terra + Aqua) when both are valid, else k(month) x Terra (DE-6 option 2);
+  - variance (mu + alpha mu^2) x lambda (DE-16);
+  - a flagged satellite-month is empty, never zero.
+
+  `alpha` per configuration is added to `metadata.json`.
+- **Check:** for a real IBGE municipality uploaded as a file, the result must equal that municipality's series in `municipalities.csv`.
+- **Limit:** only the part of the polygon inside the open area is counted.
+- **Check result** (`tests/js/hotspots.test.js`, Alta Floresta D'Oeste, 1100015, every month 2000-11 to 2026-10):
+  - fed with the pipeline's counts of the municipality, the browser harmonization gives its series in `municipalities.csv` (values, variances and estimated flags);
+  - counted from the detections inside its polygon, the valid satellite-months agree except one: 2024-09, Aqua, 42 against 43.
+
+  - in the browser (`tests/e2e/app_smoke.mjs`), the municipality's polygon uploaded as a file gives its harmonized series in the 120 months compared;
+  - Brazil pilot (`tests/e2e/brazil_packs.mjs`), Altamira (PA) uploaded as a file: 176 of 177 months equal; 2024-01 is 38 against 37, one NOAA-20 detection on its border that the pilot's polygon test and the browser's classify differently.
+
+  The Rondonia detection (-62.0005, -12.5987) lies where the IBGE polygons of 1100015 and 1100379 overlap slightly. The pipeline's polygon test (matplotlib) finds it in both and keeps the first. The browser's ray test finds it only in 1100379. This is a DE-24 difference that existed before DE-37. A user's polygon counts what the browser finds inside it.
